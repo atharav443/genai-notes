@@ -35,38 +35,18 @@ const NAV = '<!--site-nav:start-->'
   + '@media print{.site-nav{display:none!important}}</style>'
   + '<!--site-nav:end-->';
 
+// chrome.css + chrome.js are the single source for the injected article chrome.
+const CHROME_DIR = path.join(ROOT, 'build', 'chrome');
+const chromeCss = fs.readFileSync(path.join(CHROME_DIR, 'chrome.css'), 'utf8');
+const chromeJs = fs.readFileSync(path.join(CHROME_DIR, 'chrome.js'), 'utf8');
+
+if (chromeJs.indexOf('</' + 'script') !== -1) {
+  throw new Error('build/chrome/chrome.js contains a literal script-close tag; it cannot be inlined');
+}
+
 const REVEAL = '<!--site-reveal:start-->'
-  + '<style>'
-  + '@media screen{'
-  + '.js .card-qa .a{display:none}'
-  + '.js .card-qa.open .a{display:block}'
-  + '.reveal-btn{margin:0;padding:5px 9px;background:#fff;border:1px solid #e0e0dc;'
-  + 'border-radius:3px;font:600 9.5px/1 ui-sans-serif,-apple-system,"Segoe UI",sans-serif;'
-  + 'letter-spacing:.12em;text-transform:uppercase;color:#8a8a94;cursor:pointer}'
-  + '.reveal-btn:hover{color:#1c1c1e;border-color:#c9c9cf}'
-  + '.reveal-btn:focus-visible{outline:2px solid #1c1c1e;outline-offset:2px}'
-  + '}'
-  + '@media print{.reveal-btn{display:none!important}.card-qa .a{display:block!important}}'
-  + '</style>'
-  + '<script>(function(){try{'
-  + 'var cards=document.querySelectorAll(".card-qa");'
-  + 'for(var i=0;i<cards.length;i++){(function(card,n){'
-  + 'var a=card.querySelector(".a");if(!a)return;'
-  + 'var id="answer-"+n;a.id=id;'
-  + 'var b=document.createElement("button");'
-  + 'b.type="button";b.className="reveal-btn";b.textContent="Reveal answer";'
-  + 'b.setAttribute("aria-expanded","false");b.setAttribute("aria-controls",id);'
-  + 'b.addEventListener("click",function(){'
-  + 'var open=card.classList.toggle("open");'
-  + 'b.textContent=open?"Hide answer":"Reveal answer";'
-  + 'b.setAttribute("aria-expanded",open?"true":"false");'
-  + '});'
-  + 'a.parentNode.insertBefore(b,a);'
-  + '})(cards[i],i);}'
-  // If anything above throws, un-gate so the answers come back instead of
-  // leaving 47 cards hidden behind a button that was never created.
-  + '}catch(e){document.documentElement.classList.remove("js");}'
-  + '})();</script>'
+  + '<style>' + chromeCss + '</style>'
+  + '<script>' + chromeJs + '</script>'
   + '<!--site-reveal:end-->';
 
 // ------------------------------------------------- one-time legacy migration

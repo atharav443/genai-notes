@@ -13,6 +13,7 @@ runtime dependencies — the published site is plain HTML.
 | `content.json` | source of truth for the landing page |
 | `assets/site.css` | shared styles for the landing page and 404 |
 | `build/` | three zero-dependency Node scripts (see below) |
+| `build/chrome/` | `chrome.css` + `chrome.js` — the single source for everything injected into the articles (postcards, decks, nav) |
 | `html/` | rendered articles (KaTeX pre-rendered, fonts base64-inlined) |
 | `pdf/` | print exports of each topic |
 | `notes/rlhf/` | `FULL.md` reference and the Anki-importable `flashcards.tsv` |
@@ -58,6 +59,9 @@ Open the site through the server, not `file://` — the article chrome links to
 | `build/inject-nav.js` | adds the site chrome to every `html/*.html`: an `← All topics` bar, a `.js` marker, and the recall-card reveal control. Each block sits between `<!--site-X:start-->` and `<!--site-X:end-->`, so a later run **replaces** it instead of skipping: edit the block in the script, re-run, and every article follows |
 | `build/render-math.js` | pre-renders raw \(…\) / \[…\] into static KaTeX markup, in place |
 
+`inject-nav.js` reads `build/chrome/chrome.css` and `build/chrome/chrome.js` and inlines them, so the
+articles stay self-contained (no extra requests, works offline).
+
 `inject-nav.js` touches exactly three places: right after `<head>`, right after `<body>`, and right before `</body>`.
 Everything else in the article stays byte-identical, which is what keeps the print
 exports reproducible. Re-run it after any rebuild — a rebuild regenerates the file
@@ -65,20 +69,46 @@ from `viz/*.src.html` and therefore drops the chrome.
 
 ## Recall cards
 
-The RLHF essay has 47 question/answer boxes. On screen the answer is hidden and a
-**Reveal answer** button sits in its place, so the reader can try to recall before
-checking. Three details make that safe:
+The RLHF essay has 47 question/answer boxes, drawn in the spirit of
+[Quantum Country](https://quantum.country)'s mnemonic medium. Two things happen on
+screen, both built at runtime from the same markup:
 
-- Hiding is scoped to `.js .card-qa .a`, and the `js` class is added by a script in `<head>`. If JS never runs, no class
-  is set and every answer stays visible — 47 readable cards, not 47 dead ones.
-- `@media print` forces the answers visible and hides the buttons, so the
-  PDF export is unchanged (verified: 32 pages, no button text in the text layer).
-- If the reveal script throws it removes the `js` class again, so a bug
-  cannot strand the answers behind buttons that were never created.
+**1. Inline postcards.** Each `.card-qa` becomes a white card with a soft shadow;
+the answer is hidden until the reader clicks the card (or its **Reveal answer**
+button), so recall comes before checking.
+
+**2. A review deck per Part.** After each `<div class="part">` the essay gets a
+stacked-postcard deck holding that Part's cards — one card dealt at a time, click
+to reveal, then grade **Didn't remember** / **Remembered**. When the deck empties it
+reports `n of m remembered` and offers to replay only the ones missed. The per-Part
+split is derived from the DOM (`7, 16, 9, 7, 6, 2` for the six Parts), not from any
+build-time list, so adding cards to the source needs no wiring — re-run the
+injector and the decks pick them up.
+
+Grades persist in `localStorage` under `genai-review:<page-name>` (the key is derived from the
+URL, so a future VAE or diffusion essay cannot collide on card ids). There is no
+backend, so this is a local record of what you last answered — **not** a real spaced-
+repetition scheduler. Quantum Country's is server-side; replicating it would need
+storage plus a queue, and is deliberately out of scope here.
+
+Three constraints keep this safe:
+
+- Hiding is scoped to `.js .card-qa .a`, and the `js` class is added by a script in `<head>`. If JS never runs, no class is set and every
+  answer stays visible — 47 readable cards, not 47 dead ones. The decks simply
+  never appear.
+- `@media print` forces answers visible and drops every button,
+  deck and hint, so the PDF is unchanged (verified: 32 pages, and searching the text
+  layer finds no deck UI).
+- If the chrome script throws it removes the `js` class again, so a bug cannot
+  strand the answers behind controls that were never created.
+
+Styling and behaviour live in `build/chrome/chrome.css` and `build/chrome/chrome.js`.
+Edit those, then run `node build/inject-nav.js` and every article picks up the
+change — do not edit the injected copy inside `html/*.html`.
 
 The essay's opening prose still says “cover the answer with your hand”. That is now
-only true of the printed PDF; on screen the button does it. Reword if you want the two
-to agree.
+only true of the printed PDF; on screen the card and the deck do it. Reword if you
+want the two to agree.
 
 ## Rebuilding an RLHF article
 
