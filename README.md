@@ -55,12 +55,30 @@ Open the site through the server, not `file://` — the article chrome links to
 | script | what it does |
 |---|---|
 | `build/build-index.js` | `content.json` → `index.html` |
-| `build/inject-nav.js` | prepends the `← All topics` bar to every `html/*.html`; **idempotent** — it marks the file with ``<!--site-nav-->`` and later runs are no-ops |
+| `build/inject-nav.js` | adds the site chrome to every `html/*.html`: an `← All topics` bar, a `.js` marker, and the recall-card reveal control. Each block sits between `<!--site-X:start-->` and `<!--site-X:end-->`, so a later run **replaces** it instead of skipping: edit the block in the script, re-run, and every article follows |
 | `build/render-math.js` | pre-renders raw \(…\) / \[…\] into static KaTeX markup, in place |
 
-`inject-nav.js` only inserts a block immediately after `<body>`; everything else
-in the article stays byte-identical, which is what keeps the print exports
-reproducible.
+`inject-nav.js` touches exactly three places: right after `<head>`, right after `<body>`, and right before `</body>`.
+Everything else in the article stays byte-identical, which is what keeps the print
+exports reproducible. Re-run it after any rebuild — a rebuild regenerates the file
+from `viz/*.src.html` and therefore drops the chrome.
+
+## Recall cards
+
+The RLHF essay has 47 question/answer boxes. On screen the answer is hidden and a
+**Reveal answer** button sits in its place, so the reader can try to recall before
+checking. Three details make that safe:
+
+- Hiding is scoped to `.js .card-qa .a`, and the `js` class is added by a script in `<head>`. If JS never runs, no class
+  is set and every answer stays visible — 47 readable cards, not 47 dead ones.
+- `@media print` forces the answers visible and hides the buttons, so the
+  PDF export is unchanged (verified: 32 pages, no button text in the text layer).
+- If the reveal script throws it removes the `js` class again, so a bug
+  cannot strand the answers behind buttons that were never created.
+
+The essay's opening prose still says “cover the answer with your hand”. That is now
+only true of the printed PDF; on screen the button does it. Reword if you want the two
+to agree.
 
 ## Rebuilding an RLHF article
 
