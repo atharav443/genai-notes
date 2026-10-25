@@ -1,0 +1,106 @@
+<section class="viz">
+  <h2>Interactive — why the discriminator "fails" at equilibrium</h2>
+  <p class="hint">Slide the generator to match the data. The <em>optimal</em> discriminator
+  \(D^*(x)=\frac{p_x(x)}{p_x(x)+p_\theta(x)}\) flattens to \(\tfrac12\), and \(J(\theta,w)\) saturates at \(-\log 4\).
+  That flatness is the equilibrium — and also why f-divergence training stalls when the supports never overlap.</p>
+  <canvas id="gcv" width="1040" height="540"></canvas>
+  <div class="controls">
+    <label>&mu;<sub>&theta;</sub> <input id="gmu" type="range" min="-3.2" max="3.2" step="0.01" value="2.35"></label>
+    <label>&sigma;<sub>&theta;</sub> <input id="gsd" type="range" min="0.30" max="2.00" step="0.01" value="0.70"></label>
+    <button id="gfit">Fit generator</button>
+    <button class="ghost" id="gsig">Show gradient</button>
+  </div>
+  <div class="readout" id="gout"></div>
+</section>
+<script>
+(function(){
+  var CV=document.getElementById('gcv'), X=CV.getContext('2d');
+  var dpr=Math.min(2,window.devicePixelRatio||1), W=1040, H=540;
+  CV.width=W*dpr; CV.height=H*dpr; CV.style.height=(H/ (W/ CV.getBoundingClientRect().width||1))+'px';
+  CV.style.height='auto'; X.scale(dpr,dpr);
+  var XL=-4, XR=4, N=420;
+  function gauss(x,m,s){ return Math.exp(-0.5*((x-m)/s)*((x-m)/s))/(s*Math.sqrt(2*Math.PI)); }
+  function pdata(x){ return 0.5*gauss(x,-1.05,0.46)+0.5*gauss(x,1.15,0.52); }
+  var showSig=false;
+  function pt(mu,sd){ return function(x){ return gauss(x,mu,sd); }; }
+  function curve(fn,y0,h,scale){ // scale = px per unit density
+    var pts=[]; for(var i=0;i<=N;i++){ var x=XL+(XR-XL)*i/N; pts.push([i*(W/N), y0 - fn(x)*scale]); } return pts;
+  }
+  function path(pts,y0){ X.beginPath(); X.moveTo(pts[0][0],y0); for(var i=0;i<pts.length;i++) X.lineTo(pts[i][0],pts[i][1]); X.lineTo(pts[pts.length-1][0],y0); X.closePath(); }
+  function line(pts){ X.beginPath(); X.moveTo(pts[0][0],pts[0][1]); for(var i=1;i<pts.length;i++) X.lineTo(pts[i][0],pts[i][1]); }
+  var ACC='#7c3aed', ACC2='#a78bfa', INK='#1a1a1d', MUT='#8a8a94', LINE='#e3e0da';
+  function draw(){
+    var mu=parseFloat(document.getElementById('gmu').value), sd=parseFloat(document.getElementById('gsd').value);
+    var pth=pt(mu,sd);
+    X.clearRect(0,0,W,H);
+    X.fillStyle='#fbfaf8'; X.fillRect(0,0,W,H);
+    // ---- top panel: densities
+    var topH=250, topY=topH, sc=380;
+    X.strokeStyle=LINE; X.beginPath(); X.moveTo(0,topY); X.lineTo(W,topY); X.stroke();
+    path(curve(pdata,topY,topH,sc),topY); X.fillStyle='rgba(13,148,136,.16)'; X.fill(); X.strokeStyle='#0d9488'; X.lineWidth=2.2; X.stroke();
+    path(curve(pth,topY,topH,sc),topY); X.fillStyle='rgba(124,58,237,.16)'; X.fill(); X.strokeStyle=ACC; X.lineWidth=2.2; X.stroke();
+    // samples
+    for(var i=0;i<160;i++){
+      var u1=Math.random()||1e-9,u2=Math.random();
+      var z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+      var comp=Math.random()<0.5?-1.05:1.15, s=Math.random()<0.5?0.46:0.52;
+      var x=comp+s*z, px=(x-XL)/(XR-XL)*W;
+      X.fillStyle='rgba(13,148,136,.55)'; X.beginPath(); X.arc(px,topY-8-Math.random()*16,2.1,0,6.28); X.fill();
+    }
+    for(var j=0;j<160;j++){
+      var a=Math.random()||1e-9,b=Math.random();
+      var zz=Math.sqrt(-2*Math.log(a))*Math.cos(2*Math.PI*b), xx=mu+sd*zz, pxx=(xx-XL)/(XR-XL)*W;
+      X.fillStyle='rgba(124,58,237,.55)'; X.beginPath(); X.arc(pxx,topY-8-Math.random()*16,2.1,0,6.28); X.fill();
+    }
+    X.font='600 12.5px -apple-system,Segoe UI,Inter,sans-serif';
+    X.fillStyle='#0d9488'; X.fillText('p\u2093  (real data)', 12, 22);
+    X.fillStyle=ACC; X.fillText('p\u03B8  (generator)', 12, 40);
+    // ---- bottom panel: D* + objective
+    var botY=H-70, botH=170;
+    X.strokeStyle=LINE; X.beginPath(); X.moveTo(0,botY); X.lineTo(W,botY); X.stroke();
+    X.setLineDash([4,4]); X.strokeStyle='#c9c5bd'; X.beginPath(); X.moveTo(0,botY-botH*0.5); X.lineTo(W,botY-botH*0.5); X.stroke(); X.setLineDash([]);
+    X.fillStyle=MUT; X.fillText('D*(x) = \u00BD', W-84, botY-botH*0.5-6);
+    var dpt=[]; for(var k=0;k<=N;k++){ var x=XL+(XR-XL)*k/N, pd=pdata(x), pq=pth(x), d=pd/(pd+pq+1e-12); dpt.push([k*(W/N), botY-d*botH]); }
+    line(dpt); X.strokeStyle=ACC; X.lineWidth=2.6; X.stroke();
+    X.fillStyle=ACC; X.fillText('optimal discriminator D*(x)', 12, botY-botH-8);
+    // objective via grid integration
+    var dx=(XR-XL)/N, J=0, Jp=0, Jq=0, gradMu=0;
+    for(var n=0;n<=N;n++){
+      var xg=XL+(XR-XL)*n/N, pd=pdata(xg), pq=pth(xg), d=pd/(pd+pq+1e-12);
+      d=Math.min(1-1e-9,Math.max(1e-9,d));
+      Jp+=pd*Math.log(d)*dx; Jq+=pq*Math.log(1-d)*dx;
+      var dpq=(xg-mu)/(sd*sd)*pq; // d/dmu of p_theta
+      gradMu+=Math.log(1-d)*dpq*dx;
+    }
+    J=Jp+Jq;
+    if(showSig){
+      var gx=(mu-XL)/(XR-XL)*W, gy=topY-30, arrow=Math.max(-140,Math.min(140,gradMu*260));
+      X.strokeStyle='#e11d48'; X.lineWidth=3; X.beginPath(); X.moveTo(gx,gy); X.lineTo(gx+arrow,gy); X.stroke();
+      X.beginPath(); var dir=arrow>=0?1:-1, tip=gx+arrow;
+      X.moveTo(tip,gy); X.lineTo(tip-9*dir,gy-5); X.lineTo(tip-9*dir,gy+5); X.closePath(); X.fillStyle='#e11d48'; X.fill();
+      X.fillStyle='#e11d48'; X.font='700 12.5px -apple-system,Segoe UI,Inter,sans-serif';
+      X.fillText('\u2202J/\u2202\u03B8  (gradient the generator sees)', Math.min(W-330,gx+arrow+10), gy-12);
+    }
+    var close=Math.abs(mu-1.15)<0.28 && Math.abs(sd-0.50)<0.20;
+    document.getElementById('gout').innerHTML =
+      'J(\u03B8,w) = E\u2093[log D*] + E\u03B8[log(1\u2212D*)] = <b>'+J.toFixed(4)+'</b>'+
+      ' &nbsp;\u00B7&nbsp; \u2212log 4 = \u22121.3863'+
+      ' &nbsp;\u00B7&nbsp; gap to \u2212log 4 = <b>'+(J+1.3863).toFixed(3)+'</b>'+
+      (close ? ' &nbsp;<span style="color:#0d9488;font-weight:800">\u2192 matched: D* \u2248 \u00BD everywhere, gradient \u2192 0</span>' : '');
+    requestAnimationFrame(function(){});
+  }
+  function fit(){
+    var mu=parseFloat(document.getElementById('gmu').value), sd=parseFloat(document.getElementById('gsd').value);
+    var t=0; (function step(){
+      var dx=0.02, dmu=1.15-mu, dsd=0.50-sd;
+      mu+=dmu*0.10; sd+=dsd*0.10; t++;
+      document.getElementById('gmu').value=mu; document.getElementById('gsd').value=sd;
+      draw(); if(t<42) requestAnimationFrame(step);
+    })();
+  }
+  ['gmu','gsd'].forEach(function(id){ document.getElementById(id).addEventListener('input',draw); });
+  document.getElementById('gfit').addEventListener('click',fit);
+  document.getElementById('gsig').addEventListener('click',function(){ showSig=!showSig; this.textContent=showSig?'Hide gradient':'Gradient signal'; draw(); });
+  draw();
+})();
+</script>

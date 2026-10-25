@@ -1,0 +1,88 @@
+<section class="viz">
+  <h2>Interactive — forward noising &amp; reverse (DDIM, &sigma;=0)</h2>
+  <p class="hint">The forward process is fixed, not learned: \(x_t=\sqrt{\bar\alpha_t}x_0+\sqrt{1-\bar\alpha_t}\,\epsilon_t\).
+  Scrub \(t\) to destroy the image, then run the reverse. With an <em>oracle</em> denoiser and \(\sigma_t=0\),
+  the reverse is fully deterministic — exactly the DDIM update on page 110.</p>
+  <canvas id="dcv" width="1040" height="360"></canvas>
+  <div class="controls">
+    <label>t <input id="dt" type="range" min="0" max="999" step="1" value="0"></label>
+    <button id="dfwd">Run forward</button>
+    <button id="drev">Run reverse (DDIM)</button>
+    <button class="ghost" id="dnew">New noise</button>
+  </div>
+  <div class="readout" id="dout"></div>
+</section>
+<script>
+(function(){
+  var CV=document.getElementById('dcv'), X=CV.getContext('2d'), W=1040, H=360;
+  var dpr=Math.min(2,window.devicePixelRatio||1); CV.width=W*dpr; CV.height=H*dpr; X.scale(dpr,dpr);
+  var ACC='#ea580c', LINE='#e3e0da', MUT='#8a8a94', INK='#1a1a1d';
+  var T=1000, S=104, x0=new Float32Array(S*S), noise=new Float32Array(S*S), abar=new Float32Array(T+1);
+  (function schedule(){
+    var b0=1e-4, b1=0.02, cum=1;
+    abar[0]=1;
+    for(var t=1;t<=T;t++){ var bt=b0+(b1-b0)*(t-1)/(T-1); cum*= (1-bt); abar[t]=cum; }
+  })();
+  (function art(){
+    var c=document.createElement('canvas'); c.width=S; c.height=S; var g=c.getContext('2d');
+    var grd=g.createLinearGradient(0,0,S,S); grd.addColorStop(0,'#fde68a'); grd.addColorStop(1,'#fb923c');
+    g.fillStyle=grd; g.fillRect(0,0,S,S);
+    g.fillStyle='#0f172a'; g.beginPath(); g.arc(S*0.38,S*0.40,S*0.20,0,6.28); g.fill();
+    g.fillRect(S*0.58,S*0.30,S*0.26,S*0.26);
+    g.strokeStyle='#0f172a'; g.lineWidth=4; g.beginPath(); g.moveTo(S*0.20,S*0.78); g.lineTo(S*0.80,S*0.78); g.stroke();
+    var d=g.getImageData(0,0,S,S).data;
+    for(var i=0;i<S*S;i++) x0[i]=(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114)/255;
+  })();
+  function reseed(){ for(var i=0;i<S*S;i++){ var u1=Math.random()||1e-9,u2=Math.random();
+    noise[i]=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); } }
+  reseed();
+  function render(t){
+    var a=abar[t], s1=Math.sqrt(a), s2=Math.sqrt(1-a);
+    var im=X.createImageData(S,S);
+    for(var i=0;i<S*S;i++){
+      var v=x0[i]*s1+noise[i]*s2; v=Math.max(0,Math.min(1,v));
+      var g=Math.round(v*255); im.data[i*4]=g; im.data[i*4+1]=g; im.data[i*4+2]=g; im.data[i*4+3]=255;
+    }
+    var disp=232, ox=24, oy=34;
+    var off=document.createElement('canvas'); off.width=S; off.height=S; off.getContext('2d').putImageData(im,0,0);
+    X.imageSmoothingEnabled=false;
+    X.clearRect(0,0,W,H); X.fillStyle='#fbfaf8'; X.fillRect(0,0,W,H);
+    X.drawImage(off, ox, oy, disp, disp);
+    X.strokeStyle=LINE; X.strokeRect(ox+.5,oy+.5,disp,disp);
+    X.fillStyle=INK; X.font='600 12.5px -apple-system,Segoe UI,Inter,sans-serif';
+    X.fillText('x_t  (data + noise)', ox, oy-9);
+    // schedule panel
+    var px0=320, pw=680, py=90, ph=180;
+    X.strokeStyle=LINE; X.beginPath(); X.moveTo(px0,py+ph); X.lineTo(px0+pw,py+ph); X.stroke();
+    X.beginPath(); X.moveTo(px0,py); X.lineTo(px0,py+ph); X.stroke();
+    X.beginPath();
+    for(var k=0;k<=pw;k++){ var tt=Math.round(k/pw*T), yy=py+ph-abar[tt]*ph; if(k===0)X.moveTo(px0+k,yy); else X.lineTo(px0+k,yy); }
+    X.strokeStyle='#94a3b8'; X.lineWidth=2; X.stroke();
+    var gx=px0+(t/T)*pw, gy=py+ph-abar[t]*ph;
+    X.strokeStyle=ACC; X.setLineDash([4,4]); X.beginPath(); X.moveTo(gx,py+ph); X.lineTo(gx,gy); X.stroke(); X.setLineDash([]);
+    X.fillStyle=ACC; X.beginPath(); X.arc(gx,gy,5,0,6.28); X.fill();
+    X.fillStyle=MUT; X.fillText('\u03B1\u0304_t  (signal retained) \u2014 1 at t=0 \u2192 ~0 at t=T', px0, py-12);
+    X.fillStyle=INK; X.font='700 13px -apple-system,Segoe UI,Inter,sans-serif';
+    X.fillText('t = '+t+' / '+T, px0+pw-96, py+ph+26);
+    var s1=Math.sqrt(abar[t]);
+    document.getElementById('dout').innerHTML =
+      'x_t = \u221A\u03B1\u0304_t\u00B7x\u2080 + \u221A(1\u2212\u03B1\u0304_t)\u00B7\u03B5'+
+      ' &nbsp;\u00B7&nbsp; \u03B1\u0304_t = <b>'+abar[t].toFixed(5)+'</b>'+
+      ' &nbsp;\u00B7&nbsp; signal \u221A\u03B1\u0304_t = <b>'+s1.toFixed(3)+'</b>'+
+      ' &nbsp;\u00B7&nbsp; noise \u221A(1\u2212\u03B1\u0304_t) = <b>'+Math.sqrt(1-abar[t]).toFixed(3)+'</b>';
+  }
+  function animate(from,to,ms){
+    var t0=performance.now();
+    (function step(now){
+      var p=Math.min(1,(now-t0)/ms), v=Math.round(from+(to-from)*p);
+      document.getElementById('dt').value=v; render(v);
+      if(p<1) requestAnimationFrame(step);
+    })(t0);
+  }
+  document.getElementById('dt').addEventListener('input',function(){ render(parseInt(this.value,10)); });
+  document.getElementById('dfwd').addEventListener('click',function(){ animate(0,T,2100); });
+  document.getElementById('drev').addEventListener('click',function(){ animate(T,0,2600); });
+  document.getElementById('dnew').addEventListener('click',function(){ reseed(); render(parseInt(document.getElementById('dt').value,10)); });
+  render(0);
+})();
+</script>

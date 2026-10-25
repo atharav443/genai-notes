@@ -1,0 +1,1529 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Reinforcement learning from human feedback, for the very curious</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/RLHF-Curious.html</code> instead. This file is input to <code>viz/build/build-curious.js</code>.</div>
+
+<h1>Reinforcement learning<br>from human feedback,<br>for the very curious</h1>
+<h1 class="sub-title">How a language model learns to be good &mdash; and why the
+mathematics of &ldquo;good&rdquo; turns out to be a single subtraction</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Along the way you will find small boxes containing a
+question and its answer. Those boxes are not decoration. They are the essay
+testing you &mdash; and if you take them seriously, you will remember this material
+for years instead of days.</p>
+
+<p>Here is how to use them. When a box appears, <b>cover the answer with your
+hand</b>, say your answer out loud, and only then read what is written. If you
+get it wrong, that is useful: the effort of a failed recall is what makes the
+next one stick. If you get it right, move on. Each box is numbered so you can
+find it again; every question and answer is also collected in the Appendix, and
+in a plain-text file you can import into any spaced-repetition system.</p>
+
+<p>One more thing before we begin. This essay is built from two sources: a set of
+handwritten lecture notes (pages 128&ndash;146 of an IIT Madras generative-AI
+course), and a recording of the professor delivering them. Where the notes and
+the lecture disagree &mdash; and they do, in several places, including two outright
+errors &mdash; we will stop and look at it. You will find those moments marked
+<i>A note on the notes</i>. Learning to distrust a source is part of learning.</p>
+
+<hr class="rule">
+
+<div class="toc">
+<span class="p">Part I &mdash; The problem with a very good parrot</span>
+1 &middot; A machine that finishes your sentence &nbsp;&nbsp;
+2 &middot; The thing we cannot write down &nbsp;&nbsp;
+3 &middot; Two kinds of learning from data &nbsp;&nbsp;
+4 &middot; The reward you can check
+<span class="p">Part II &mdash; An agent in a world</span>
+5 &middot; A joystick and a score &nbsp;&nbsp;
+6 &middot; The six things that make a game &nbsp;&nbsp;
+7 &middot; One number for an entire life &nbsp;&nbsp;
+8 &middot; The distribution over futures &nbsp;&nbsp;
+9 &middot; The integral we cannot do &nbsp;&nbsp;
+10 &middot; The trick that fools a derivative &nbsp;&nbsp;
+11 &middot; The gift &nbsp;&nbsp;
+12 &middot; Too noisy to be useful &nbsp;&nbsp;
+13 &middot; Did this action help? &nbsp;&nbsp;
+14 &middot; The equation on every page
+<span class="p">Part III &mdash; Putting a language model inside the machine</span>
+15 &middot; A prompt is a state &nbsp;&nbsp;
+16 &middot; Stale samples, and the ratio that fixes them &nbsp;&nbsp;
+17 &middot; When the ratio explodes &nbsp;&nbsp;
+18 &middot; The clip &nbsp;&nbsp;
+19 &middot; What the clip does, in numbers
+<span class="p">Part IV &mdash; Where the number comes from</span>
+20 &middot; You cannot grade on an absolute scale &nbsp;&nbsp;
+21 &middot; Two answers, one question &nbsp;&nbsp;
+22 &middot; A reward defined only by its differences &nbsp;&nbsp;
+23 &middot; Goodhart, with a gradient
+<span class="p">Part V &mdash; The cancellation</span>
+24 &middot; An objective with a closed-form answer &nbsp;&nbsp;
+25 &middot; The function that cancels &nbsp;&nbsp;
+26 &middot; DPO &nbsp;&nbsp;
+27 &middot; Removing the value function &nbsp;&nbsp;
+<span class="p">Part VI &mdash; What we glossed over</span>
+28 &middot; Five places the notes are wrong &nbsp;&nbsp;
+29 &middot; What this essay does not tell you &nbsp;&nbsp;
+Appendix &middot; Every question in this essay
+</div>
+
+<div class="part">Part I &mdash; The problem with a very good parrot</div>
+<h2>1 &middot; A machine that finishes your sentence</h2>
+
+<p>Suppose you train a model on a very large pile of text. You give it one job:
+given everything written so far, say what comes next. Do that a few trillion
+times and something strange happens. The model gets good enough that it can
+finish a sentence, then a paragraph, then a proof sketch, then a program.</p>
+
+<p>Formally, it has learned a conditional distribution over the next token.
+Call
+the parameters \( \theta \), the vocabulary \( \mathcal{V} \), and the situation
+at step \( t \) the state \( s \). Then what the model gives you is this:</p>
+
+\[ \pi_\theta(a \mid s) \;=\; \Pr\big(x_t = v \mid x_{<t}\big), \qquad v\in\mathcal{V} \]
+
+<p>Read the left-hand side carefully, because it is the strangest thing in this
+essay. We have written the model's output as a <i>policy</i>: a distribution over
+actions given a situation. That is a word from a different field entirely, and
+the whole rest of this essay is about why it is the right word.</p>
+
+<p>Because here is the trouble. A model trained this way is an astonishing
+imitator and a poor judge. It will continue a sentence the way the internet
+would continue it &mdash; including the parts of the internet that are cruel, or
+wrong, or simply unhelpful. It has no term in its objective that says <i>this
+completion is better than that one</i>. It only knows what tends to follow what.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  What exactly does a next-token-prediction model learn &mdash; a program, a database
+  of answers, or something else?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A conditional probability distribution over the next token given the previous
+  tokens: \( \pi_\theta(a\mid s) \). Everything else it appears to do is sampling
+  from that distribution.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  Why doesn't that training objective already make the model helpful?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because it only rewards <i>matching the corpus</i>. There is no term in the
+  objective that compares two possible responses and says which is better. The
+  corpus contains cruelty and error as faithfully as it contains kindness and
+  truth, and the model learns to reproduce all of it.</p>
+</div>
+
+<h2>2 &middot; The thing we cannot write down</h2>
+
+<p>So we want the model to be <i>good</i>. The lecture we are following states the
+goal plainly: to make the model compatible with a desired, pre-defined rule or
+behaviour, as specified by human annotations or by fixed rules.</p>
+
+<p>Why not simply collect examples of good behaviour and fine-tune on them? People
+do this, and it helps. But it runs into two walls, and it is worth naming them
+precisely, because they explain everything that follows.</p>
+
+<p>The first wall is about <b>format</b>. A person is quite good at looking at two
+answers and saying &ldquo;the second one is better.&rdquo; A person is much worse at
+<i>writing</i> the ideal answer from scratch. If you ask for demonstrations you get
+a little data of high quality. If you ask for comparisons you get a lot of data
+of decent quality. Comparisons are the only label that scales &mdash; but a comparison
+is not a target string, so there is nothing to put through a cross-entropy loss.</p>
+
+<p>The second wall is about <b>location</b>. Whether a response is helpful is not a
+property of any single token. It is a property of the whole response &mdash; a
+derivation is correct or it is not; a refusal is appropriate or it is not. You
+cannot label token number 47 as &ldquo;good&rdquo;. The judgement lives at the end, and it
+is about the entire thing.</p>
+
+<p>Put those together. We need to optimise a number that arrives once, at the end,
+judging a whole sequence. That is not a supervised-learning problem. It is a
+problem about <i>acting</i>, and it has a name.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  What is the &ldquo;format&rdquo; wall that stops us from just using supervised fine-tuning?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Human preference data comes as <i>comparisons</i>, not as demonstrations. A
+  ranking is not a target string, so there is nothing to compute a per-token loss
+  against. Comparisons are cheap and scalable; ideal answers are neither.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  What is the &ldquo;location&rdquo; wall?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The quality signal is a property of the <i>whole sequence</i>, not of individual
+  tokens. It arrives once, at the end. You cannot assign a per-token label to
+  whether a derivation is correct.</p>
+</div>
+
+<h2>3 &middot; Two kinds of learning from data</h2>
+
+<p>It helps to place this next to what you already know. There are three ways a
+machine can learn from data, and they differ in what they are handed.</p>
+
+\[ \begin{aligned}
+\text{supervised:}\quad & (x,y)\sim p(x,y) &&\Longrightarrow\ \text{learn } p(y\mid x)\\
+\text{unsupervised:}\quad & x\sim p(x) &&\Longrightarrow\ \text{learn } p(x)\\
+\text{reinforcement:}\quad & \text{no dataset} &&\Longrightarrow\ \text{learn } \pi_\theta(a\mid s)
+\end{aligned} \]
+
+<p>Supervised learning <i>imitates a label</i>. Reinforcement learning <i>optimises a
+scalar obtained by acting</i>. Notice that the third row has a hole where the data
+used to be. There is no dataset of correct actions. Instead there is an
+environment which, when you do something, tells you what it was worth.</p>
+
+<p>That is a strange trade. You give up the rich per-example supervision of a
+label, and in exchange you get something a label can never give you: the ability
+to be judged on outcomes you were never shown.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  In one line: what is the difference between supervised learning and reinforcement
+  learning?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Supervised learning imitates a label; reinforcement learning optimises a scalar
+  reward obtained by acting in an environment. The second has no dataset of
+  correct actions &mdash; only feedback.</p>
+</div>
+
+<h2>4 &middot; The reward you can check</h2>
+
+<p>Here is the single most practical idea in this whole subject, and the handwritten
+notes never mention it. The professor says it in the first three minutes.</p>
+
+<p>Reinforcement learning works <i>best</i> when the reward is
+<b>verifiable</b> &mdash; when you can check it, mechanically, with no human in the
+loop. Did the program pass the unit test? Does the answer equal 42? Is the proof
+machine-checkable? Those are yes-or-no questions with a definite answer.</p>
+
+<p>And now look at which tasks modern language models are best at. Mathematics.
+Programming. Anything with a checker. This is not a coincidence. In those domains
+the reward is essentially a coin: \( r \in \{0,1\} \), free to compute, noiseless,
+and available in unlimited quantity. You can run the model a million times and
+grade every attempt.</p>
+
+<p>Compare a chatbot. What is the reward for &ldquo;was this reply kind, accurate and
+appropriately brief&rdquo;? It is a judgement, not a check. Two annotators give the
+same reply a 6 and a 9. There is no test case. So you cannot compute the reward
+&mdash; you have to <i>learn</i> a function that predicts it, from human comparisons.
+And every error in that learned function becomes an error in your model.</p>
+
+<p>The professor puts the consequence in one sentence, and it is worth memorising
+verbatim: <i>your policy gradient algorithm is as good as your reward model.</i></p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  What makes a reward &ldquo;verifiable&rdquo;, and give the two domains where this works best.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Verifiable means deterministic and mechanically checkable &mdash; a test case passes
+  or it doesn't. Mathematics and programming are the two domains, because a
+  checker can grade the outcome without a human, for free, at unlimited scale.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  Why is an open-ended chat assistant the hard case?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because there is no checker. The reward for &ldquo;was this reply good&rdquo; is a human
+  judgement, so it must be <i>learned</i> from preference comparisons rather than
+  computed &mdash; and the learned reward model becomes the ceiling on how good the
+  assistant can become.</p>
+</div>
+
+<div class="aside">
+<span class="who">A note on the notes</span>
+The lecture's one-line summary &mdash; &ldquo;your policy gradient algorithm is as good
+as your reward model&rdquo; &mdash; appears nowhere on pages 128&ndash;146. Nor does the word
+<i>verifiable</i>. If you revise from the notes alone you will learn the machinery
+of PPO and miss the reason it is used where it is used.
+</div>
+
+<div class="part">Part II &mdash; An agent in a world</div>
+<h2>5 &middot; A joystick and a score</h2>
+
+<p>Before there were language models, the standard testbed for this kind of learning
+was a video game. The professor, who is old enough to remember them, apologises to
+his students for the reference. We will not.</p>
+
+<p>Picture an Atari machine. There is a screen. There is a joystick with a handful
+of moves: left, right, jump. There is a score in the corner. You see the screen,
+you move the joystick, the screen changes, and occasionally the score goes up.</p>
+
+<p>Now ask: what would it take for a program to learn to play this, with no
+instructions, no manual, and no teacher &mdash; only the screen and the score?</p>
+
+<p>Notice what information the program has. At each moment it is in some
+<i>situation</i> &mdash; the position of things on the screen. It chooses an
+<i>action</i> from a small menu. The machine then decides what the next situation
+is, and pays out a number. That is all. The program never learns the rules of the
+game. It never reads the manual. It only ever learns: <i>in situations like this,
+that action tends to lead to more points.</i></p>
+
+<p>Hold on to that last sentence, because in a few pages we will prove something
+surprising about it: the program can learn to play well <b>without ever knowing how
+the machine decides what happens next</b>. That is not an approximation. It is
+exactly true, and it is the reason this machinery works on language models, where
+nobody knows the &ldquo;rules&rdquo; at all.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  In the Atari framing, what is the &ldquo;state&rdquo;, what is the &ldquo;action&rdquo;, and where does
+  the &ldquo;reward&rdquo; come from?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The state is the current screen (or the things on it), the action is one of the
+  joystick moves, and the reward is the score. The environment &mdash; the machine &mdash;
+  supplies the next state and the reward.</p>
+</div>
+
+<h2>6 &middot; The six things that make a game</h2>
+
+<p>That description can be made precise, and once it is precise you can prove things
+about it. Six objects are enough.</p>
+
+<table>
+<tr><th style="width:13%">symbol</th><th style="width:26%">what it is</th><th>in the Atari game</th></tr>
+<tr><td>\( \mathcal{S} \)</td><td>state space</td><td>all the screens you could be looking at</td></tr>
+<tr><td>\( \mathcal{A} \)</td><td>action space</td><td>the joystick's moves</td></tr>
+<tr><td>\( p(s'\mid s,a) \)</td><td>transition kernel</td><td>how the machine reacts to your move</td></tr>
+<tr><td>\( r(s,a) \)</td><td>reward</td><td>the score change, a single number</td></tr>
+<tr><td>\( \gamma \)</td><td>discount factor</td><td>how much you care about the future</td></tr>
+<tr><td>\( \rho_0(s_0) \)</td><td>initial state distribution</td><td>which screen the game starts on</td></tr>
+</table>
+
+<p>Add one more object, which is the thing we are actually trying to learn: a
+<i>policy</i> \( \pi_\theta(a\mid s) \), a distribution over actions given the current
+state. The policy is the entire behaviour of the agent. In the lecture, the
+professor is emphatic that &ldquo;agent&rdquo; and &ldquo;policy&rdquo; are the same word: if there is
+an agent there is a policy, because that is what defines an agent.</p>
+
+<p>The word <i>Markov</i> in &ldquo;Markov decision process&rdquo; is doing exactly one job.
+It says the transition kernel depends only on the current state and action, never
+on how you got there. The future is conditionally independent of the past, given
+the present. That is why the state must contain everything relevant &mdash; in our
+language model, the state will have to be the entire text so far, not just the
+last token.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  What does the word &ldquo;Markov&rdquo; assert, and what does that force the state to be?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It asserts that the transition kernel depends only on the current state and
+  action: \( p(s_{t+1}\mid s_t,a_t,\dots,s_0)=p(s_{t+1}\mid s_t,a_t) \). So the
+  state must contain everything about the past that matters &mdash; for a language
+  model, the whole text so far.</p>
+</div>
+
+<h2>7 &middot; One number for an entire life</h2>
+
+<p>The agent does not receive one reward. It receives a sequence of them, one per
+step, and we need to collapse that sequence into a single number we can maximise.
+The standard way is to add them up &mdash; but with a twist.</p>
+
+\[ R(\tau) \;=\; \sum_{t=0}^{T}\gamma^{t}\, r(s_t,a_t), \qquad 0<\gamma<1 \]
+
+<p>Winding the sum by \( \gamma^t \) <i>discounts the future</i>. A point now is
+worth more than a point a hundred steps from now. Two reasons are usually given,
+and they are worth separating.</p>
+
+<p>The engineering reason: if the game never ends, the raw sum may be infinite, and
+no finite sum has a maximum. Discounting makes the total finite and the problem
+well-posed. The behavioural reason: it is a dial for how far ahead the agent
+bothers to look. As \( \gamma\to 0 \) it becomes greedy and only sees the next
+step; as \( \gamma\to 1 \) it becomes patient and weights the whole future equally.</p>
+
+<div class="aside">
+<span class="who">A note on the notes</span>
+Two small distortions to avoid. Page 130 writes the return as
+\( \sum_t r(s_t,a_t) \) with <i>no</i> \( \gamma \) &mdash; even though \( \gamma \) was
+declared one page earlier. And the lecture, describing what \( \gamma \) is for, says
+it makes &ldquo;recent&rdquo; rewards matter most. Mechanically it is the reverse framing:
+\( \gamma^t \) makes <i>distant</i> rewards matter <i>less</i>. The mechanism is
+exponential decay in time, not recency.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  What are the two distinct reasons for the discount factor \( \gamma \)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  (i) <i>Well-posedness</i>: on an infinite horizon the undiscounted sum may
+  diverge, so no finite maximum exists. (ii) <i>Horizon control</i>: \( \gamma \)
+  dials how far ahead the agent optimises.</p>
+</div>
+
+<h2>8 &middot; The distribution over futures</h2>
+
+<p>Now a change of view that makes the mathematics possible.</p>
+
+<p>Run the agent once. You get a film: the starting screen, the first action, the
+next screen, the next action, and so on to the end. Call that whole film a
+<i>trajectory</i> \( \tau \). The agent does not produce a single action; it
+produces a distribution over films.</p>
+
+<p>And because the world is a Markov decision process, that distribution factorises
+beautifully. Start in a state drawn from \( \rho_0 \). Then at each step multiply
+the probability the policy chose that action, and the probability the world
+responded with that next state:</p>
+
+\[ p_\theta(\tau)\;=\;\rho_0(s_0)\prod_{t=0}^{T}\pi_\theta(a_t\mid s_t)\;p(s_{t+1}\mid s_t,a_t) \]
+
+<p>This is nothing but the chain rule of probability, applied to a process that
+unrolls in time. The lecture says exactly that: &ldquo;it's just the chain rule&rdquo;.</p>
+
+<p>Now look at that product with your eyes narrowed. There are three kinds of term.
+One is the starting distribution. One is the world's rulebook. One is your policy.
+<b>Only one of the three contains \( \theta \).</b></p>
+
+<p>That single observation is the hinge on which the entire subject turns. Everything
+that follows &mdash; every algorithm, every paper &mdash; exploits it. Remember it.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  Write the trajectory distribution, and say which factors depend on \( \theta \).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( p_\theta(\tau)=\rho_0(s_0)\prod_t\pi_\theta(a_t\mid s_t)p(s_{t+1}\mid s_t,a_t) \).
+  Only the <i>policy</i> factors \( \pi_\theta \) depend on \( \theta \). The initial
+  distribution and the transition kernel are properties of the world.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  Why does that factorisation matter so much?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because when we differentiate with respect to \( \theta \), the two
+  \( \theta \)-free factors differentiate to zero and vanish. The gradient will
+  depend only on the policy &mdash; and never on the world's transition rule.</p>
+</div>
+
+<h2>9 &middot; The integral we cannot do</h2>
+
+<p>We now have an objective. Maximise the expected return over trajectories drawn from
+your own policy:</p>
+
+\[ J(\theta)\;=\;\mathbb{E}_{\tau\sim p_\theta}\big[R(\tau)\big]
+\;=\;\int p_\theta(\tau)\,R(\tau)\,d\tau \]
+
+<p>And we want to climb it: compute \( \nabla_\theta J \) and step uphill.</p>
+
+<p>So let us differentiate. The gradient slides inside the integral:</p>
+
+\[ \nabla_\theta J(\theta)\;=\;\int \underbrace{\nabla_\theta p_\theta(\tau)}_{\text{the measure}}\,R(\tau)\,d\tau \]
+
+<p>Now stop and look at where \( \theta \) is. It is not inside the reward &mdash; the
+reward is handed to you by the world and has no parameters. \( \theta \) is inside
+the <i>distribution</i>. You are not differentiating a function of \( \theta \). You are
+differentiating a distribution over \( \theta \), and integrating the result against
+a fixed function.</p>
+
+<p>This is the crux, so let us say the wrong thing and see why it fails. You might
+try to compute \( \mathbb{E}[\nabla_\theta R(\tau)] \). But \( R(\tau) \) does not
+contain \( \theta \), so that gradient is exactly zero, for every trajectory,
+always. It tells you nothing. The only way the objective changes when you move
+\( \theta \) is by changing <i>which trajectories happen</i>.</p>
+
+<p>And we cannot even do that integral by brute force. The set of possible
+trajectories has size roughly \( |\mathcal{V}|^T \) &mdash; for a language model, a
+vocabulary of tens of thousands raised to the power of a few hundred tokens. You
+could not enumerate it before the heat death of the universe. And \( p_\theta \)
+itself is not something you have a formula for; you have a sampler.</p>
+
+<p>This is the same shape of problem you meet in variational inference: an
+intractable integral over a distribution you cannot write down. And it is solved
+by the same kind of move &mdash; get \( \theta \) inside a logarithm, then estimate by
+sampling.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  Why is \( \mathbb{E}_{\tau}\big[\nabla_\theta R(\tau)\big] \) useless?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \( R(\tau) \) contains no \( \theta \), so its gradient is identically
+  zero. The parameters influence the objective only by changing the <i>distribution
+  over trajectories</i>, never the reward of a given trajectory.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  In one phrase: what is being differentiated in \( \nabla_\theta J \)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The <i>measure</i> &mdash; the probability distribution over trajectories &mdash; not the
+  integrand.</p>
+</div>
+
+<h2>10 &middot; The trick that fools a derivative</h2>
+
+<p>Here is a two-line identity that you have probably seen and possibly dismissed as
+a curiosity. It is the whole game.</p>
+
+\[ \nabla_\theta p_\theta \;=\; p_\theta \cdot \nabla_\theta \log p_\theta \]
+
+<p>Why is it true? Because \( \nabla\log p = (1/p)\,\nabla p \), so multiplying by
+\( p \) gives back \( \nabla p \). That is all. A function times one over itself
+times its derivative is its derivative.</p>
+
+<p>Watch what it buys. Substitute it into the integral:</p>
+
+\[ \begin{aligned}
+\nabla_\theta J(\theta)
+&=\int \nabla_\theta p_\theta(\tau)\,R(\tau)\,d\tau &&\text{(start)}\\
+&=\int p_\theta(\tau)\,\nabla_\theta\log p_\theta(\tau)\,R(\tau)\,d\tau
+&&\text{(the trick)}\\
+&=\mathbb{E}_{\tau\sim p_\theta}\Big[\nabla_\theta\log p_\theta(\tau)\,R(\tau)\Big]
+&&\text{(an expectation!)}
+\end{aligned} \]
+
+<p>Look at what changed. The left side was an integral over an object we cannot
+even write down. The right side is an <i>expectation</i> &mdash; which means we can
+estimate it by sampling trajectories and averaging. We have converted an
+impossible integral into a thing you can do with a for-loop.</p>
+
+<p>And the quantity inside is computable, because of the factorisation from chapter 8.
+Take the log of the product: the log of a product is a sum of logs. Differentiate:
+the two \( \theta \)-free terms die.</p>
+
+\[ \begin{aligned}
+\log p_\theta(\tau)&=\underbrace{\log\rho_0(s_0)}_{\text{no }\theta}
++\sum_t\underbrace{\log\pi_\theta(a_t\mid s_t)}_{\text{has }\theta}
++\sum_t\underbrace{\log p(s_{t+1}\mid s_t,a_t)}_{\text{no }\theta}\\[2pt]
+\Longrightarrow\quad \nabla_\theta\log p_\theta(\tau)&=\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)
+\end{aligned} \]
+
+<p>Three terms go in; one comes out. The world's rulebook has been differentiated
+away.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.1</span></span>
+  State the log-derivative trick and prove it in one line.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( \nabla_\theta p_\theta = p_\theta\,\nabla_\theta\log p_\theta \). Proof:
+  \( \nabla\log p=(1/p)\nabla p \), so \( p\cdot(1/p)\nabla p=\nabla p \).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.2</span></span>
+  What does the trick convert the problem <i>into</i>, and why does that help?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It converts the gradient of an intractable integral into an <i>expectation</i> of a
+  computable quantity, \( \mathbb{E}[\nabla_\theta\log p_\theta(\tau)R(\tau)] \),
+  which can be estimated by sampling trajectories and averaging.</p>
+</div>
+
+<h2>11 &middot; The gift</h2>
+
+<p>Put the pieces together and something remarkable falls out.</p>
+
+\[ \boxed{\;\nabla_\theta J(\theta)=\mathbb{E}_{\tau\sim p_\theta}\Big[\Big(\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)\Big)R(\tau)\Big]\;} \]
+
+<p>Read the right-hand side and list what it needs. It needs the policy, which you
+have &mdash; it is your model. It needs to be able to compute the log-probability of a
+token, which is one forward pass. It needs trajectories, which you get by sampling.
+And that is all.</p>
+
+<p>Now list what it <b>does not</b> need. It does not need \( p(s_{t+1}\mid s_t,a_t) \)
+&mdash; the world's transition rule. Not approximately, not estimated: the term is
+simply gone.</p>
+
+<p>Sit with how strange that is. In the Atari game, the &ldquo;rules&rdquo; are the game's
+code, which you could in principle read. In a conversation, the transition rule is
+<i>how the world responds to what your model just said</i> &mdash; the laws of physics, the
+state of mind of the person reading, the state of the internet. Nobody has that
+written down. Nobody ever will.</p>
+
+<p>The policy gradient theorem says you never need it. You need only the ability to
+try things and be told how it went. The professor calls this a very, very strong
+result. It is the reason this machinery exists at all.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.1</span></span>
+  What does the policy gradient theorem free you from needing, and why is that the
+  difference between theory and practice here?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It removes any dependence on the state-transition distribution
+  \( p(s'\mid s,a) \). For a language model interacting with the world that rule is
+  unknowable &mdash; so without this result the whole approach would be unusable.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.2</span></span>
+  Name the three things you need in order to run this estimator.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  (i) \( \nabla_\theta\log\pi_\theta \), free from backprop through the model;
+  (ii) an estimate of the advantage \( \hat A \); (iii) many rollouts &mdash; batches of
+  sampled trajectories.</p>
+</div>
+
+<h2>12 &middot; Too noisy to be useful</h2>
+
+<p>There is a catch, and it is a big one. The estimator we just derived is unbiased,
+which sounds like high praise, but in practice it is nearly useless: its
+<b>variance is enormous</b>. Here is why.</p>
+
+<p>The return \( R(\tau) \) is a sum over the whole trajectory. Its scale depends on
+the game, the length, the discount. Worse, it is almost always positive, so every
+observed trajectory says &ldquo;do more of what you just did&rdquo; &mdash; including trajectories
+that were merely average. All trajectories push the same direction, differing only
+in how hard they push. That is a terrible learning signal.</p>
+
+<p>The fix is embarrassingly simple. Subtract a number from the return:</p>
+
+\[ R_t \;\longmapsto\; R_t - b(s_t) \]
+
+<p>where \( b(s_t) \) is called a <b>baseline</b>, and \( R_t \) is the return from step
+\( t \) onward (the <i>reward-to-go</i>, since reward that arrived before step \( t \)
+cannot have been caused by the action at step \( t \)).</p>
+
+<p>Subtracting a baseline leaves the gradient unbiased. That is worth proving, because
+the proof is three lines and it explains <i>why</i> the baseline is allowed to depend
+on the state but not on the action:</p>
+
+\[ \begin{aligned}
+\mathbb{E}_{a\sim\pi}\big[\nabla_\theta\log\pi_\theta(a\mid s)\,b(s)\big]
+&= b(s)\sum_a\nabla_\theta\pi_\theta(a\mid s) &&\text{(}b\text{ pulls out)}\\
+&= b(s)\,\nabla_\theta\underbrace{\sum_a\pi_\theta(a\mid s)}_{=\,1} &&\text{(swap sum and gradient)}\\
+&= b(s)\cdot 0 = 0 &&\text{(gradient of a constant)}
+\end{aligned} \]
+
+<p>The probabilities always sum to one. Whatever you do to \( \theta \), they still
+sum to one. So the gradient of that sum is zero, and any quantity that does not
+depend on the action gets multiplied by zero in expectation. The baseline changes
+the <i>variance</i> and nothing else.</p>
+
+<h3>But a constant does nothing at all</h3>
+
+<p>Now a subtlety that catches almost everyone, and that the lecture gets wrong.</p>
+
+<p>You might think: subtracting <i>any</i> number reduces variance, so let us subtract
+the mean. No. The variance of a random variable is unchanged by adding or
+subtracting a constant:</p>
+
+\[ \mathrm{Var}(X-c)\;=\;\mathrm{Var}(X) \qquad\text{for any constant } c \]
+
+<p>So a constant baseline is a no-op. Variance falls only when the baseline is
+<i>correlated with the return</i> &mdash; when it tracks the thing you are subtracting
+from, and so removes part of its spread. Formally:</p>
+
+\[ \mathrm{Var}(X-b)\;=\;\mathrm{Var}(X)-2\,\mathrm{Cov}(X,b)+\mathrm{Var}(b) \]
+
+<p>You want \( \mathrm{Cov}(X,b) \) large and positive. In practice \( b \) is chosen
+to be a guess at the return &mdash; which brings us to the next chapter.</p>
+
+<div class="aside">
+<span class="who">A note on the notes</span>
+This is one of two outright errors in the source. At 24:57 the lecture says: suppose
+you take a high-variance estimator, subtract a <i>constant</i>, and the variance
+&ldquo;would simply change.&rdquo; It would not. \( \mathrm{Var}(X-c)=\mathrm{Var}(X) \)
+exactly. Variance reduction requires a state-dependent baseline that correlates with
+the return. The notes on page 132 repeat the claim without the constant, so they are
+not wrong &mdash; but they never state the condition that makes it true either.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;12.1</span></span>
+  Why is subtracting a baseline still unbiased? Give the one-line reason.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \( \mathbb{E}_a[\nabla_\theta\log\pi_\theta(a\mid s)b(s)] = b(s)\nabla_\theta\sum_a\pi_\theta(a\mid s)=b(s)\nabla_\theta 1=0 \)
+  &mdash; provided \( b \) does not depend on the action.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;12.2</span></span>
+  Does subtracting a <i>constant</i> baseline reduce variance?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  No. \( \mathrm{Var}(X-c)=\mathrm{Var}(X) \). Variance falls only if the baseline
+  correlates with the return &mdash; so it must depend on the state, not be a constant.</p>
+</div>
+
+<h2>13 &middot; Did this action help?</h2>
+
+<p>What should the baseline be? The natural guess is: the return you would expect
+anyway from this state, before you know which action was taken. That object has a
+name.</p>
+
+\[ V^\pi(s)\;=\;\mathbb{E}_\pi\big[R_t \mid s_t=s\big] \]
+
+<p>This is the <b>value function</b>. It answers: starting here, and then behaving
+according to my policy, how much reward do I expect to collect? Note that it is a
+function of the state only. It does not know what you are about to do.</p>
+
+<p>Its sibling conditions on the action as well:</p>
+
+\[ Q^\pi(s,a)\;=\;\mathbb{E}_\pi\big[R_t \mid s_t=s,\,a_t=a\big] \]
+
+<p>the <b>action-value</b>, or Q-function. Same question, but now you also say which
+move you are making.</p>
+
+<p>The difference between them is one of the most useful quantities in the subject:
+</p>
+
+\[ A^\pi(s,a)\;=\;Q^\pi(s,a)-V^\pi(s) \]
+
+<p>called the <b>advantage</b>. And the name is exactly right. The \( Q \) term asks
+&ldquo;how much do I get if I do this here?&rdquo; The \( V \) term asks &ldquo;how much do I get
+here regardless?&rdquo; The difference is what <i>this action specifically</i> contributed.
+The professor puts it as: does taking this action lead to a better reward or not?</p>
+
+<p>Now the small miracle. You would think computing the advantage requires computing
+both \( Q \) and \( V \). It does not. Take the observed reward-to-go \( R_t \), which
+is one sample of what actually happened, and subtract the value:</p>
+
+\[ \begin{aligned}
+\mathbb{E}\big[R_t-V^\pi(s_t)\,\big|\,s_t{=}s,\,a_t{=}a\big]
+&=\underbrace{\mathbb{E}\big[R_t\mid s_t{=}s,a_t{=}a\big]}_{Q^\pi(s,a)}-V^\pi(s)
+&&\text{(since }V\text{ is constant given }s\text{)}\\
+&=Q^\pi(s,a)-V^\pi(s)\;=\;A^\pi(s,a) &&\text{(definition)}
+\end{aligned} \]
+
+<p>So \( R_t - V(s_t) \) is an unbiased <i>estimate</i> of the advantage, from a single
+sample. That is all we ever needed: drop the expectation from an unbiased estimator
+and you are left with something you can compute from one rollout.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;13.1</span></span>
+  What is the difference between \( V^\pi(s) \) and \( Q^\pi(s,a) \), in words?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( V \) is the expected return from a state, <i>not knowing</i> which action will be
+  taken (averaging over the policy). \( Q \) is the expected return from a state
+  <i>given</i> a particular action. So \( Q \) is \( V \) plus the effect of that action.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;13.2</span></span>
+  Why is \( R_t - V(s_t) \) an estimate of the advantage, and why does it need only
+  one sample?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \( \mathbb{E}[R_t\mid s,a]=Q(s,a) \) and \( V(s) \) is constant given
+  \( s \), so the expectation of the difference is \( Q-V=A \). Dropping the
+  expectation from an unbiased estimator leaves a single-sample estimator.</p>
+</div>
+
+<h2>14 &middot; The equation on every page</h2>
+
+<p>Put the last three chapters together. Use the advantage as the baseline. That is
+the equation that appears, in some clothing, in essentially every paper about
+aligning language models:</p>
+
+\[ \boxed{\;\nabla_\theta J(\theta)\;\approx\;\mathbb{E}_{\tau\sim\pi_\theta}\Big[\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)\;\hat A^\pi(s_t,a_t)\Big]\;} \]
+
+<p>Note the \( \approx \) and not \( = \). The left side is exact; the right side uses
+a one-sample estimate of the advantage rather than its expectation. This is an
+estimator, not an identity, and the professor is careful to say so.</p>
+
+<p>Read it as an instruction. For each step of each trajectory: compute the
+log-probability of the action you took, take its gradient, multiply by how much
+better than expected that action turned out to be, and average. Actions that beat
+the baseline get their probability pushed up; actions that fell short get pushed
+down. Repeat a few million times.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;14.1</span></span>
+  Recite the key equation, and say in one sentence what it instructs you to do.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( \nabla_\theta J\approx\mathbb{E}[\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)\hat A_t] \).
+  Push up the log-probability of actions whose advantage was positive and down those
+  whose advantage was negative, weighted by the size of the advantage.</p>
+</div>
+
+<div class="part">Part III &mdash; Putting a language model inside the machine</div>
+<h2>15 &middot; A prompt is a state</h2>
+
+<p>Everything so far has been about games. Now we make the substitution that the
+whole subject exists for, and it is simpler than you might expect.</p>
+
+<p>Take the transformer. Its output at each position is a distribution over the
+vocabulary. Take the prompt. Treat it as the initial state.</p>
+
+\[ \begin{aligned}
+s_0 &= \text{the prompt} &&\leftarrow\ \text{this is } \rho_0 \text{, the prompt distribution}\\
+a_0 &= \text{the first token emitted} &&\text{an action}\\
+s_1 &= [\,s_0,\,a_0\,] &&\text{the prompt with that token appended}\\
+a_1 &= \text{the second token} &&\text{the next action}\\
+&\ \ \vdots
+\end{aligned} \]
+
+<p>That is it. The policy <i>is</i> the language model; the action space is the
+vocabulary; the state is the entire text so far. Nothing new is trained to make
+this work. The professor makes the point twice, because it is easy to
+over-complicate: the transformer that gives you a distribution over tokens <i>is</i>
+the policy, and updating the policy is nothing other than changing the
+transformer's weights.</p>
+
+<p>Two consequences are worth noticing.</p>
+
+<p>First, the action space is enormous. In the Atari game it had a handful of
+elements. Here it has fifty thousand or more &mdash; one action per vocabulary item.
+That makes this a very unusual reinforcement learning problem.</p>
+
+<p>Second, where does the reward land? A preference is a judgement about a <i>whole
+response</i>, so the reward arrives once, at the end. Every intermediate step is
+worth zero:</p>
+
+\[ r(s_t,a_t)=0\ \ \forall\,t<T, \qquad r(s_T,a_T)=r_\phi(x,y)\;\in\;\mathbb{R} \]
+
+<p>This is called a <i>sparse, terminal</i> reward, and it explains a great deal about
+how these systems are built. The learning signal for a forty-token response is a
+single number, arriving at token forty. Which is why, in practice, the discount
+factor is set to \( \gamma=1 \) &mdash; episodes are short and bounded by the context
+window, so future reward is not something you need to deflate.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;15.1</span></span>
+  In the language-model MDP, what are \( s_t \), \( a_t \), and \( \mathcal{A} \)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( s_t \) is the entire text so far (prompt plus generated tokens), \( a_t \) is
+  the next token, and \( \mathcal{A}=\mathcal{V} \) is the whole vocabulary &mdash; tens of
+  thousands of actions.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;15.2</span></span>
+  When is the reward nonzero, and why does that matter?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Only at the final step, as one number scoring the whole response. It is a sparse
+  terminal reward, which is why the advantage must be estimated from the episode's
+  outcome and why some architectures add a learned value function to help.</p>
+</div>
+
+<h2>16 &middot; Stale samples, and the ratio that fixes them</h2>
+
+<p>Here is a practical annoyance that turns out to have a beautiful fix.</p>
+
+<p>Look again at the update. The expectation is over trajectories drawn from
+\( \pi_\theta \) &mdash; the very policy we are changing. This is called
+<b>on-policy</b> learning, and it is brutally expensive: the moment \( \theta \) moves,
+the samples you just collected came from the wrong distribution. Throw them away
+and generate again.</p>
+
+<p>For a language model, &ldquo;generate again&rdquo; means running full inference &mdash;
+sampling complete responses to prompts &mdash; which dominates the cost of training.
+Wouldn't it be better to reuse a batch for several gradient steps?</p>
+
+<p>The tool for that is older than any of this, and it is called <b>importance
+sampling</b>. Suppose you want an expectation under a distribution \( p \), but you
+only have samples from \( q \). Multiply and divide by \( q \):</p>
+
+\[ \mathbb{E}_{x\sim p}\big[f(x)\big]
+=\int q(x)\,\underbrace{\frac{p(x)}{q(x)}}_{\text{importance weight}}\,f(x)\,dx
+=\mathbb{E}_{x\sim q}\Big[\frac{p(x)}{q(x)}f(x)\Big] \]
+
+<p>Samples from the wrong distribution can be corrected by weighting each one by how
+much more (or less) likely it was under the distribution you actually wanted. The
+price is that you must be able to evaluate the ratio \( p/q \).</p>
+
+<p>Now the beautiful part. For a language model you <i>can</i> &mdash; trivially. You
+generated that token under the old checkpoint, and the log-probability it assigned
+was written to the rollout buffer. The current model assigns some log-probability
+too. The ratio is two numbers and a subtraction:</p>
+
+\[ r_t(\theta)\;=\;\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} \]
+
+<p>This is only possible because the policy is an explicit probability model. You
+could never do this with an agent that only knows Q-values. So we can write the
+gradient as an expectation over the <i>old</i> policy, and take several gradient steps
+before regenerating:</p>
+
+\[ \underbrace{\mathbb{E}_{\pi_{\text{old}}}\big[r_t(\theta)\,\nabla_\theta\log\pi_\theta(a_t\mid s_t)\,\hat A_t\big]}_{\text{what we want}}
+\qquad\text{and}\qquad
+\underbrace{L(\theta)=\mathbb{E}_{\pi_{\text{old}}}\big[r_t(\theta)\,\hat A_t\big]}_{\text{what we optimise}} \]
+
+<p>These are not the same function. One is <i>ratio times grad-log</i>; the other is
+<i>grad-ratio</i>. They coincide because</p>
+
+\[ \nabla_\theta r_t(\theta)=\nabla_\theta\frac{\pi_\theta}{\pi_{\text{old}}}
+=\frac{\pi_\theta}{\pi_{\text{old}}}\nabla_\theta\log\pi_\theta
+=r_t(\theta)\,\nabla_\theta\log\pi_\theta \]
+
+<p>so that at \( \theta=\theta_{\text{old}} \), where the ratio is exactly one,</p>
+
+\[ \nabla_\theta L(\theta)\big|_{\theta=\theta_{\text{old}}}
+=\nabla_\theta J(\theta)\big|_{\theta=\theta_{\text{old}}} \]
+
+<p>Note the qualifier, which the notes state and which matters. The surrogacy holds
+<i>at</i> the old parameters. It is a first-order approximation to the true objective
+around the current policy, not an identity everywhere. The further you step, the
+more you are trusting a Taylor expansion.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;16.1</span></span>
+  What does &ldquo;on-policy&rdquo; mean, and what specifically does it cost you?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The expectation is over trajectories from the policy currently being optimised.
+  So every update needs freshly generated rollouts &mdash; for an LLM, full inference on
+  the model being trained, which is the dominant cost.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;16.2</span></span>
+  Why is a transformer an unusually good place to use importance sampling?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because it is an explicit likelihood model: the log-probability of the sampled
+  token under the old policy was recorded, and the current model can recompute it in
+  one forward pass. The importance ratio \( \pi_\theta/\pi_{\text{old}} \) is therefore
+  cheap and exact.</p>
+</div>
+
+<h2>17 &middot; When the ratio explodes</h2>
+
+<p>There is a failure mode, and understanding it explains the most distinctive piece
+of engineering in the whole subject.</p>
+
+<p>The surrogate is only valid near \( \theta_{\text{old}} \). Push \( \theta \) far
+enough and the ratio \( r_t(\theta) \) &mdash; a ratio of probabilities, recall, which can
+be arbitrarily large &mdash; multiplies your advantage estimate by something enormous. The
+objective explodes, the gradient estimate becomes wildly noisy, and training
+destabilises. The lecture describes exactly this: if the new policy deviates too
+much from the old one, the objective explodes and gives high-variance estimates.</p>
+
+<p>The principled fix is to forbid the policy from moving too far. This is called a
+<b>trust region</b>: maximise the surrogate, but only within a neighbourhood of the old
+policy, measured by KL divergence.</p>
+
+\[ \max_{\theta}\;\mathbb{E}_{\pi_{\text{old}}}\big[r_t(\theta)\hat A_t\big]
+\quad\text{subject to}\quad
+\mathbb{E}_{s\sim\pi_{\text{old}}}\Big[D_{\mathrm{KL}}\big(\pi_{\text{old}}(\cdot\mid s)\,\big\|\,\pi_\theta(\cdot\mid s)\big)\Big]\le\delta \]
+
+<p>This is TRPO &mdash; trust region policy optimization &mdash; and the region is exactly
+the set of policies the surrogate can be trusted to describe.</p>
+
+<p>But it is awkward to actually run. You are solving a constrained optimisation
+problem where the constraint is a KL divergence over a fifty-thousand-way categorical
+distribution, at every state. That wants a second-order solver, and it is expensive.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;17.1</span></span>
+  Why does the surrogate objective blow up when the policy moves too far?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the importance ratio \( \pi_\theta/\pi_{\text{old}} \) is unbounded. Far from
+  \( \theta_{\text{old}} \) it multiplies the advantage by a huge factor, so the
+  objective &mdash; and its gradient estimate &mdash; becomes enormous and high-variance.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;17.2</span></span>
+  What is TRPO's constraint, in words and in symbols?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Keep the new policy inside a trust region around the old one: maximise the
+  surrogate subject to \( \mathbb{E}_s[D_{\mathrm{KL}}(\pi_{\text{old}}(\cdot\mid s)\|\pi_\theta(\cdot\mid s))]\le\delta \).</p>
+</div>
+
+<h2>18 &middot; The clip</h2>
+
+<p>PPO replaces the hard constraint with something almost embarrassingly crude, and
+it works.</p>
+
+<p>Instead of measuring the KL divergence, just refuse to let the ratio leave a
+narrow band around one. Take the ordinary surrogate term \( r_t\hat A_t \), and also
+compute the same term with the ratio clamped into \( [1-\epsilon,\,1+\epsilon] \),
+where \( \epsilon \) is around \( 0.1 \) to \( 0.2 \). Then take the <i>smaller</i> of
+the two:</p>
+
+\[ L^{\text{CLIP}}(\theta)=\mathbb{E}_t\Big[\min\Big(r_t(\theta)\,\hat A_t,\;\;
+\mathrm{clip}\big(r_t(\theta),\,1-\epsilon,\,1+\epsilon\big)\,\hat A_t\Big)\Big] \]
+
+<p>The <i>min</i> is doing something specific, and it is easier to see by cases than by
+algebra. Suppose the advantage is positive &mdash; this was a good action, we want more
+of it. Then the objective grows as the ratio grows, and we would happily push the
+probability up forever. But once the ratio passes \( 1+\epsilon \), the clipped term is
+flat, and the <i>min</i> selects the flat one. There is nothing left to gain. The
+incentive to keep pushing is removed.</p>
+
+<p>Now suppose the advantage is negative &mdash; a bad action, we want less of it. Then
+the objective grows as the ratio <i>shrinks</i>. If the ratio has gone above the band,
+the unclipped term is a large penalty, and the <i>min</i> selects it. So the gradient
+still flows, still pushing the ratio down where it belongs.</p>
+
+<p>The asymmetry is the algorithm. When you have moved too far in the <i>beneficial</i>
+direction, the objective goes flat and the update stops. When you have moved too far
+in the <i>harmful</i> direction, the objective stays steep and the update continues.
+Clipping never protects a bad update. It only declines to reward a good one further.</p>
+
+<div class="fig">
+<div class="box"><pre class="d">                          advantage  > 0        advantage  < 0
+  ratio inside the band        gradient flows        gradient flows
+  ratio above 1 + eps          <b>flat, stop</b>            <b>still penalised</b>
+  ratio below 1 - eps          still rewarded        <b>flat, stop</b></pre></div>
+<div class="cap"><b>The two regimes.</b> PPO's clipped objective is flat exactly where
+you have already gone far enough in a direction that helps, and steep where you have
+gone far in a direction that hurts.</div>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;18.1</span></span>
+  Write the PPO clipped objective from memory. What is \( \epsilon \) roughly?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( L^{\text{CLIP}}=\mathbb{E}_t[\min(r_t\hat A_t,\mathrm{clip}(r_t,1-\epsilon,1+\epsilon)\hat A_t)] \),
+  with \( \epsilon\approx 0.1 \) to \( 0.2 \).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;18.2</span></span>
+  Why \( \min \) rather than \( \max \)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( \min \) is the pessimistic choice: it flattens the objective once you have moved
+  far in a beneficial direction (so you stop), but keeps it steep when you have moved
+  far in a harmful direction (so you keep correcting). A \( \max \) would let the
+  policy run away.</p>
+</div>
+
+<h2>19 &middot; What the clip does, in numbers</h2>
+
+<p>One worked example is worth more than the asymmetry argument, so here is a
+concrete one. Take a three-token vocabulary, \( \epsilon=0.1 \), and suppose the old
+policy put probability \( 0.50 \) on token A while the current one puts \( 0.60 \).</p>
+
+\[ r=\frac{0.60}{0.50}=1.20,\qquad \mathrm{clip}(1.20,\,0.9,\,1.1)=1.10 \]
+
+<p>The ratio is above the band. Now compute the objective both ways for each sign of
+the advantage.</p>
+
+<table>
+<tr><th style="width:12%">advantage</th><th style="width:22%">unclipped \( r\hat A \)</th><th style="width:20%">clipped \( 1.1\hat A \)</th><th style="width:10%">\( \min \)</th><th>what happens</th></tr>
+<tr><td>\( +0.8 \)</td><td>\( 1.20\times0.8=0.96 \)</td><td>\( 1.10\times0.8=0.88 \)</td><td><b>0.88</b></td>
+<td>clipped wins, so the objective is constant &mdash; <b>no gradient</b>. We already raised a good action's probability by more than \( \epsilon \); the algorithm declines to reward that further.</td></tr>
+<tr><td>\( -0.8 \)</td><td>\( 1.20\times(-0.8)=-0.96 \)</td><td>\( 1.10\times(-0.8)=-0.88 \)</td><td><b>\( -0.96 \)</b></td>
+<td>unclipped wins, so <b>the gradient flows</b>. We wrongly raised a <i>bad</i> action's probability; the objective keeps pushing the ratio down.</td></tr>
+</table>
+
+<p>Same ratio, same clip, opposite behaviour &mdash; and the sign of the advantage is
+the only difference. That is precisely the asymmetry, made arithmetic.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;19.1</span></span>
+  With \( r=1.2 \), \( \epsilon=0.1 \) and \( \hat A=+0.8 \), which term does the
+  \( \min \) choose, and what does that imply about the gradient?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The clipped term, \( 1.1\times0.8=0.88 < 0.96 \). The objective is locally
+  constant there, so the gradient with respect to that move is zero &mdash; no further
+  reward for increasing the probability.</p>
+</div>
+
+<div class="part">Part IV &mdash; Where the number comes from</div>
+<h2>20 &middot; You cannot grade on an absolute scale</h2>
+
+<p>Everything so far assumed we have \( r \). For mathematics and code we do &mdash; there
+is a checker. For ordinary conversation we do not, and this is where the
+&ldquo;human feedback&rdquo; in the name earns its place.</p>
+
+<p>The obvious plan is to train a reward model by supervised regression. Collect
+triples of situation, action and score, and fit a network to predict the score. The
+notes propose exactly this and then immediately note the problem in one sentence:
+<i>however, obtaining such data is not easy.</i></p>
+
+<p>It is worth spelling out why, because it is the reason for everything in the next
+two chapters. Ask two people to score the same reply out of ten and you get a six
+and a nine. Ask them which of two replies is better and they agree far more often.
+Absolute scores carry the rater's private calibration &mdash; their mood, their standards,
+their generosity. Comparisons cancel all of that out within a single judgement.</p>
+
+<p>So change the data format. Instead of scores, collect pairs:</p>
+
+\[ \mathcal{D}=\Big\{\big(x,\,y_w,\,y_l\big)\Big\} \]
+
+<p>where \( x \) is the prompt, \( y_w \) the response a human preferred, and \( y_l \)
+the one they rejected. The notes call this <i>preferential data</i>, and end a page
+with the question that the rest of this section answers: given preferential data,
+how would one build a reward model?</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;20.1</span></span>
+  Why are pairwise preferences easier to collect than absolute scores?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because a comparison cancels the rater's private calibration. Two people will
+  disagree about whether a reply is a 6 or a 9, but agree far more reliably about
+  which of two replies is better. Comparing is also a cheaper cognitive task than
+  authoring or grading.</p>
+</div>
+
+<h2>21 &middot; Two answers, one question</h2>
+
+<p>We need a probabilistic model of a human choosing between two things. There is a
+classical one, from psychometrics, dating to 1952: the Bradley&ndash;Terry model.</p>
+
+<p>The idea is almost too simple. Give each response a single number, its reward.
+Then say the probability that one beats the other is a softmax over those numbers:</p>
+
+\[ P(y_w \succ y_l \mid x)=\frac{\exp\big(r(x,y_w)\big)}{\exp\big(r(x,y_w)\big)+\exp\big(r(x,y_l)\big)}
+\;=\;\sigma\Big(r(x,y_w)-r(x,y_l)\Big) \]
+
+<p>where \( \sigma(t)=1/(1+e^{-t}) \) is the logistic function. The two expressions
+are the same thing &mdash; divide top and bottom by the numerator and you get the
+sigmoid of the difference. The notes write both, one under the other, which is
+slightly confusing on a first read.</p>
+
+<p>To fit it, maximise the likelihood of the observed comparisons:</p>
+
+\[ \mathcal{L}_{\text{RM}}(\phi)=\mathbb{E}_{(x,y_w,y_l)\sim\mathcal{D}}\Big[\log\sigma\Big(r_\phi(x,y_w)-r_\phi(x,y_l)\Big)\Big] \]
+
+<p>Look at what this loss is actually doing. It is a logistic loss on the
+<i>difference</i> of rewards. When the model already ranks the winner above the loser
+by a wide margin, \( \sigma \) is near one, the log is near zero, and there is almost
+no gradient &mdash; the pair is learned. When the model has them backwards, \( \sigma \)
+is near zero, the log goes to minus infinity, and the gradient is large. The loss
+spends its effort on the pairs the model currently gets wrong.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;21.1</span></span>
+  Write the Bradley&ndash;Terry model and its training objective.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( P(y_w\succ y_l\mid x)=\sigma(r_\phi(x,y_w)-r_\phi(x,y_l)) \), fitted by
+  maximising \( \mathbb{E}_{\mathcal{D}}[\log\sigma(r_\phi(x,y_w)-r_\phi(x,y_l))] \).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;21.2</span></span>
+  Which pairs does the reward-model loss concentrate on, and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The ones the model currently ranks wrongly. A correctly-ranked pair gives
+  \( \sigma\approx1 \) and \( \log\sigma\approx0 \), so almost no gradient; a
+  reversed pair gives a large gradient.</p>
+</div>
+
+<h2>22 &middot; A reward defined only by its differences</h2>
+
+<p>Now a property of Bradley&ndash;Terry that neither source mentions, and which you need
+in order to understand the next part.</p>
+
+<p>Add a constant to the reward. Every response gets \( +100 \). What happens to the
+model? Nothing:</p>
+
+\[ \big(r_\phi+c\big)(x,y_w)-\big(r_\phi+c\big)(x,y_l)
+=\underbrace{r_\phi(x,y_w)-r_\phi(x,y_l)}_{\text{unchanged}} \]
+
+<p>The constant cancels in the difference. Which means the likelihood cannot tell
+\( r \) from \( r+100 \) &mdash; indeed from \( r \) plus <i>any function of the prompt
+alone</i>, since both responses share the same \( x \). Only differences between
+responses to the same prompt are <b>identifiable</b>.</p>
+
+<p>This is not a technicality. It is the crack in the wall through which the next
+part of the essay walks. If a reward model is only defined up to a per-prompt
+constant, then a per-prompt constant is <i>unobservable</i> &mdash; and anything that
+depends on it can be cancelled out of the mathematics entirely.</p>
+
+<p>Two more things BT does not model, for completeness. It cannot represent a tie:
+it insists one answer wins. And it assumes human preference really is a logistic
+function of a scalar difference &mdash; an assumption, not a theorem. If the features a
+human cares about cannot be summarised by one number per response, the reward model
+is misspecified, and the optimiser downstream will faithfully optimise the
+misspecification.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;22.1</span></span>
+  Why is a Bradley&ndash;Terry reward only defined up to a per-prompt constant?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the model depends only on \( r(x,y_w)-r(x,y_l) \), and both responses share
+  the same \( x \). Adding any function of \( x \) alone &mdash; in particular a constant &mdash;
+  cancels in the difference and leaves the likelihood unchanged. So only differences
+  between responses to the same prompt are identifiable.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;22.2</span></span>
+  Name two things Bradley&ndash;Terry fails to represent.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Ties (it forces a strict winner), and any preference that cannot be expressed as a
+  logistic function of a single scalar difference between two responses.</p>
+</div>
+
+<h2>23 &middot; Goodhart, with a gradient</h2>
+
+<p>We now have a reward model \( r_\phi \). Freeze it. Run PPO against it.</p>
+
+<p>And here the whole scheme develops a disease, which is worth understanding before
+the cure. Recall what \( r_\phi \) is: a network fitted to a finite pile of human
+comparisons. It is a <i>proxy</i> for human preference, accurate on the kind of text
+people actually wrote in the data.</p>
+
+<p>PPO is an optimiser with no other objective. It does not know that \( r_\phi \) is a
+proxy. Give it a few thousand steps and it will find inputs where \( r_\phi \) is
+enormous and human preference is not: flattery, length, confident-sounding
+confabulation, the tone of a helpful expert with nothing behind it.</p>
+
+<p>This is Goodhart's law &mdash; <i>when a measure becomes a target, it ceases to be a
+good measure</i> &mdash; implemented as gradient descent. The optimiser does not break
+the reward model; it finds the parts of the input space where the reward model is
+merely wrong, and lives there.</p>
+
+<p>The cure is a leash. Do not just maximise the reward; maximise the reward minus how
+far you have drifted from the model you started with:</p>
+
+\[ \max_{\theta}\;\mathbb{E}\big[r_\phi(x,y)\big]
+-\beta\,D_{\mathrm{KL}}\big(\pi_\theta(\cdot\mid x)\,\big\|\,\pi_{\text{ref}}(\cdot\mid x)\big) \]
+
+<p>where \( \pi_{\text{ref}} \) is the frozen supervised model, and \( \beta \) says how
+much drift you tolerate. Small \( \beta \) and the model chases the proxy into
+degeneracy; large \( \beta \) and it never moves at all. Tuning \( \beta \) is most of
+the practical art of RLHF.</p>
+
+<div class="aside">
+<span class="who">A note on the notes</span>
+This KL term is the second real problem in the source. Page 141 writes the full PPO
+loss &mdash; clipped objective, value regression, entropy bonus &mdash; and omits the
+reference-policy KL entirely. Then page 144, motivating DPO, silently assumes it is
+there. The notes are internally inconsistent on the one term that makes RLHF safe.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;23.1</span></span>
+  What is reward hacking, in one sentence?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The optimiser finds inputs that score highly under the learned reward model while
+  being worse by actual human preference &mdash; it exploits the proxy's errors rather than
+  the thing the proxy was meant to measure.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;23.2</span></span>
+  What is the standard mitigation, and what does its strength parameter trade off?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A KL penalty to the frozen reference policy,
+  \( -\beta D_{\mathrm{KL}}(\pi_\theta\|\pi_{\text{ref}}) \). Small \( \beta \): chases
+  the reward and hacks it. Large \( \beta \): stays near the reference and barely
+  improves.</p>
+</div>
+
+<div class="part">Part V &mdash; The cancellation</div>
+<h2>24 &middot; An objective with a closed-form answer</h2>
+
+<p>Now we arrive at the part that, the first time you see it, looks like a magic
+trick. It is not. It is one algebraic observation, made at exactly the right moment.</p>
+
+<p>Here is the objective from the last chapter, stripped of the reward model notation:</p>
+
+\[ \max_{\theta}\;\mathbb{E}_{y\sim\pi_\theta(\cdot\mid x)}\big[r(x,y)\big]
+-\beta\,D_{\mathrm{KL}}\big(\pi_\theta(\cdot\mid x)\,\big\|\,\pi_{\text{ref}}(\cdot\mid x)\big) \]
+
+<p>It looks like something you would have to optimise numerically, with PPO. But it
+has a closed-form solution, and we can find it. The objective separates over prompts,
+so fix one \( x \) and maximise over the distribution \( \pi(\cdot\mid x) \) directly,
+subject to the probabilities summing to one. With a Lagrange multiplier \( \mu \):</p>
+
+\[ \begin{aligned}
+\mathcal{L}&=\sum_y \pi(y)\Big[r(y)-\beta\log\frac{\pi(y)}{\pi_{\text{ref}}(y)}\Big]
++\mu\Big(\sum_y\pi(y)-1\Big)\\[2pt]
+\frac{\partial\mathcal{L}}{\partial\pi(y)}&=r(y)-\beta\log\frac{\pi(y)}{\pi_{\text{ref}}(y)}-\beta+\mu \;=\;0
+\end{aligned} \]
+
+<p>Setting that derivative to zero and solving for \( \pi(y) \) gives the answer.</p>
+
+\[ \pi^\star(y\mid x)=\frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\exp\!\Big(\frac{1}{\beta}r(x,y)\Big) \]
+
+<p>Read it: start from the reference model, and tilt it exponentially towards
+high-reward responses. The tilt is sharp when \( \beta \) is small and gentle when
+\( \beta \) is large. That is exactly what a KL-regularised optimum should look like,
+and the KL term is precisely what makes it tractable &mdash; without it the optimum is the
+degenerate &ldquo;put all probability on the single best response&rdquo;.</p>
+
+<p>And \( Z(x) \) is the normaliser, \( Z(x)=\sum_y\pi_{\text{ref}}(y\mid x)\exp\big(r(x,y)/\beta\big) \)
+&mdash; a sum over <i>every possible response</i>. Which is hopeless.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;24.1</span></span>
+  What is the closed-form optimum of the KL-regularised reward objective, and in
+  words, what is it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( \pi^\star(y\mid x)=\frac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)\exp(r(x,y)/\beta) \). It is the
+  reference model re-weighted by an exponential tilt toward high reward, with
+  \( \beta \) controlling how sharp the tilt is.</p>
+</div>
+
+<h2>25 &middot; The function that cancels</h2>
+
+<p>We cannot compute \( Z(x) \). But watch what happens if we turn the equation
+around.</p>
+
+<p>Take logs of the closed form and rearrange for \( r \):</p>
+
+\[ \begin{aligned}
+\log\pi^\star(y\mid x)&=\log\pi_{\text{ref}}(y\mid x)-\log Z(x)+\tfrac{1}{\beta}r(x,y)\\[2pt]
+\Longrightarrow\quad r(x,y)&=\beta\log\frac{\pi^\star(y\mid x)}{\pi_{\text{ref}}(y\mid x)}+\beta\log Z(x)
+\end{aligned} \]
+
+<p>This says something startling. The optimal reward <i>is</i> the log-ratio of the
+optimal policy to the reference policy, plus a per-prompt constant. The reward is not
+something separate that has to be learned. It is already latent inside the policy.</p>
+
+<p>Now put it back into Bradley&ndash;Terry, which needs a difference of rewards for two
+responses to the same prompt:</p>
+
+\[ \begin{aligned}
+r(x,y_w)-r(x,y_l)
+&=\beta\log\frac{\pi^\star(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}
+-\beta\log\frac{\pi^\star(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}
+\underbrace{+\beta\log Z(x)-\beta\log Z(x)}_{=\;0}
+\end{aligned} \]
+
+<p>And there it is. The intractable sum over every possible response appears twice,
+with the same value, and subtracts out.</p>
+
+<p>Why <i>exactly</i> the same value? Because \( Z(x) \) is a function of the prompt
+alone, and both responses were answers to the <b>same prompt</b>. That is the whole
+trick. If the two responses had been to different prompts, \( Z \) would not cancel,
+and this algorithm would not exist. An entire family of modern training methods rests
+on the observation that you compare two answers to one question.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;25.1</span></span>
+  Why does the partition function \( Z(x) \) cancel in DPO? Be precise.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \( Z(x) \) depends only on the prompt \( x \), and the preferred and
+  rejected responses are answers to the <i>same</i> prompt. It therefore appears twice
+  in the reward difference with identical value and subtracts to zero.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;25.2</span></span>
+  What would break if the two responses came from different prompts?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( Z(x_w)\neq Z(x_l) \) in general, so the terms would not cancel, and you would be
+  back to needing to compute an intractable normaliser. DPO's derivation requires a
+  shared prompt.</p>
+</div>
+
+<h2>26 &middot; DPO</h2>
+
+<p>So we never need the reward model. Substitute the policy for the reward, take the
+negative log-likelihood, and you have a loss you can compute with two forward passes:</p>
+
+\[ \boxed{\;\mathcal{L}_{\text{DPO}}(\theta)=-\mathbb{E}\Big[\log\sigma\Big(
+\beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}
+-\beta\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}\Big)\Big]\;} \]
+
+<p>Look at how similar this is to the reward-model loss of chapter 21. It is the same
+\( -\log\sigma(\text{difference}) \) &mdash; with the learned reward \( r_\phi \) replaced by
+the quantity</p>
+
+\[ \hat r_\theta(x,y)=\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \]
+
+<p>which people call the <i>implicit reward</i>. That is the whole content of DPO: it
+is Bradley&ndash;Terry reward modelling in which the policy is its own reward function.</p>
+
+<p>So the common claim that DPO is &ldquo;reward-free&rdquo; is imprecise. The reward is not
+absent; it is implicit, and it is a log-ratio. What disappears is the separate reward
+<i>network</i>, the value head, and the rollouts.</p>
+
+<p>There is a pleasing practical consequence. At initialisation, when
+\( \pi_\theta=\pi_{\text{ref}} \), every log-ratio is zero, so the difference is zero,
+so \( \sigma(0)=\tfrac12 \), so the loss is exactly \( \ln 2\approx0.693 \). If your
+first training step does not report roughly \( 0.693 \), your reference model is not a
+frozen copy of your policy &mdash; a classic bug, caught by arithmetic.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;26.1</span></span>
+  Write the DPO loss and define the implicit reward.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \( \mathcal{L}_{\text{DPO}}=-\mathbb{E}[\log\sigma(\hat r_\theta(x,y_w)-\hat r_\theta(x,y_l))] \)
+  with \( \hat r_\theta(x,y)=\beta\log(\pi_\theta(y\mid x)/\pi_{\text{ref}}(y\mid x)) \).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;26.2</span></span>
+  Is DPO reward-free? What value does the loss take at initialisation, and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Not quite &mdash; the reward is implicit, \( \beta\log(\pi_\theta/\pi_{\text{ref}}) \);
+  what is gone is the reward <i>network</i> and the RL loop. At init the loss is exactly
+  \( \ln 2\approx0.693 \) because every log-ratio is zero, so the sigmoid is \( \tfrac12 \).</p>
+</div>
+
+<h2>27 &middot; Removing the value function</h2>
+
+<p>One last thread, which the lecture mentions in passing and the notes omit entirely.</p>
+
+<p>Go back to the game. The advantage needed a baseline, and the natural baseline was
+the value function &mdash; a second network, trained by regression, purely to estimate
+what you would have got anyway.</p>
+
+<p>If the reward is verifiable, you can do something much cheaper. Sample a <i>group</i>
+of \( G \) answers to the same prompt. Score them all with the checker. Now use the
+group's own average as the baseline, and its spread to normalise:</p>
+
+\[ \mathcal{A}_i=\frac{r_i-\operatorname{mean}(r_1,\dots,r_G)}{\operatorname{std}(r_1,\dots,r_G)} \]
+
+<p>No value network. No reward model either, since the verifier <i>is</i> the reward.
+The group is the baseline: if one answer scores higher than its siblings, that is
+evidence the answer was good, and the normalisation makes the scale irrelevant. This
+is GRPO, and it is the algorithm behind most modern training on mathematics and code.</p>
+
+<p>Notice what made it possible. It required a <i>checkable</i> reward &mdash; chapter 4 &mdash;
+and a baseline that is action-independent but correlated with the return &mdash; chapter 12.
+Both ideas were established long before this algorithm appeared.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;27.1</span></span>
+  In GRPO, what replaces the value function as the baseline, and what does it require?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The mean reward of a group of \( G \) sampled answers to the same prompt,
+  normalised by the group's standard deviation. It requires a <i>verifiable</i> reward,
+  since there is no learned reward model.</p>
+</div>
+
+<div class="part">Part VI &mdash; What we glossed over</div>
+<h2>28 &middot; Five places the notes are wrong</h2>
+
+<p>We promised at the start to be honest about the source. Here is the account.</p>
+
+<p><b>One.</b> Page 130 writes &ldquo;policy updating using gradient descent&rdquo;
+immediately beside \( \theta\leftarrow\theta+\alpha\nabla_\theta J \). The plus sign
+means <i>ascent</i>. The words are wrong, the formula is right. (The lecture
+self-corrects out loud, which is charming: &ldquo;gradient descent or gradient ascent
+rather&rdquo;.)</p>
+
+<p><b>Two.</b> Page 130 writes the return as \( \sum_t r(s_t,a_t) \) without the
+\( \gamma^t \), one page after introducing \( \gamma \). The lecture writes it
+correctly.</p>
+
+<p><b>Three.</b> At 24:57 the lecture says that subtracting a <i>constant</i>
+baseline changes the variance. It does not: \( \mathrm{Var}(X-c)=\mathrm{Var}(X) \). The
+variance falls only for a baseline that correlates with the return.</p>
+
+<p><b>Four.</b> Page 141's full PPO loss omits the reference-policy KL, which page 144
+then assumes exists. The notes contradict themselves on the one term that prevents
+reward hacking.</p>
+
+<p><b>Five.</b> Page 143 gives Bradley&ndash;Terry as a likelihood and stops. It never
+states that only reward <i>differences</i> are identifiable, which is the entire basis
+of the next section's derivation. Reading the notes alone, the DPO cancellation looks
+like magic rather than algebra.</p>
+
+<p>None of this makes the notes bad. They are handwritten lecture notes, and they
+compress. But a compressed source teaches you to reproduce symbols, and an
+uncompressed one teaches you why the symbols are there.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;28.1</span></span>
+  Name the two outright mathematical errors in the source.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  (i) The claim that subtracting a <i>constant</i> baseline reduces variance &mdash; it
+  does not, \( \mathrm{Var}(X-c)=\mathrm{Var}(X) \). (ii) Writing the return without
+  \( \gamma^t \) after introducing \( \gamma \). (The &ldquo;grad descent&rdquo; label is a
+  sign/word mismatch rather than a mathematical error.)</p>
+</div>
+
+<h2>29 &middot; What this essay does not tell you</h2>
+
+<p>Three honest limits, so you know where the map ends.</p>
+
+<p><b>Scale.</b> Everything here was described at the level of one gradient step.
+Nothing was said about how you batch rollouts, how you manage four models in memory,
+or how you keep a distributed training run stable for weeks. That is most of the
+engineering, and none of the mathematics.</p>
+
+<p><b>Evaluation.</b> We asserted that a reward model can be wrong and that DPO can
+displace likelihood onto unwanted responses. We did not say how to detect it. In
+practice this is the hard part: deciding whether a model that scores well has become
+better, or has merely become better at the thing you measured.</p>
+
+<p><b>Alternatives.</b> There are many objectives between PPO and DPO &mdash; IPO, KTO,
+ORPO, and others &mdash; each trading stability, data requirements and theoretical
+guarantees differently. This essay described the two that the course covers, which
+are also the two you will meet first.</p>
+
+<p>And one thing to keep: everything in this essay came from two moves. First,
+notice that <i>only one factor of the trajectory distribution contains the
+parameters</i>. Second, notice that <i>a constant which depends only on the prompt
+cannot affect a comparison between two responses to that prompt</i>. The first gives
+you the policy gradient. The second gives you DPO. If you remember nothing else,
+remember those two observations and you can reconstruct the rest.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;29.1</span></span>
+  State the two structural observations that the whole essay rests on.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  (i) In \( p_\theta(\tau)=\rho_0\prod_t\pi_\theta\,p \), only the policy factor
+  depends on \( \theta \) &mdash; which yields the policy gradient theorem. (ii) A quantity
+  depending only on the prompt cancels in a comparison between responses to that
+  prompt &mdash; which yields the DPO cancellation.</p>
+</div>
+
+<hr class="rule">
+<h2>Appendix &nbsp;&middot;&nbsp; Every question in this essay</h2>
+
+<p>Every card you met is listed below. Try them cold: cover the right-hand column, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+contains each question with its answer and imports directly into any
+spaced-repetition system. Answers are deliberately <i>not</i> printed here &mdash; a
+review list with the answers beside it is a reading list, not a test.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from pages 128&ndash;146 of the IIT Madras generative-AI notes and the lecture
+recording. Typeset with KaTeX. Source: <i>viz/RLHF-Curious.src.html</i>.</p>
+
+</body></html>

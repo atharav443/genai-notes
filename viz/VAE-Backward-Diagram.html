@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>VAE backward pass — precise</title>
+<style>
+@page{size:A4 portrait;margin:11mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,sans-serif;color:#16161a;background:#fff}
+h1{font-size:16pt;letter-spacing:-.02em;margin-bottom:2px}
+.sub{font-size:9pt;color:#5c5c66;margin-bottom:8px;border-bottom:2px solid #7c3aed;padding-bottom:8px}
+svg{width:100%;height:auto;display:block}
+.note{margin-top:8px;font-size:8.5pt;color:#5c5c66;line-height:1.55}
+.note b{color:#16161a}
+</style></head><body>
+
+<h1>The backward pass — every local derivative</h1>
+<div class="sub">Read <b>top &#8594; bottom</b>: the gradient is peeled backwards through the graph, one node at a time. Each edge shows its local derivative; each box shows what has accumulated.</div>
+
+<svg viewBox="0 0 860 872" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="a" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+    <path d="M0,0 L7.5,3 L0,6 z" fill="#3f3f46"/></marker>
+  <marker id="ap" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+    <path d="M0,0 L7.5,3 L0,6 z" fill="#7c3aed"/></marker>
+  <marker id="ag" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+    <path d="M0,0 L7.5,3 L0,6 z" fill="#0d9488"/></marker>
+  <marker id="ao" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+    <path d="M0,0 L7.5,3 L0,6 z" fill="#ea580c"/></marker>
+</defs>
+
+<!-- ===== loss ===== -->
+<rect x="330" y="20" width="220" height="50" rx="9" fill="#16161a"/>
+<text x="440" y="41" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff">loss = recon + KL</text>
+<text x="440" y="58" text-anchor="middle" font-size="9.5" fill="#a1a1aa">start here &#183; &#8706;L/&#8706;L = 1</text>
+
+<line x1="440" y1="70" x2="440" y2="96" stroke="#3f3f46" stroke-width="1.8"/>
+<line x1="250" y1="96" x2="630" y2="96" stroke="#3f3f46" stroke-width="1.8"/>
+<line x1="250" y1="96" x2="250" y2="116" stroke="#3f3f46" stroke-width="1.8" marker-end="url(#a)"/>
+<line x1="630" y1="96" x2="630" y2="116" stroke="#3f3f46" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="448" y="90" font-size="9.5" font-weight="700" fill="#52525b">+</text>
+
+<!-- ===== recon / KL ===== -->
+<rect x="140" y="118" width="220" height="48" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.8"/>
+<text x="250" y="139" text-anchor="middle" font-size="11.5" font-weight="800" fill="#9a3412">recon = &#8214;x &#8722; x&#770;&#8214;&#178;</text>
+<text x="250" y="156" text-anchor="middle" font-size="9" fill="#c2410c">&#8706;L/&#8706;recon = 1</text>
+
+<rect x="520" y="118" width="220" height="48" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.8"/>
+<text x="630" y="139" text-anchor="middle" font-size="11.5" font-weight="800" fill="#9a3412">KL = &#189;(&#956;&#178;+&#963;&#178;&#8722;1&#8722;log&#963;&#178;)</text>
+<text x="630" y="156" text-anchor="middle" font-size="9" fill="#c2410c">&#8706;L/&#8706;KL = 1</text>
+
+<!-- ===== recon -> decoder ===== -->
+<line x1="250" y1="166" x2="250" y2="200" stroke="#3f3f46" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="262" y="180" font-size="10" font-family="ui-monospace,Menlo,monospace" fill="#9a3412">&#8706;recon/&#8706;x&#770; = &#8722;2(x&#8722;x&#770;)</text>
+<text x="262" y="192" font-size="8.5" fill="#71717a">local derivative of the squared error</text>
+
+<!-- ===== decoder ===== -->
+<rect x="140" y="202" width="220" height="52" rx="8" fill="#f7f3ff" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="250" y="224" text-anchor="middle" font-size="11.5" font-weight="800">DECODER (&#952;)</text>
+<text x="250" y="241" text-anchor="middle" font-size="9" fill="#6d28d9">x&#770; = Dec&#952;(z)</text>
+
+<!-- grad theta terminal -->
+<line x1="360" y1="228" x2="398" y2="228" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#ap)"/>
+<rect x="404" y="206" width="176" height="46" rx="8" fill="#f3efff" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="492" y="224" text-anchor="middle" font-size="10.5" font-weight="800" fill="#6d28d9">&#8711;&#952; = &#8706;recon/&#8706;&#952;</text>
+<text x="492" y="241" text-anchor="middle" font-size="8.5" fill="#6d28d9">TERMINAL &#8212; KL has no &#952;, so it stops</text>
+
+<!-- ===== decoder -> z ===== -->
+<polyline points="250,254 250,296 440,296 440,322" fill="none" stroke="#3f3f46" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="300" y="288" font-size="10" font-family="ui-monospace,Menlo,monospace" fill="#52525b">dz &#8801; &#8706;recon/&#8706;z = &#8706;recon/&#8706;x&#770; &#183; &#8706;x&#770;/&#8706;z</text>
+<text x="300" y="311" font-size="8.5" fill="#71717a">&#8212; the ONLY route by which reconstruction reaches the encoder</text>
+
+<!-- ===== KL -> merge (right channel) ===== -->
+<polyline points="630,166 630,432" fill="none" stroke="#ea580c" stroke-width="1.8" marker-end="url(#ao)"/>
+<text x="642" y="300" font-size="10" font-family="ui-monospace,Menlo,monospace" fill="#9a3412">&#8706;KL/&#8706;&#956; = &#956;</text>
+<text x="642" y="315" font-size="10" font-family="ui-monospace,Menlo,monospace" fill="#9a3412">&#8706;KL/&#8706;logv = &#189;(&#963;&#178;&#8722;1)</text>
+<text x="642" y="330" font-size="8.5" fill="#c2410c">(logv &#8801; log&#963;&#178;)</text>
+
+<!-- ===== z node ===== -->
+<rect x="330" y="324" width="220" height="52" rx="8" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.8"/>
+<text x="440" y="346" text-anchor="middle" font-size="11.5" font-weight="800" fill="#0f766e">z = &#956; + &#963;&#183;&#949;</text>
+<text x="440" y="363" text-anchor="middle" font-size="9" fill="#0f766e">reparameterization</text>
+
+<!-- local derivatives of reparam -->
+<rect x="60" y="330" width="246" height="66" rx="8" fill="#e6f6f4" stroke="#0d9488" stroke-width="1.3"/>
+<text x="72" y="347" font-size="9" font-weight="800" fill="#0f766e">LOCAL DERIVATIVES OF THIS NODE</text>
+<text x="72" y="364" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#0f766e">&#8706;z/&#8706;&#956; = 1 &nbsp;&nbsp; &#8706;z/&#8706;&#963; = &#949;</text>
+<text x="72" y="380" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#0f766e">&#8706;&#963;/&#8706;logv = &#189;&#963;</text>
+<text x="72" y="392" font-size="8" fill="#0f766e">(&#963; = e^&#189;logv)</text>
+
+<!-- connector: local-derivative box -> z node -->
+<line x1="306" y1="352" x2="328" y2="352" stroke="#0d9488" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ag)"/>
+
+<!-- ===== z -> merge ===== -->
+<line x1="440" y1="376" x2="440" y2="430" stroke="#3f3f46" stroke-width="1.8" marker-end="url(#a)"/>
+
+<!-- ===== merge box ===== -->
+<rect x="230" y="432" width="410" height="80" rx="9" fill="#f8f8f6" stroke="#16161a" stroke-width="1.8"/>
+<text x="242" y="450" font-size="9" font-weight="800" fill="#52525b">ACCUMULATED AT THE ENCODER&#8217;S OUTPUTS</text>
+<text x="242" y="470" font-size="10" font-family="ui-monospace,Menlo,monospace" fill="#6d28d9">&#8706;L/&#8706;&#956; = dz&#183;1 + &#956;</text>
+<text x="242" y="487" font-size="10" font-family="ui-monospace,Menlo,monospace" fill="#0f766e">&#8706;L/&#8706;logv = dz&#183;&#949;&#183;&#189;&#963; + &#189;(&#963;&#178;&#8722;1)</text>
+<text x="242" y="503" font-size="8.5" fill="#71717a">first term of each: from reconstruction (via z) &nbsp;&#183;&nbsp; second: from KL</text>
+
+<!-- ===== merge -> encoder ===== -->
+<line x1="435" y1="512" x2="435" y2="546" stroke="#3f3f46" stroke-width="1.8" marker-end="url(#a)"/>
+
+<!-- ===== encoder ===== -->
+<rect x="290" y="548" width="290" height="56" rx="9" fill="#f1fbf9" stroke="#0d9488" stroke-width="2"/>
+<text x="435" y="570" text-anchor="middle" font-size="12" font-weight="800">ENCODER (&#966;)</text>
+<text x="435" y="587" text-anchor="middle" font-size="9" fill="#0f766e">(&#956;, log&#963;&#178;) = Enc&#966;(x)</text>
+
+<!-- grad phi terminal -->
+<line x1="580" y1="576" x2="620" y2="576" stroke="#0d9488" stroke-width="1.8" marker-end="url(#ag)"/>
+<rect x="626" y="552" width="192" height="48" rx="8" fill="#e6f6f4" stroke="#0d9488" stroke-width="1.8"/>
+<text x="722" y="571" text-anchor="middle" font-size="10.5" font-weight="800" fill="#0f766e">&#8711;&#966; = &#8706;L/&#8706;&#966;</text>
+<text x="722" y="588" text-anchor="middle" font-size="8.5" fill="#0f766e">BOTH terms, summed</text>
+
+<!-- final note -->
+<line x1="60" y1="624" x2="818" y2="624" stroke="#e3e0da" stroke-width="1"/>
+<text x="60" y="642" font-size="9.5" fill="#71717a"><tspan font-weight="700" fill="#16161a">Why the trick matters here:</tspan> dz must travel from x&#770; back into &#956; and &#963;. If z were drawn by an opaque <tspan font-family="ui-monospace,Menlo,monospace">sample()</tspan>,</text>
+<text x="60" y="658" font-size="9.5" fill="#71717a">there would be no &#8706;z/&#8706;&#956; and no &#8706;z/&#8706;&#963; &#8212; the arrow into the encoder would be severed and &#966; would never learn.</text>
+
+<!-- ===== worked numeric example ===== -->
+<rect x="60" y="676" width="760" height="182" rx="9" fill="#fbfaf8" stroke="#c7c3bb" stroke-width="1.4"/>
+<text x="74" y="696" font-size="9.5" font-weight="800" fill="#52525b">THE SAME PASS WITH NUMBERS &#8212; from the dry run (&#956; = 0.8, &#963; = 0.6, &#949; = &#8722;1.5, x = [1.0, &#8722;0.5], x&#770; = [0.9, &#8722;0.4])</text>
+
+<line x1="74" y1="706" x2="806" y2="706" stroke="#e3e0da" stroke-width="1"/>
+
+<text x="74" y="726" font-size="9" font-weight="800" fill="#9a3412">RECONSTRUCTION SIDE</text>
+<text x="74" y="744" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#52525b">x &#8722; x&#770; = [0.10, &#8722;0.10]</text>
+<text x="74" y="761" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#52525b">&#8706;recon/&#8706;x&#770; = &#8722;2(x&#8722;x&#770;) = [&#8722;0.20, +0.20]</text>
+<text x="74" y="778" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#52525b">&#8706;z/&#8706;&#956; = 1 &nbsp;&nbsp; &#8706;z/&#8706;&#963; = &#949; = &#8722;1.5</text>
+<text x="74" y="795" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#52525b">&#8706;z/&#8706;logv = &#949;&#183;&#189;&#963; = &#8722;1.5 &#215; 0.30 = &#8722;0.45</text>
+
+<text x="440" y="726" font-size="9" font-weight="800" fill="#c2410c">KL SIDE</text>
+<text x="440" y="744" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#52525b">&#8706;KL/&#8706;&#956; = &#956; = 0.80</text>
+<text x="440" y="761" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#52525b">&#8706;KL/&#8706;logv = &#189;(&#963;&#178; &#8722; 1)</text>
+<text x="440" y="778" font-size="9.5" font-family="ui-monospace,Menlo,monospace" fill="#52525b">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = &#189;(0.36 &#8722; 1) = &#8722;0.32</text>
+
+<line x1="74" y1="806" x2="806" y2="806" stroke="#e3e0da" stroke-width="1"/>
+<text x="74" y="825" font-size="9" font-weight="800" fill="#0f766e">PUT TOGETHER</text>
+<text x="74" y="844" font-size="10" font-family="ui-monospace,Menlo,monospace" font-weight="700" fill="#0f766e">&#8706;L/&#8706;&#956; = 1&#183;dz + 0.80 &nbsp;&nbsp;&nbsp;&nbsp; &#8706;L/&#8706;logv = &#8722;0.45&#183;dz &#8722; 0.32</text>
+<text x="560" y="844" font-size="8.5" fill="#71717a">dz = &#8706;recon/&#8706;z, which needs the</text>
+<text x="560" y="856" font-size="8.5" fill="#71717a">decoder&#8217;s weights &#8212; not knowable here</text>
+</svg>
+
+<div class="note">
+<b>The two terminals are different, and that is the whole story.</b> &#952; finishes early — the reconstruction gradient reaches it and stops, because KL contains no &#952;. &#966; finishes last — it must sum a reconstruction contribution that has travelled all the way back through <b>z</b>, plus a direct KL contribution.
+</div>
+
+</body></html>

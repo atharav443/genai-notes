@@ -1,0 +1,156 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Where the integral comes from — P(x) = ∫P(x,z)dz</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,sans-serif;
+     background:#fbfaf8;color:#16161a;padding:26px 18px 44px}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:23px;letter-spacing:-.02em;margin-bottom:3px}
+.sub{color:#5c5c66;font-size:13.5px;margin-bottom:16px}
+h2{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#8a8a94;margin:20px 0 9px;font-weight:800}
+.chain{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.step{display:flex;gap:9px;background:#fff;border:1px solid #e3e0da;border-radius:9px;padding:9px 11px;align-items:flex-start}
+.step.hot{border-color:#0d9488;background:#f1fbf9}
+.num{flex:0 0 auto;width:19px;height:19px;border-radius:50%;background:#0d9488;color:#fff;font-size:11.5px;
+     font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step p{font-size:13.4px;line-height:1.45;margin:0}
+.eqbox{background:#16161a;color:#fff;border-radius:10px;padding:13px 16px;margin:14px 0 6px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14.5px;text-align:center;line-height:1.7}
+.eqbox .note{color:#a1a1aa;font-size:11.5px;font-family:-apple-system,Segoe UI,sans-serif;display:block;margin-top:4px}
+canvas{width:100%;display:block;background:#fff;border:1px solid #e3e0da;border-radius:11px}
+.ctl{display:flex;flex-wrap:wrap;gap:22px;align-items:center;margin:14px 0 6px}
+.ctl label{font-size:13px;font-weight:700;display:flex;align-items:center;gap:9px}
+input[type=range]{accent-color:#0d9488;width:210px}
+.v{font-family:ui-monospace,Menlo,monospace;background:#f4f2ee;border:1px solid #e3e0da;border-radius:5px;
+   padding:1px 6px;font-size:12.5px;min-width:42px;text-align:center}
+.out{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:#f6f4f0;border:1px solid #e3e0da;
+     border-left:3px solid #0d9488;border-radius:8px;padding:11px 14px;margin-top:10px;line-height:1.85}
+.big{font-size:15.5px;font-weight:800}
+.err{color:#e11d48;font-weight:800}.ok{color:#0d9488;font-weight:800}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:#5c5c66;margin-top:8px}
+.key{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+</style></head><body><div class="wrap">
+
+<h1>Where the integral comes from</h1>
+<div class="sub">You can't understand any of the VAE until this step is obvious. So here is the exact reasoning, then a machine to play with.</div>
+
+<h2>The reasoning, in six steps</h2>
+<div class="chain">
+  <div class="step"><span class="num">1</span><p>We want a model that gives us the probability of a data point, <b>P(x)</b>.</p></div>
+  <div class="step"><span class="num">2</span><p>We <b>assume</b> every <b>x</b> was produced by a hidden code <b>z</b>. So generating <b>x</b> is two steps: pick <b>z</b>, then render <b>x</b> from it.</p></div>
+  <div class="step"><span class="num">3</span><p>For a specific pair, both must happen: <b>P(x, z) = P(z) &middot; P(x|z)</b>. &nbsp;<i>(how likely the code) &times; (how likely it renders this x)</i></p></div>
+  <div class="step"><span class="num">4</span><p>But we never saw which <b>z</b> was used. <b>Any</b> of them could have produced this <b>x</b>.</p></div>
+  <div class="step hot"><span class="num">5</span><p>So we <b>add up every possibility</b>: &nbsp;<b>P(x) = &Sigma;<sub>z</sub> P(x, z)</b></p></div>
+  <div class="step hot"><span class="num">6</span><p>When <b>z</b> is continuous there is no list to loop over &mdash; so the sum becomes an <b>integral</b>:</p></div>
+</div>
+
+<div class="eqbox">P(x) &nbsp;=&nbsp; &int; P(x, z) dz
+<span class="note">An integral is not a different idea. It is the sum in step 5, taken over infinitely many z.</span></div>
+
+<h2>Now watch it happen — one fixed x, every z contributing a slice</h2>
+<canvas id="cv" width="1060" height="540"></canvas>
+
+<div class="ctl">
+  <label>number of slices N <input id="sn" type="range" min="2" max="40" step="1" value="10"><span class="v" id="nv">10</span></label>
+  <label>which x <input id="sx" type="range" min="-2.6" max="2.6" step="0.02" value="0"><span class="v" id="xv">0.00</span></label>
+</div>
+<div class="legend">
+  <span><span class="key" style="background:rgba(13,148,136,.30)"></span>each bar = one z's contribution, P(z)&middot;P(x|z)&middot;&Delta;z</span>
+  <span><span class="key" style="background:#0d9488"></span>the true curve P(z)&middot;P(x|z)</span>
+  <span><span class="key" style="background:#c7c3bb"></span>the prior P(z) alone</span>
+</div>
+<div class="out" id="out"></div>
+
+<script>
+(function(){
+  var CV=document.getElementById('cv'), X=CV.getContext('2d');
+  var dpr=Math.min(2,window.devicePixelRatio||1), W=1060, H=540;
+  CV.width=W*dpr; CV.height=H*dpr; CV.style.height='auto'; X.scale(dpr,dpr);
+  var ZL=-3.5, ZR=3.5, SIG=0.35, SCALE=760;
+  var X0=62, X1=1000, YAX=452;          // axis origin
+  function mpz(z){ return X0 + (z-ZL)/(ZR-ZL)*(X1-X0); }
+  function gauss(v,m,s){ var d=(v-m)/s; return Math.exp(-0.5*d*d)/(s*Math.sqrt(2*Math.PI)); }
+  function prior(z){ return gauss(z,0,1); }
+  function lik(x,z){ return gauss(x,z,SIG); }
+  function integrand(x,z){ return prior(z)*lik(x,z); }
+  function exactMarginal(x){ return gauss(x,0,Math.sqrt(1+SIG*SIG)); }
+
+  function draw(){
+    var N=+document.getElementById('sn').value;
+    var x=+document.getElementById('sx').value;
+    document.getElementById('nv').textContent=N;
+    document.getElementById('xv').textContent=x.toFixed(2);
+
+    X.clearRect(0,0,W,H);
+    X.fillStyle='#fff'; X.fillRect(0,0,W,H);
+
+    // axis
+    X.strokeStyle='#e3e0da'; X.lineWidth=1.4;
+    X.beginPath(); X.moveTo(X0,YAX); X.lineTo(X1,YAX); X.stroke();
+    X.fillStyle='#8a8a94'; X.font='600 11px -apple-system,Segoe UI,sans-serif';
+    for(var t=-3;t<=3;t+=1){
+      var px=mpz(t);
+      X.strokeStyle='#e3e0da'; X.beginPath(); X.moveTo(px,YAX-4); X.lineTo(px,YAX+4); X.stroke();
+      X.fillText(t,px-4,YAX+18);
+    }
+    X.fillStyle='#16161a'; X.font='700 12px -apple-system,Segoe UI,sans-serif';
+    X.fillText('hidden code  z',X0,YAX+38);
+
+    // prior (dashed)
+    X.beginPath(); X.moveTo(mpz(ZL),YAX);
+    for(var i=0;i<=400;i++){ var z=ZL+(ZR-ZL)*i/400; X.lineTo(mpz(z),YAX-prior(z)*SCALE); }
+    X.lineTo(mpz(ZR),YAX); X.closePath();
+    X.fillStyle='rgba(199,195,187,.22)'; X.fill();
+    X.strokeStyle='#c7c3bb'; X.lineWidth=1.6; X.setLineDash([5,4]); X.stroke(); X.setLineDash([]);
+    X.fillStyle='#9a9aa4'; X.font='600 11.5px -apple-system,Segoe UI,sans-serif';
+    X.fillText('prior P(z) — how likely each code is', mpz(-3.42), 26);
+
+    // slice boundaries — always visible, so you can COUNT the slices even where f(z) is ~0
+    var dz=(ZR-ZL)/N, sum=0;
+    X.strokeStyle='rgba(13,148,136,.38)'; X.lineWidth=1;
+    for(var b=0;b<=N;b++){
+      var bx=mpz(ZL+b*dz);
+      X.beginPath(); X.moveTo(bx,YAX); X.lineTo(bx,YAX-20); X.stroke();
+    }
+
+    // bars: Riemann sum
+    for(var k=0;k<N;k++){
+      var zk=ZL+(k+0.5)*dz, h=integrand(x,zk)*SCALE, px=mpz(ZL+k*dz), w=mpz(ZL+(k+1)*dz)-mpz(ZL+k*dz);
+      sum += integrand(x,zk)*dz;
+      X.fillStyle='rgba(13,148,136,'+(N>60?0.13:0.28)+')';
+      X.fillRect(px,YAX-h,w-0.6,h);
+      if(N<=40){ X.strokeStyle='rgba(13,148,136,.55)'; X.lineWidth=1; X.strokeRect(px+.5,YAX-h,w-1,h); }
+    }
+
+    // integrand curve
+    X.beginPath(); X.moveTo(mpz(ZL),YAX);
+    for(var j=0;j<=500;j++){ var zj=ZL+(ZR-ZL)*j/500; X.lineTo(mpz(zj),YAX-integrand(x,zj)*SCALE); }
+    X.lineTo(mpz(ZR),YAX); X.closePath();
+    X.strokeStyle='#0d9488'; X.lineWidth=2.6; X.stroke();
+
+    // label the peak
+    var zstar=x*1/(1+SIG*SIG); // mode of the product (verified: z=x/(1+sigma^2))
+    X.strokeStyle='#0d9488'; X.setLineDash([3,3]); X.lineWidth=1.2;
+    X.beginPath(); X.moveTo(mpz(zstar),YAX); X.lineTo(mpz(zstar),YAX-integrand(x,zstar)*SCALE-8); X.stroke(); X.setLineDash([]);
+    X.fillStyle='#0d9488'; X.font='700 11.5px -apple-system,Segoe UI,sans-serif';
+    X.fillText('P(z)\u00B7P(x|z)', mpz(zstar)+8, YAX-integrand(x,zstar)*SCALE-14);
+
+    // marked x
+    X.fillStyle='#16161a'; X.font='700 12.5px -apple-system,Segoe UI,sans-serif';
+    X.fillText('this fixed  x = '+x.toFixed(2), 800, 26);
+
+    var exact=exactMarginal(x), err=Math.abs(sum-exact)/exact*100;
+    document.getElementById('out').innerHTML =
+      'sum of '+N+' slices &nbsp;=&nbsp; <b class="big">'+sum.toFixed(5)+'</b>'+
+      ' &nbsp;&nbsp;|&nbsp;&nbsp; true integral &nbsp;=&nbsp; <b class="big">'+exact.toFixed(5)+'</b>'+
+      ' &nbsp;&nbsp;|&nbsp;&nbsp; error &nbsp;=&nbsp; <b class="'+(err<1?'ok':'err')+'">'+err.toFixed(2)+'%</b>'+
+      '<br><span style="color:#5c5c66">Drag N up: the bars get thinner and the sum creeps toward the exact integral. '+
+      'At N = &infin;, the sum <i>is</i> the integral. That is the only difference between them.</span>';
+  }
+  document.getElementById('sn').addEventListener('input',draw);
+  document.getElementById('sx').addEventListener('input',draw);
+  draw();
+})();
+</script>
+</div></body></html>

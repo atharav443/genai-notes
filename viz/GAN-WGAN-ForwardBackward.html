@@ -1,0 +1,279 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GAN &amp; WGAN — forward and backward passes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,sans-serif;
+     background:#fbfaf8;color:#16161a;padding:0 0 60px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+header{background:linear-gradient(135deg,#16161a,#2d1b4e);color:#fff;padding:30px 0 26px;margin-bottom:26px}
+header h1{font-size:26px;letter-spacing:-.02em;margin-bottom:4px}
+header p{opacity:.8;font-size:14px;max-width:70ch}
+.tabs{display:flex;gap:8px;margin-top:18px}
+.tabs button{font:inherit;font-size:14px;font-weight:800;cursor:pointer;border:0;border-radius:9px;
+  padding:9px 20px;background:rgba(255,255,255,.13);color:#fff;transition:.15s}
+.tabs button.on{background:#fff;color:#16161a}
+h2{font-size:18px;margin:26px 0 4px;letter-spacing:-.01em;padding-left:11px;border-left:4px solid #7c3aed}
+h2 .step{display:inline-block;font-size:12px;font-weight:800;background:#7c3aed;color:#fff;
+  border-radius:5px;padding:2px 8px;margin-right:9px;vertical-align:2px}
+h2.g{border-left-color:#0d9488}h2.g .step{background:#0d9488}
+.sub{color:#6b6b75;font-size:13.5px;margin:2px 0 12px;padding-left:15px}
+.card{background:#fff;border:1px solid #e3e0da;border-radius:12px;padding:16px 18px;margin:12px 0}
+.card.dark{background:#16161a;color:#fff;border-color:#16161a}
+.card.dark .lbl{color:#a1a1aa}
+.lbl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8a8a94;margin-bottom:8px}
+/* flow */
+.flow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:center;margin:14px 0}
+.bx{border:2px solid #7c3aed;border-radius:9px;padding:7px 13px;background:#f7f3ff;font-weight:800;
+  font-size:14px;white-space:nowrap;position:relative}
+.bx small{display:block;font-size:10px;font-weight:700;letter-spacing:.05em;opacity:.75;margin-top:2px}
+.bx.gen{border-color:#0d9488;background:#f1fbf9}
+.bx.io{border-color:#3f3f46;background:#f2f2f4}
+.bx.frozen{border-style:dashed;opacity:.62}
+.bx.trained{box-shadow:0 0 0 3px rgba(234,88,12,.22)}
+.ar{color:#9a9aa4;font-weight:800;font-size:17px}
+.tag{position:absolute;top:-10px;right:-8px;font-size:9px;font-weight:800;letter-spacing:.06em;
+  padding:1px 6px;border-radius:4px;color:#fff}
+.tag.frz{background:#71717a}.tag.trn{background:#ea580c}
+/* numeric steps */
+ol.steps{list-style:none;counter-reset:s;margin:10px 0}
+ol.steps li{counter-increment:s;position:relative;padding:7px 0 7px 34px;border-bottom:1px dashed #eeece7;font-size:14px}
+ol.steps li:last-child{border-bottom:0}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:7px;width:22px;height:22px;
+  border-radius:50%;background:#7c3aed;color:#fff;font-size:11.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center}
+ol.steps.g li::before{background:#0d9488}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+code{background:#f4f2ee;padding:1px 5px;border-radius:4px}
+.val{font-family:ui-monospace,Menlo,monospace;background:#f4f2ee;border-radius:4px;padding:1px 6px;font-weight:700}
+.hl{background:#fff3c4;border-radius:3px;padding:0 3px;font-weight:700}
+.key{background:#16161a;color:#fff;border-radius:10px;padding:14px 17px;margin:14px 0;font-size:14.5px;line-height:1.55}
+.key b{color:#5eead4}
+.key code,.card.dark code{background:#32323e;color:#f0f0f5;border:1px solid #45454f}
+.warn{border:1.5px solid #f5b9ab;background:#fff6f3;border-radius:10px;padding:13px 16px;margin:12px 0;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+th,td{border:1px solid #e3e0da;padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#f6f4f0;font-weight:800;font-size:12px}
+td.mono{font-family:ui-monospace,Menlo,monospace}
+.neg{color:#e11d48;font-weight:700}.pos{color:#0d9488;font-weight:700}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:12.5px;color:#5c5c66;margin-top:10px}
+.legend span::before{content:'';display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.legend .a::before{background:#0d9488}
+body[data-mode="wgan"] .bx.gen{opacity:.62}.legend .b::before{background:#7c3aed}.legend .c::before{background:#71717a}
+body[data-mode="gan"] .w{display:none}
+body[data-mode="wgan"] .g{display:none}
+</style></head><body data-mode="gan">
+
+<header><div class="wrap">
+  <h1>GAN &amp; WGAN — every step of forward and backward</h1>
+  <p>Two networks, two alternating updates. The critical detail: the generator's gradient flows <b>through</b> the second network without updating it. Numbers are real and verified.</p>
+  <div class="tabs">
+    <button id="t-gan" class="on" onclick="setMode('gan')">Vanilla GAN</button>
+    <button id="t-wgan" onclick="setMode('wgan')">WGAN</button>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+<!-- ================= SETUP ================= -->
+<h2 style="border-left-color:#3f3f46"><span class="step" style="background:#3f3f46">0</span>The setup — one sample, real numbers</h2>
+<div class="sub">Everything is 1-D so every derivative is a number you can check by hand.</div>
+<div class="card">
+<table>
+<tr><th>component</th><th>definition</th><th>values</th></tr>
+<tr><td>data</td><td class="mono">x ~ P_x</td><td class="mono val">x = 2.0</td></tr>
+<tr><td>noise</td><td class="mono">z ~ N(0,I)</td><td class="mono val">z = 0.5</td></tr>
+<tr><td>generator</td><td class="mono">x&#770; = w_g·z + b_g</td><td class="mono">w_g = 0.8, b_g = 0.1</td></tr>
+<tr class="g"><td>discriminator</td><td class="mono">D_w(x) = &#963;( w_d·x + b_d )</td><td class="mono">w_d = 1.0, b_d = 0.0</td></tr>
+<tr class="w"><td>critic</td><td class="mono">T_w(x) = w_d·x + b_d &nbsp;<b>(no sigmoid)</b></td><td class="mono">w_d = 1.0, b_d = 0.0</td></tr>
+<tr><td>learning rate</td><td class="mono">&#945;</td><td class="mono val">0.1</td></tr>
+</table>
+<div class="key" style="margin-bottom:0">First compute the fake: &nbsp; <b>x&#770; = 0.8 × 0.5 + 0.1 = 0.5</b></div>
+</div>
+
+<!-- ================= D UPDATE ================= -->
+<h2><span class="step">A</span><span class="g">Discriminator</span><span class="w">Critic</span> update — FORWARD</h2>
+<div class="sub">The second network trains. The generator is switched off (its weights don't move).</div>
+
+<div class="card">
+<div class="lbl">data flow</div>
+<div class="flow">
+  <div class="bx io">x ~ P_x<small>REAL</small></div><span class="ar">──────────────►</span>
+  <div class="bx gen frozen">G<sub>&#952;</sub><small>FROZEN</small><span class="tag frz">no update</span></div>
+  <span class="ar">──►</span>
+  <div class="bx io">x&#770;<small>FAKE</small></div>
+  <span class="ar">──►</span>
+  <div class="bx trained"><span class="g">D<sub>w</sub></span><span class="w">T<sub>w</sub></span><small>TRAINING</small><span class="tag trn">updates</span></div>
+  <span class="ar">──►</span>
+  <div class="bx io"><span class="g">D(x), D(x&#770;)</span><span class="w">T(x), T(x&#770;)</span></div>
+</div>
+<div class="legend"><span class="a">generator G<sub>&#952;</sub></span><span class="b"><span class="g">discriminator</span><span class="w">critic</span></span><span class="c">dashed = frozen</span></div>
+</div>
+
+<div class="card">
+<div class="lbl">step by step — with real numbers</div>
+<ol class="steps">
+  <li>Sample real data &nbsp; <span class="val">x = 2.0</span> &nbsp; and noise &nbsp; <span class="val">z = 0.5</span></li>
+  <li>Generate the fake through the frozen generator: &nbsp; <span class="val">x&#770; = w_g·z + b_g = 0.8(0.5) + 0.1 = 0.5</span></li>
+  <li class="g">Pre-activation for real: &nbsp; <span class="mono">w_d·x + b_d = 1.0(2.0) + 0 = 2.0</span></li>
+  <li class="g">Squash it: &nbsp; <span class="val">D(x) = &#963;(2.0) = 0.8808</span> &nbsp;<span style="color:#8a8a94">&#8592; "confidence it's real"</span></li>
+  <li class="g">Pre-activation for fake: &nbsp; <span class="mono">w_d·x&#770; + b_d = 1.0(0.5) + 0 = 0.5</span></li>
+  <li class="g">Squash: &nbsp; <span class="val">D(x&#770;) = &#963;(0.5) = 0.6225</span></li>
+  <li class="g"><b>Loss</b> &nbsp; <span class="mono">L_D = &minus;[ log D(x) + log(1 &minus; D(x&#770;)) ]</span><br>
+      <span style="color:#6b6b75">= &minus;[ log(0.8808) + log(0.3775) ] = &minus;[&minus;0.1269 + &minus;0.9741] =</span> <span class="val">1.1010</span></li>
+  <li class="w">Critic score for real: &nbsp; <span class="val">T(x) = 1.0(2.0) + 0 = 2.0</span></li>
+  <li class="w">Critic score for fake: &nbsp; <span class="val">T(x&#770;) = 1.0(0.5) + 0 = 0.5</span></li>
+  <li class="w"><b>Loss</b> &nbsp; <span class="mono">L_T = T(x&#770;) &minus; T(x)</span> &nbsp;<span style="color:#8a8a94">(we want T(x) high, T(x&#770;) low)</span><br>
+      <span style="color:#6b6b75">= 0.5 &minus; 2.0 =</span> <span class="val">&minus;1.5000</span></li>
+</ol>
+</div>
+
+<div class="warn g"><b>Notice:</b> the two scores are close (0.88 vs 0.62) — the discriminator is not yet confident. That's healthy early training. If it were 1.00 vs 0.00, Phase H's saturation would be happening.</div>
+
+<h2><span class="step">B</span><span class="g">Discriminator</span><span class="w">Critic</span> update — BACKWARD</h2>
+<div class="sub">Gradient flows only into <span class="g">w</span><span class="w">w</span>. It stops at the dashed boundary.</div>
+
+<div class="card">
+<div class="flow">
+  <div class="bx io">loss</div><span class="ar">──►</span>
+  <div class="bx trained"><span class="g">&#8711;D</span><span class="w">&#8711;T</span><small>through the net</small></div>
+  <span class="ar">──►</span>
+  <div class="bx trained">&#8711;w<sub>d</sub>, &#8711;b<sub>d</sub><small>UPDATE</small></div>
+  <span class="ar" style="opacity:.25">&#9587;</span>
+  <div class="bx gen frozen" style="opacity:.35">G<sub>&#952;</sub><small>BLOCKED</small></div>
+</div>
+<div class="key" style="margin-bottom:0">The gradient <b>stops at the discriminator</b>. Generator weights are untouched — the gradient never reaches them.</div>
+</div>
+
+<div class="card">
+<div class="lbl">gradients</div>
+<table>
+<tr><th>gradient</th><th class="g">derivation (sigmoid cancels beautifully)</th><th class="w">derivation (linear — trivial)</th><th>value</th></tr>
+<tr>
+  <td class="mono">&#8706;L/&#8706;w_d</td>
+  <td class="g mono">&minus;(1&minus;D(x))·x + D(x&#770;)·x&#770;<br>= &minus;0.1192(2.0) + 0.6225(0.5)</td>
+  <td class="w mono">x&#770; &minus; x<br>= 0.5 &minus; 2.0</td>
+  <td class="mono val"><span class="g">0.07282</span><span class="w">&minus;1.5000</span></td>
+</tr>
+<tr>
+  <td class="mono">&#8706;L/&#8706;b_d</td>
+  <td class="g mono">&minus;(1&minus;D(x)) + D(x&#770;)<br>= &minus;0.1192 + 0.6225</td>
+  <td class="w mono">1 &minus; 1</td>
+  <td class="mono val"><span class="g">0.50326</span><span class="w">0.0000</span></td>
+</tr>
+</table>
+<div class="key" style="font-size:13.5px;margin-bottom:0"><b class="g">Why the sigmoid "cancels":</b> &nbsp;<code>&#963;'(z) = &#963;(z)(1&minus;&#963;(z))</code>, so <code>&minus;1/D · D(1&minus;D) = &minus;(1&minus;D)</code>. The logistic derivative and the log derivative annihilate each other — leaving a clean linear expression. <b class="w">The WGAN has no sigmoid and no log, so there's nothing to cancel.</b></div>
+</div>
+
+<div class="card dark">
+<div class="lbl">the update</div>
+<table style="margin:0">
+<tr><th style="background:#2a2a33;color:#fff;border-color:#3f3f46">param</th><th style="background:#2a2a33;color:#fff;border-color:#3f3f46">rule</th><th style="background:#2a2a33;color:#fff;border-color:#3f3f46">result</th></tr>
+<tr style="border-color:#3f3f46"><td class="mono" style="border-color:#3f3f46">w_d</td><td class="mono" style="border-color:#3f3f46">w_d &larr; w_d &minus; &#945;·&#8711;</td><td class="mono" style="border-color:#3f3f46"><span class="g">1.0 &rarr; 0.992718</span><span class="w">1.0 &rarr; 1.15 &rarr; <b style="color:#fdba74">clip &rarr; 1.0</b></span></td></tr>
+<tr style="border-color:#3f3f46"><td class="mono" style="border-color:#3f3f46">b_d</td><td class="mono" style="border-color:#3f3f46">b_d &larr; b_d &minus; &#945;·&#8711;</td><td class="mono" style="border-color:#3f3f46"><span class="g">0.0 &rarr; &minus;0.050326</span><span class="w">0.0 &rarr; 0.0</span></td></tr>
+</table>
+<div class="w" style="margin-top:12px;font-size:14px;background:#241f2e;border-radius:8px;padding:11px 14px">
+  <b style="color:#fdba74">&#9888; The extra step WGAN needs:</b> after every update, <b>clip</b> the weights to <code>[&minus;c, c]</code> (here c = 1).<br>
+  <code style="background:#1a1a22;color:#e9e9ef">w_d = 1.15 &rarr; clipped to 1.00</code><br>
+  <span style="color:#a1a1aa">This is how 1-Lipschitz is enforced — bounding the weights bounds how fast the critic can change. It's why the second network is called a <i>critic</i>, not a discriminator: it outputs an unbounded score, not a probability.</span>
+</div>
+</div>
+
+<!-- ================= G UPDATE ================= -->
+<h2 class="g"><span class="step">C</span>Generator update — FORWARD</h2>
+<div class="sub">Now the roles reverse. The generator trains; the discriminator is frozen.</div>
+
+<div class="card">
+<div class="flow">
+  <div class="bx io">z ~ N(0,I)</div><span class="ar">──►</span>
+  <div class="bx gen trained">G<sub>&#952;</sub><small>TRAINING</small><span class="tag trn">updates</span></div>
+  <span class="ar">──►</span>
+  <div class="bx io">x&#770;</div><span class="ar">──►</span>
+  <div class="bx frozen"><span class="g">D<sub>w</sub></span><span class="w">T<sub>w</sub></span><small>FROZEN</small><span class="tag frz">no update</span></div>
+  <span class="ar">──►</span>
+  <div class="bx io"><span class="g">D(x&#770;)</span><span class="w">T(x&#770;)</span></div>
+</div>
+<div class="legend"><span class="a">trained this step</span><span class="c">dashed = frozen</span></div>
+</div>
+
+<div class="card">
+<div class="lbl">step by step</div>
+<ol class="steps g">
+  <li>Sample noise &nbsp; <span class="val">z = 0.5</span></li>
+  <li>Feed through the <b>training</b> generator: &nbsp; <span class="val">x&#770; = 0.8(0.5) + 0.1 = 0.5</span></li>
+  <li class="g">Score it with the frozen discriminator: &nbsp; <span class="val">D(x&#770;) = &#963;(0.5) = 0.6225</span></li>
+  <li class="g"><b>Loss (non-saturating)</b> &nbsp; <span class="mono">L_G = &minus;log D(x&#770;)</span><br>
+      <span style="color:#6b6b75">= &minus;log(0.6225) =</span> <span class="val">0.47408</span></li>
+  <li class="w">Score it with the frozen critic: &nbsp; <span class="val">T(x&#770;) = 0.5000</span></li>
+  <li class="w"><b>Loss</b> &nbsp; <span class="mono">L_G = &minus;T(x&#770;)</span> &nbsp; <span style="color:#8a8a94">(push the critic's score up)</span><br>
+      <span style="color:#6b6b75">= &minus;0.50000</span></li>
+</ol>
+</div>
+
+<h2 class="g"><span class="step">D</span>Generator update — BACKWARD &nbsp;<span style="font-size:13px;color:#e11d48">&#9888; the subtle one</span></h2>
+<div class="sub">The gradient must travel <b>backwards through the discriminator</b> — but the discriminator's weights don't change.</div>
+
+<div class="card">
+<div class="flow">
+  <div class="bx io">loss<sub>G</sub></div><span class="ar">──►</span>
+  <div class="bx frozen"><span class="g">&#8711; D</span><span class="w">&#8711; T</span><small>Jacobian USED<br>weights FROZEN</small></div>
+  <span class="ar">──►</span>
+  <div class="bx io">&#8711;x&#770;</div>
+  <span class="ar">──►</span>
+  <div class="bx g trained">&#8711;&#952;<small>UPDATE</small></div>
+</div>
+<div class="key" style="margin-bottom:0">
+  <b>This is the step everyone gets wrong.</b> The gradient passes <i>through</i> the frozen network — it uses <code>&#8706;D/&#8706;x&#770;</code> — but <code>w</code> is never updated on this pass. The discriminator acts as a <b>fixed measuring stick</b>, not a training target.
+</div>
+</div>
+
+<div class="card">
+<div class="lbl">the chain rule, term by term</div>
+<table>
+<tr><th>link</th><th class="g">vanilla GAN</th><th class="w">WGAN</th></tr>
+<tr><td class="mono">&#8706;L/&#8706;D(x&#770;)</td><td class="g mono">&minus;1/D(x&#770;) = &minus;1.6061</td><td class="w mono">&minus;1</td></tr>
+<tr><td class="mono">&#8706;D/&#8706;x&#770;</td><td class="g mono">D(x&#770;)(1&minus;D(x&#770;))·w_d <span style="color:#8a8a94">(the sigmoid derivative)</span></td><td class="w mono">w_d = 1.0 <span style="color:#8a8a94">(linear)</span></td></tr>
+<tr><td class="mono" style="font-weight:800">&#8706;L/&#8706;x&#770;</td><td class="g mono">&minus;(1&minus;D(x&#770;))·w_d = <span class="val">&minus;0.37754</span></td><td class="w mono">&minus;w_d = <span class="val">&minus;1.0000</span></td></tr>
+<tr><td class="mono">&#8706;x&#770;/&#8706;w_g</td><td class="g mono">z = 0.5</td><td class="w mono">z = 0.5</td></tr>
+<tr><td class="mono" style="font-weight:800">&#8706;L/&#8706;w_g</td><td class="g mono"><span class="val">&minus;0.18877</span></td><td class="w mono"><span class="val">&minus;0.5000</span></td></tr>
+<tr><td class="mono" style="font-weight:800">&#8706;L/&#8706;b_g</td><td class="g mono"><span class="val">&minus;0.37754</span></td><td class="w mono"><span class="val">&minus;1.0000</span></td></tr>
+</table>
+<div class="key" style="font-size:13.5px;margin-bottom:0"><b>Look at the magnitudes.</b> The WGAN's gradient is <b>~2.6× larger</b> here &mdash; and crucially it's <code>&minus;w_d</code>, a <b>constant</b>. It does not shrink as the critic gets confident. The GAN's gradient is <code>&minus;(1&minus;D)·w_d</code>, which <b>&rarr; 0</b> as <code>D &rarr; 1</code>. That's Phase H's saturation, visible in the formula.</div>
+</div>
+
+<div class="card dark">
+<div class="lbl">the generator's update</div>
+<table style="margin:0">
+<tr><th style="background:#2a2a33;color:#fff;border-color:#3f3f46">param</th><th style="background:#2a2a33;color:#fff;border-color:#3f3f46">vanilla GAN</th><th style="background:#2a2a33;color:#fff;border-color:#3f3f46">WGAN</th></tr>
+<tr><td class="mono" style="border-color:#3f3f46">w_g</td><td class="mono" style="border-color:#3f3f46">0.8 &minus; 0.1(&minus;0.18877) = <b style="color:#5eead4">0.818877</b></td><td class="mono" style="border-color:#3f3f46">0.8 &minus; 0.1(&minus;0.5) = <b style="color:#5eead4">0.8500</b></td></tr>
+<tr><td class="mono" style="border-color:#3f3f46">b_g</td><td class="mono" style="border-color:#3f3f46">0.1 &minus; 0.1(&minus;0.37754) = <b style="color:#5eead4">0.137754</b></td><td class="mono" style="border-color:#3f3f46">0.1 &minus; 0.1(&minus;1.0) = <b style="color:#5eead4">0.2000</b></td></tr>
+</table>
+<div style="margin-top:11px;font-size:13.5px;color:#a1a1aa">Both push <code style="background:#1a1a22;color:#e9e9ef">x&#770;</code> upward &mdash; away from 0.5, toward the real value 2.0. That's the generator learning.</div>
+</div>
+
+<!-- ================= ALTERNATION ================= -->
+<h2 style="border-left-color:#16161a"><span class="step" style="background:#16161a">E</span>The alternation — why it's two separate passes</h2>
+<div class="card">
+<table>
+<tr><th>&nbsp;</th><th class="g">Vanilla GAN</th><th class="w">WGAN</th></tr>
+<tr><td>update order</td><td class="mono">k× D, then 1× G</td><td class="mono">k× critic, then 1× G <span style="color:#8a8a94">(n_critic = 5 typical)</span></td></tr>
+<tr><td>2nd network carries</td><td class="g">a <b>probability</b> — sigmoid bounds it to [0,1]</td><td class="w">a <b>score</b> — unbounded, any real number</td></tr>
+<tr><td>constraint</td><td class="g">implicit (sigmoid range)</td><td class="w"><b>1-Lipschitz</b> — enforced by clipping</td></tr>
+<tr><td>gradient to G shrinks?</td><td class="g"><b>yes</b> &mdash; <code>&minus;(1&minus;D)·w_d &rarr; 0</code></td><td class="w"><b>no</b> &mdash; <code>&minus;w_d</code>, constant</td></tr>
+<tr><td>uses log?</td><td class="g">yes</td><td class="w">no</td></tr>
+<tr><td>extra step</td><td class="g">—</td><td class="w">clip weights after every update</td></tr>
+<tr><td>name of 2nd net</td><td class="g">discriminator</td><td class="w"><b>critic</b></td></tr>
+</table>
+<div class="key" style="margin-bottom:0">Everything above is one idea: <b>a bounded <i>value</i> saturates; a bounded <i>slope</i> does not.</b> The sigmoid caps <code>D</code> at [0,1], so its derivative dies when it's confident. The Lipschitz constraint caps how fast <code>T</code> may change, but lets its <i>value</i> grow without limit — so the gradient survives even when real and fake are far apart.</div>
+</div>
+
+</div>
+
+<script>
+function setMode(m){
+  document.body.dataset.mode = m;
+  document.getElementById('t-gan').classList.toggle('on', m==='gan');
+  document.getElementById('t-wgan').classList.toggle('on', m==='wgan');
+}
+</script>
+</body></html>

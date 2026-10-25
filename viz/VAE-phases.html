@@ -1,0 +1,322 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>VAE — Intuition, one page per phase</title>
+<style>
+@page{size:A4 portrait;margin:12mm 12mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:10.1pt/1.42 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,sans-serif;color:#16161a;background:#fff}
+.page{page-break-after:always;break-after:page;display:block;padding-bottom:2mm}
+.page:last-child{page-break-after:auto}
+.ph{display:flex;align-items:center;gap:9px;border-bottom:2.5px solid #0d9488;padding-bottom:7px;margin-bottom:12px}
+.badge{flex:0 0 auto;background:#0d9488;color:#fff;font-weight:800;font-size:11pt;width:34px;height:34px;
+       border-radius:9px;display:flex;align-items:center;justify-content:center}
+.ph.a .badge{background:#e11d48}.ph.b .badge{background:#0d9488}.ph.c .badge{background:#7c3aed}
+.ph.d .badge{background:#ea580c}.ph.e .badge{background:#2563eb}
+h1{font-size:16.5pt;letter-spacing:-.02em;line-height:1.15}
+.story{font-size:8.8pt;color:#6b6b75;margin-top:2px}
+h3{font-size:10.8pt;margin:11px 0 4px;letter-spacing:-.01em}
+p{margin:6px 0}
+.small{font-size:9pt;color:#5c5c66}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5pt;background:#f6f4f0;border:1px solid #e3e0da;
+    border-left:3px solid #0d9488;border-radius:7px;padding:7px 11px;margin:7px 0;line-height:1.6}
+.eq.big{font-size:10.6pt;text-align:center;padding:10px}
+.flow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.4pt;display:flex;align-items:center;
+      gap:7px;flex-wrap:wrap;margin:10px 0;justify-content:center}
+.bx{border:1.5px solid #7c3aed;border-radius:7px;padding:5px 10px;background:#f7f3ff;font-weight:700;white-space:nowrap}
+.bx.g{border-color:#0d9488;background:#e6f6f4}.bx.r{border-color:#e11d48;background:#fff1f2}
+.bx.k{border-color:#16161a;background:#f2f2f4}.bx.o{border-color:#ea580c;background:#fff5ed}
+.ar{color:#9a9aa4;font-weight:800;font-size:11pt}
+.callout{border:1.4px solid #e3e0da;border-radius:9px;padding:8px 12px;margin:8px 0;background:#fdfcfb}
+.callout.warn{border-color:#f5b9ab;background:#fff6f3}
+.callout.fix{border-color:#a8e0d6;background:#f1fbf9}
+.callout.key{border-color:#16161a;background:#16161a;color:#fff}
+.callout.key .lbl{color:#a1a1aa}
+.lbl{font-size:8pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8a8a94;margin-bottom:5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+ul{margin:6px 0 6px 18px}li{margin:3.5px 0}
+.hl{background:#fff3c4;padding:1px 3px;border-radius:3px}
+.foot{margin-top:16px;border-top:1.5px dashed #d6d2cb;padding-top:7px;font-size:8.8pt;color:#5c5c66}
+.bigwrap{display:flex;justify-content:center;margin:10px 0}
+.dim{color:#8a8a94}
+.hr{height:1px;background:#e3e0da;margin:11px 0}
+</style></head><body>
+<section class="page">
+  <div class="ph a"><div class="badge">A</div>
+    <div><h1>Why a VAE has to exist</h1>
+    <div class="story">The goal we want, the bet we make, and the wall we slam into.</div></div></div>
+
+  <h3>The goal</h3>
+  <p>We want a model we can <b>sample new data from</b> — i.e. learn the true distribution
+  P<sub>x</sub>. Not just <i>recognise</i> data. <b>Create</b> it. Everything that follows exists to make that one thing trainable.</p>
+
+  <h3>The bet: a hidden code</h3>
+  <p>Real data is <b>thin</b> inside its own space. A 28×28 image is 784 numbers, but the set of
+  plausible handwritten digits is a thin sheet inside ℝ<sup>784</sup>. There is enormous redundancy.</p>
+  <p>So we <b>posit</b> that every <b>x</b> was produced from a short hidden code <b>z</b>:</p>
+  <div class="bigwrap"><div class="flow">
+    <span class="bx g">z &#8712; &#8477;<sup>k</sup>, k &#8810; d</span><span class="ar">&#8594;</span>
+    <span class="bx">x  (your data)</span>
+  </div></div>
+  <div class="callout warn">
+    <div class="lbl">Careful — this is a bet, not a fact</div>
+    <p style="margin:0">We <b>invent</b> z. We never observe the real one — that is exactly why it is called
+    <b>latent</b>. If the data has no such structure, the bet fails no matter how well we optimise.</p>
+  </div>
+
+  <h3>The wall</h3>
+  <p>Having a latent variable means our model has to <b>marginalise z out</b>:</p>
+  <div class="eq big">P<sub>&#952;</sub>(x) &nbsp;=&nbsp; &#8747; P<sub>&#952;</sub>(x, z) dz</div>
+  <p>An integral over <b>all of latent space</b>, sitting inside a log. There is no closed form, and you would need it at
+  <i>every single</i> gradient step. So we cannot compute the likelihood — which kills maximum likelihood outright.</p>
+  <p>And it takes the posterior down with it, because the posterior needs that same quantity:</p>
+  <div class="eq">P<sub>&#952;</sub>(z|x) &nbsp;=&nbsp; P<sub>&#952;</sub>(x|z) &#183; P<sub>&#952;</sub>(z) &nbsp;/&nbsp; <b>P<sub>&#952;</sub>(x)</b>
+&nbsp;&nbsp;&nbsp;<span class="dim">&#8592; the thing we just said we cannot compute</span></div>
+
+  <div class="callout">
+    <div class="lbl">Why this is a wall and not a speed bump</div>
+    <p style="margin:0">Training changes <b>&#952;</b> — the parameters. It does <b>not</b> change the fact that
+    P<sub>&#952;</sub>(x) is defined by an intractable integral. Swap in the perfect &#952;* and the integral is still
+    intractable. <b>You cannot train your way out of it.</b></p>
+  </div>
+  <p class="small">Sanity check that it really is about the <i>integral</i>: a Gaussian Mixture Model has the same
+  philosophy, but its z is <b>discrete</b> — so the marginal is a finite <b>sum</b> of M terms, not an integral.
+  That is why EM works perfectly there and collapses completely here.</p>
+
+  <div class="foot"><b>Phase A in one line:</b> we want to generate data &#8594; we bet on a hidden code &#8594;
+  marginalising that code out is intractable &#8594; so the likelihood and the posterior are both out of reach.</div>
+</section>
+<section class="page">
+  <div class="ph b"><div class="badge">B</div>
+    <div><h1>Bound it instead of computing it</h1>
+    <div class="story">What we do when the exact quantity is unreachable: squeeze it from below.</div></div></div>
+
+  <h3>The move</h3>
+  <p>We cannot compute log P<sub>&#952;</sub>(x). So we stop trying, and instead build something we <b>can</b> compute
+  that is guaranteed to sit <b>underneath</b> it.</p>
+  <p>Introduce <b>any</b> distribution q(z|x) — your own stand-in for the posterior. Multiply by 1 inside the integral,
+  then apply <b>Jensen's inequality</b>:</p>
+  <div class="eq big">log P<sub>&#952;</sub>(x) &nbsp;&#8805;&nbsp; E<sub>q</sub>[&nbsp;log(&nbsp;P<sub>&#952;</sub>(x,z) / q(z|x)&nbsp;)&nbsp;] &nbsp;&#8801;&nbsp; <b>ELBO</b></div>
+  <p>That right-hand side is the <b>Evidence Lower Bound</b>. It contains only things we can evaluate:
+  the model P<sub>&#952;</sub>, and our own q.</p>
+
+  <h3>But here is the sharper way to see it</h3>
+  <p>The relationship is actually an <b>exact identity</b> — no inequality needed:</p>
+  <div class="eq">log P<sub>&#952;</sub>(x) &nbsp;=&nbsp; ELBO &nbsp;+&nbsp; D<sub>KL</sub>( q(z|x) &#8214; P<sub>&#952;</sub>(z|x) )</div>
+  <div class="bigwrap"><div class="flow">
+    <span class="bx k">log P<sub>&#952;</sub>(x)</span><span class="ar">=</span>
+    <span class="bx g">ELBO</span><span class="ar">+</span>
+    <span class="bx r">gap = D<sub>KL</sub>(q &#8214; true posterior)</span>
+  </div></div>
+  <p class="small" style="text-align:center;margin-top:-5px">the gap is <b>how wrong our q is</b> — it is what separates what we want from what we can compute.</p>
+
+  <p>Read it carefully, because it explains everything that follows:</p>
+  <ul>
+    <li>The ELBO is the log-likelihood <b>minus how wrong q is</b>.</li>
+    <li>Since a KL is never negative, the ELBO is always a <b>lower bound</b>. &#10003;</li>
+    <li>The bound is <b>tight</b> (gap = 0) <b>exactly when q equals the true posterior</b>.</li>
+  </ul>
+
+  <div class="callout warn">
+    <div class="lbl">The tension that defines the whole subject</div>
+    <p style="margin:0"><b>We introduce q precisely to avoid the true posterior — but the bound is only good if q is
+    close to the true posterior.</b> We <b>want</b> P<sub>&#952;</sub>(z|x); we <b>cannot have</b> it; so we approximate it and try
+    to make the approximation as tight as we can.</p>
+  </div>
+
+  <div class="callout">
+    <div class="lbl">Why that gap never fully closes</div>
+    <p style="margin:0">Our q can never <i>exactly</i> equal P<sub>&#952;</sub>(z|x) — for two independent reasons:</p>
+    <ul style="margin:3px 0 0 16px">
+      <li><b>q is confined to a family.</b> We only search over Gaussians whose &#956; and &#963; come out of a network.
+      The true posterior need not be Gaussian, nor representable by that net at all.</li>
+      <li><b>The target moves.</b> P<sub>&#952;</sub>(z|x) depends on &#952;, so every gradient step changes it — q is a function
+      approximator chasing something that never stands still.</li>
+    </ul>
+    <p style="margin:5px 0 0"><b>So the gap is narrowed, never closed.</b> Note the two distinct layers:
+    <i>computing</i> P<sub>&#952;</sub>(z|x) at all is <b>structurally</b> impossible, whereas <i>matching</i> it is merely
+    <b>imperfect</b>.</p>
+  </div>
+
+  <p class="small">This is why it is called <i>variational</i> — we converted an intractable inference problem
+  into an optimisation problem.</p>
+
+  <div class="foot"><b>Phase B in one line:</b> we can't compute the likelihood, so we compute a lower bound to it
+  instead — and the distance between them is exactly how bad our approximation q is.</div>
+</section>
+<section class="page">
+  <div class="ph c"><div class="badge">C</div>
+    <div><h1>Two networks fall out of the bound</h1>
+    <div class="story">Splitting the ELBO in two gives us an encoder and a decoder — and tells us which one is the real model.</div></div></div>
+
+  <h3>Split the ELBO</h3>
+  <div class="eq">ELBO &nbsp;=&nbsp; E<sub>q(z|x)</sub>[&nbsp;log P<sub>&#952;</sub>(x|z)&nbsp;] &nbsp;&#8722;&nbsp; D<sub>KL</sub>(&nbsp;q(z|x) &#8214; P(z)&nbsp;)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8593; <b>reconstruction</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8593; <b>regularisation</b></div>
+
+  <p>Two objects appear, and each one is a network:</p>
+  <div class="bigwrap"><div class="flow">
+    <span class="bx k">x</span><span class="ar">&#8594;</span>
+    <span class="bx g">ENCODER &nbsp;q(z|x)</span><span class="ar">&#8594;</span>
+    <span class="bx g">&#956;<sub>&#966;</sub>(x), &#963;<sub>&#966;</sub>(x)</span><span class="ar">&#8594;</span>
+    <span class="bx o">z</span><span class="ar">&#8594;</span>
+    <span class="bx">DECODER &nbsp;P<sub>&#952;</sub>(x|z)</span><span class="ar">&#8594;</span>
+    <span class="bx k">x&#770;<sub>&#952;</sub>(z)</span>
+  </div></div>
+
+  <h3>The critical detail — not the thing you'd expect</h3>
+  <p>A neural network outputs <b>numbers</b>. It cannot output a distribution. So each network outputs the
+  <b>parameters</b> of a distribution, and you supply the randomness separately:</p>
+  <div class="two">
+    <div class="callout fix" style="margin:0">
+      <div class="lbl">Encoder outputs</div>
+      <p style="margin:0">&#956;<sub>&#966;</sub>(x) and &#963;<sub>&#966;</sub>(x) — the <b>mean and spread</b> of a Gaussian over z.<br>
+      <span class="small">It does <b>not</b> hand you a z. It hands you a <i>blob</i>, and you sample from it.</span></p>
+    </div>
+    <div class="callout fix" style="margin:0">
+      <div class="lbl">Decoder outputs</div>
+      <p style="margin:0">x&#770;<sub>&#952;</sub>(z) — the <b>mean</b> of a Gaussian over x.<br>
+      <span class="small">Again not a sample — the centre of a distribution. This becomes the reconstruction.</span></p>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="lbl">And the detail that usually gets taught backwards</div>
+    <p style="margin:0">The two networks are <b>completely separate</b> — separate weights, no shared layers.
+    They touch only through the sampled z handed between them. And crucially:<br><br>
+    <b>The decoder IS the generative model.</b> It is what produces x. The encoder is <b>scaffolding</b> —
+    a computational tool we invented to help us <i>train</i>, which is thrown away at generation time.<br><br>
+    <span class="small">At generation you sample z ~ N(0,I) and push it through the decoder. The encoder never runs.</span></p>
+  </div>
+
+  <h3>Why an "auto"-encoder?</h3>
+  <p>Because during training the pair is asked to squeeze x into z and then rebuild it — which looks like an
+  autoencoder. But the mechanism is entirely different, and the KL term is what makes it something more than a
+  compressor. <span class="small">(That's Phase E.)</span></p>
+
+  <div class="foot"><b>Phase C in one line:</b> the bound factors into "rebuild the input" and "keep the code well-behaved",
+  giving a decoder (the real model) and an encoder (the training aid) — both of which output <i>parameters</i>, not samples.</div>
+</section>
+<section class="page">
+  <div class="ph d"><div class="badge">D</div>
+    <div><h1>Sampling broke the gradient</h1>
+    <div class="story">A new problem, created by the fix in Phase C — and the one clever trick that resolves it.</div></div></div>
+
+  <h3>The new problem</h3>
+  <p>The encoder tells us where z lives. But to get an actual z we must <b>draw a random sample</b> from that
+  distribution — and that draw sits <b>directly in the path</b> from the encoder's parameters to the loss:</p>
+  <div class="eq">z &nbsp;=&nbsp; sample( N(&#956;<sub>&#966;</sub>(x),&nbsp;&#963;<sub>&#966;</sub>(x)&#178;) )</div>
+  <p>When the backward pass reaches that sampling step, it has <b>no derivative rule to apply</b>. It's an
+  <b>opaque node</b> — a black box: parameters go in, randomness happens, a number comes out. The gradient chain is
+  severed, and <span class="hl">&#966; never learns</span>.</p>
+
+  <h3>The trick: move the randomness out of the parameters</h3>
+  <p>Both of these produce <b>exactly the same distribution</b> for z:</p>
+  <div class="two">
+    <div class="callout warn" style="margin:0">
+      <div class="lbl">&#10007;&nbsp; What blocks the gradient</div>
+      <div class="flow" style="justify-content:flex-start;margin:6px 0">
+        <span class="bx r">sample( &#956;, &#963; )</span><span class="ar">&#8594;</span><span class="bx o">z</span>
+      </div>
+      <p style="margin:0" class="small">The randomness is <b>inside</b> the thing whose parameters we must
+      differentiate. Opaque &#8594; chain broken.</p>
+    </div>
+    <div class="callout fix" style="margin:0">
+      <div class="lbl">&#10003;&nbsp; What lets it flow</div>
+      <div class="flow" style="justify-content:flex-start;margin:6px 0">
+        <span class="bx g">&#949; ~ N(0,1)</span><span class="ar">&#8594;</span>
+        <span class="bx">z = &#956; + &#963;&#183;&#949;</span>
+      </div>
+      <p style="margin:0" class="small">Randomness now lives in <b>&#949;</b>, a separate input. z is built from
+      <code>+</code> and <code>&#215;</code> — both differentiable.</p>
+    </div>
+  </div>
+
+  <p>Why are they the same? Because a Gaussian stays a Gaussian under shifting and scaling:
+  if &#949; ~ N(0,1), then &#956; + &#963;&#183;&#949; ~ N(&#956;, &#963;&#178;). Same distribution, different <i>procedure</i>.</p>
+
+  <div class="callout key">
+    <div class="lbl">The one distinction that matters</div>
+    <p style="margin:0"><b>&#949; is an input, not a parameter.</b> Think of it exactly like the data x — something
+    that <i>feeds</i> the network rather than something we tune.<br><br>
+    &#8226; It receives <b>no gradient</b> (we never update &#949;).<br>
+    &#8226; But it absolutely <b>shapes</b> the gradient to &#963;: since z = &#963;&#183;&#949;, we get
+    &#8706;J/&#8706;&#963; = (&#8706;J/&#8706;z)&#183;&#949;. A bigger |&#949;| means &#963; had a bigger lever on z, so it earns a
+    bigger gradient.<br><br>
+    <span style="color:#a1a1aa">No gradient flows <i>into</i> &#949;; but &#949; very much affects the gradient that flows
+    <i>elsewhere</i>. Those are not contradictory.</span></p>
+  </div>
+
+  <p><b>What actually made the gradient computable</b> was not &#949; itself — it was replacing an opaque
+  <code>sample()</code> primitive with differentiable arithmetic. &#949; is merely the piece of that arithmetic that
+  holds the randomness.</p>
+
+  <div class="callout">
+    <div class="lbl">Consequence worth carrying forward</div>
+    <p style="margin:0">Not every distribution can be written as z = g(&#949;, &#966;) with &#949; from a fixed base.
+    The ones that can are called <b>reparameterizable</b> — Gaussians, uniforms, exponentials.
+    <b>That is why the encoder's q is a Gaussian.</b> It isn't just convenience; the trick demands it.</p>
+  </div>
+
+  <div class="foot"><b>Phase D in one line:</b> sampling from q<sub>&#966;</sub> is opaque and kills the gradient, so we rewrite
+  the same random z as &#956; + &#963;&#183;&#949; — moving the randomness into a fixed input and leaving a differentiable path behind.</div>
+</section>
+<section class="page">
+  <div class="ph e"><div class="badge">E</div>
+    <div><h1>Turning the bound into a loss you can train</h1>
+    <div class="story">Both terms become ordinary, familiar quantities — and the reconstruction loss stops being a mystery.</div></div></div>
+
+  <h3>Term 1 — where MSE actually comes from</h3>
+  <p>Recall the decoder defines a Gaussian over x: <span class="eq" style="display:inline-block;margin:0;padding:2px 7px">P<sub>&#952;</sub>(x|z) = N(x; x&#770;<sub>&#952;</sub>(z), &#963;&#178;I)</span></p>
+
+  <div class="bigwrap"><svg width="380" height="118" viewBox="0 22 430 134">
+    <path d="M 25,128 C 130,128 145,26 215,26 C 285,26 300,128 405,128" fill="none" stroke="#0d9488" stroke-width="2.4"/>
+    <line x1="215" y1="26" x2="215" y2="132" stroke="#16161a" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <line x1="262" y1="52" x2="262" y2="132" stroke="#e11d48" stroke-width="1.6" stroke-dasharray="4,3"/>
+    <circle cx="262" cy="52" r="5" fill="#e11d48"/>
+    <text x="196" y="147" font-size="11" font-family="monospace" fill="#0d9488">mean x&#770;&#952;(z)</text>
+    <text x="272" y="147" font-size="11" font-family="monospace" fill="#e11d48">actual x</text>
+  </svg></div>
+
+  <p>A Gaussian peaks at its mean, so "make x probable" means <b>move the mean x&#770; onto x</b>:</p>
+  <div class="eq">log P<sub>&#952;</sub>(x|z) &nbsp;=&nbsp; <span class="dim">&#8722;(d/2)log(2&#960;&#963;&#178;) &#8722; &#8214;x &#8722; x&#770;<sub>&#952;</sub>(z)&#8214;&#178;/(2&#963;&#178;)</span>
+&nbsp;&nbsp;&#8756;&nbsp; maximising likelihood &nbsp;&#8660;&nbsp; <b>minimising &#8214;x &#8722; x&#770;<sub>&#952;</sub>(z)&#8214;&#178;</b></div>
+  <div class="callout fix">
+    <div class="lbl">The realisation</div>
+    <p style="margin:0">The "reconstruction loss" is <b>not an invented design choice</b> — it is the log-likelihood of
+    a Gaussian, rewritten. Change the likelihood (to Bernoulli, say, for binary pixels) and MSE becomes cross-entropy.
+    <b>Choose the likelihood; the loss writes itself.</b></p>
+  </div>
+  <p class="small">(The dropped term &#8722;(d/2)log(2&#960;&#963;&#178;) contains no x, no z and no &#952; — it is a constant,
+  so removing it cannot move the optimum. Maximising f(&#952;)+5 is the same as maximising f(&#952;).)</p>
+
+  <h3>Term 2 — the KL, in closed form</h3>
+  <div class="eq">D<sub>KL</sub>( q(z|x) &#8214; N(0,I) ) &nbsp;=&nbsp; &#189; &#931;<sub>j</sub> ( &#956;<sub>j</sub>&#178; + &#963;<sub>j</sub>&#178; &#8722; 1 &#8722; log &#963;<sub>j</sub>&#178; )
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="dim">&#8592; no sampling, no integral — just arithmetic on &#956; and &#963;</span></div>
+  <p>And so the whole thing becomes a plain loss to minimise:</p>
+  <div class="eq big"><b>LOSS &nbsp;=&nbsp; &#8214;x &#8722; x&#770;<sub>&#952;</sub>(z)&#8214;&#178; &nbsp;+&nbsp; &#189; &#931;<sub>j</sub> ( &#956;<sub>j</sub>&#178; + &#963;<sub>j</sub>&#178; &#8722; 1 &#8722; log &#963;<sub>j</sub>&#178; )</b></div>
+
+  <h3>What the two terms are actually fighting over</h3>
+  <div class="two">
+    <div class="callout warn" style="margin:0">
+      <div class="lbl">Reconstruction pulls</div>
+      <p style="margin:0">"Put maximum information about x into z." Its cheapest win is to <b>memorise</b> — give every
+      x its own isolated code, and drive &#963; &#8594; 0 so no noise blurs it.</p>
+    </div>
+    <div class="callout fix" style="margin:0">
+      <div class="lbl">KL pulls back</div>
+      <p style="margin:0">"Keep q(z|x) near N(0,I)." It pushes &#963; up toward 1, turning each code into a
+      <b>fuzzy blob</b> and forcing neighbouring blobs to <b>overlap</b>. Note the &#8722;log&#963;&#178; term explodes as
+      &#963; &#8594; 0, so the KL actively <i>punishes certainty</i>.</p>
+    </div>
+  </div>
+
+  <div class="callout key">
+    <div class="lbl">Why you must keep both — and why overlap is the whole point</div>
+    <p style="margin:0">A plain autoencoder (no KL) drives &#963; &#8594; 0, so codes become <b>isolated points</b> in
+    mostly-empty space. Reconstruction is excellent — but sample a random z ~ N(0,I) and you land in a <b>gap</b>, and
+    the decoder outputs garbage. <b>The KL term is what converts a compressor into a generator</b>: overlapping blobs
+    tile the space, so <i>any</i> z lands somewhere meaningful.</p>
+  </div>
+
+
+  <div class="foot"><b>Phase E in one line:</b> the first term becomes MSE, the second a closed-form KL — and their
+  tug-of-war is what makes the latent space both <i>informative</i> and <i>samplable</i>.</div>
+</section></body></html>

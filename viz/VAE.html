@@ -1,0 +1,92 @@
+<section class="viz">
+  <h2>Interactive — the ELBO trade-off &amp; posterior collapse</h2>
+  <p class="hint">Reconstruction wants a tight, informative \(q_\phi(z|x)\). The KL term pulls it onto the prior
+  \(p(z)=\mathcal N(0,I)\). Push \(\beta\) too high and \(\mu_\phi\to0,\ \sigma_\phi\to1\) for <em>every</em> \(x\) —
+  the decoder can no longer tell inputs apart.</p>
+  <canvas id="vcv" width="1040" height="420"></canvas>
+  <div class="controls">
+    <label>input x <input id="vx" type="range" min="-2.6" max="2.6" step="0.01" value="1.9"></label>
+    <label>&mu;<sub>&phi;</sub> gain <input id="vg" type="range" min="0" max="1" step="0.01" value="0.85"></label>
+    <label>&sigma;<sub>&phi;</sub> <input id="vs" type="range" min="0.10" max="1.60" step="0.01" value="0.35"></label>
+    <label>&beta; <input id="vb" type="range" min="0" max="3" step="0.05" value="1"></label>
+  </div>
+  <div class="readout" id="vout"></div>
+</section>
+<script>
+(function(){
+  var CV=document.getElementById('vcv'), X=CV.getContext('2d'), W=1040,H=420;
+  var dpr=Math.min(2,window.devicePixelRatio||1); CV.width=W*dpr; CV.height=H*dpr; X.scale(dpr,dpr);
+  var ACC='#0d9488', ORG='#ea580c', LINE='#e3e0da', MUT='#8a8a94', INK='#1a1a1d';
+  var L=62, R=978, LO=-3.0, HI=3.0;
+  function mx(v){ return L+(v-LO)/(HI-LO)*(R-L); }
+  function gauss(z,m,s){ return Math.exp(-0.5*((z-m)/s)*((z-m)/s))/(s*Math.sqrt(2*Math.PI)); }
+  function axis(y,label){
+    X.strokeStyle=LINE; X.lineWidth=1.4; X.beginPath(); X.moveTo(L,y); X.lineTo(R,y); X.stroke();
+    X.font='600 11px -apple-system,Segoe UI,Inter,sans-serif'; X.fillStyle=MUT;
+    for(var v=-3;v<=3;v++){ var px=mx(v); X.beginPath(); X.moveTo(px,y-3.5); X.lineTo(px,y+3.5); X.stroke();
+      X.fillText(v, px-4, y+16); }
+    X.fillStyle=INK; X.font='700 12px -apple-system,Segoe UI,Inter,sans-serif'; X.fillText(label, L, y-11);
+  }
+  function bump(m,s,y0,h){
+    X.beginPath(); X.moveTo(L,y0); var last=L;
+    for(var i=0;i<=300;i++){ var z=LO+(HI-LO)*i/300, px=mx(z), py=y0-gauss(z,m,s)*h;
+      X.lineTo(px,py); last=px; }
+    X.lineTo(R,y0); X.closePath();
+  }
+  function draw(){
+    var x=parseFloat(vx.value), g=parseFloat(vg.value), s=parseFloat(vs.value), b=parseFloat(vb.value);
+    var mu=g*x, ss=Math.max(s,0.03);
+    X.clearRect(0,0,W,H); X.fillStyle='#fbfaf8'; X.fillRect(0,0,W,H);
+
+    // ---- row 1 : data space
+    var y1=70; axis(y1,'data space  x');
+    X.fillStyle=ACC; X.beginPath(); X.arc(mx(x),y1,7,0,6.28); X.fill();
+    X.fillStyle=INK; X.font='600 12px -apple-system,Segoe UI,Inter,sans-serif';
+    X.fillText('x = '+x.toFixed(2), mx(x)-24, y1-14);
+
+    // ---- row 2 : latent space
+    var y2=302, h=112;
+    axis(y2,'latent space  z');
+    bump(0,1,y2,h); X.fillStyle='rgba(0,0,0,.05)'; X.fill();
+    X.strokeStyle=MUT; X.lineWidth=1.7; X.setLineDash([5,4]); X.stroke(); X.setLineDash([]);
+    X.fillStyle=MUT; X.fillText('prior p(z) = N(0,1)', mx(-2.95), y2-h-4);
+    bump(mu,ss,y2,h); X.fillStyle='rgba(13,148,136,.20)'; X.fill();
+    X.strokeStyle=ACC; X.lineWidth=2.4; X.stroke();
+    X.strokeStyle=ACC; X.setLineDash([3,3]); X.beginPath(); X.moveTo(mx(mu),y2); X.lineTo(mx(mu),y2-h-16); X.stroke(); X.setLineDash([]);
+    X.fillStyle=ACC; X.font='700 12px -apple-system,Segoe UI,Inter,sans-serif';
+    X.fillText('q\u03C6(z|x)', mx(mu)+8, y2-h-24);
+    X.fillStyle=INK; X.font='600 12px -apple-system,Segoe UI,Inter,sans-serif';
+    X.fillText('\u03BC\u03C6 = '+mu.toFixed(2)+',  \u03C3\u03C6 = '+ss.toFixed(2), mx(mu)+8, y2-h-8);
+
+    // ---- row 3 : reconstruction
+    var y3=398; axis(y3,'decoder outputs  x\u0302 = D(z)');
+    var N=13, zs=[];
+    for(var n=0;n<N;n++){
+      var u1=Math.random()||1e-9,u2=Math.random();
+      var z=mu+ss*Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+      if(z<LO-0.3||z>HI+0.3) continue;
+      zs.push(z);
+      X.strokeStyle='rgba(13,148,136,.16)'; X.lineWidth=1;
+      X.beginPath(); X.moveTo(mx(z),y2); X.lineTo(mx(z),y3); X.stroke();
+      X.fillStyle='rgba(13,148,136,.85)'; X.beginPath(); X.arc(mx(z),y2,3.4,0,6.28); X.fill();
+      X.fillStyle='rgba(234,88,12,.8)'; X.beginPath(); X.arc(mx(z),y3,4.4,0,6.28); X.fill();
+    }
+    // decode arrows
+    X.strokeStyle='rgba(234,88,12,.35)'; X.lineWidth=1.6;
+    X.beginPath(); X.moveTo(L+40,y2+30); X.lineTo(L+40,y3-22); X.stroke();
+    X.beginPath(); X.moveTo(L+40,y3-22); X.lineTo(L+34,y3-30); X.lineTo(L+46,y3-30); X.closePath(); X.fillStyle='rgba(234,88,12,.55)'; X.fill();
+
+    var recon=(x-mu)*(x-mu)+ss*ss;
+    var kl=0.5*(mu*mu+ss*ss-1-Math.log(ss*ss));
+    var collapsed=(Math.abs(mu)<0.12 && ss>0.86);
+    document.getElementById('vout').innerHTML =
+      'recon \u2248 <b>'+recon.toFixed(3)+'</b> &nbsp;\u00B7&nbsp; D\u2096\u029F = <b>'+kl.toFixed(3)+
+      '</b> &nbsp;\u00B7&nbsp; recon+\u03B2\u00B7KL = <b>'+(recon+b*kl).toFixed(3)+'</b>'+
+      (collapsed ? ' &nbsp;<b style="color:#e11d48">\u2192 posterior collapse</b>'
+                 : (b>2.2 ? ' &nbsp;<b style="color:#e11d48">\u2192 \u03B2 too high</b>'
+                          : ' &nbsp;<b style="color:#0d9488">\u2192 reconst. vs. regularity</b>'));
+  }
+  ['vx','vg','vs','vb'].forEach(function(id){ document.getElementById(id).addEventListener('input',draw); });
+  setInterval(draw,420); draw();
+})();
+</script>

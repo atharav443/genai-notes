@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>One full VAE training step, by hand</title>
+<style>
+@page{size:A4 portrait;margin:10mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:8.7pt/1.34 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,sans-serif;color:#16161a;background:#fff}
+h1{font-size:14.5pt;letter-spacing:-.02em;line-height:1.1}
+.sub{font-size:8.2pt;color:#5c5c66;margin:2px 0 7px;border-bottom:2px solid #0d9488;padding-bottom:5px}
+h2{font-size:8.6pt;letter-spacing:.07em;text-transform:uppercase;color:#0f766e;margin:0 0 4px;font-weight:800}
+.card{border:1px solid #e3e0da;border-radius:7px;padding:6px 8px;background:#fdfcfb;margin-bottom:6px}
+.setup{background:#f6f4f0;border-left:3px solid #0d9488}
+.setup table{width:100%;border-collapse:collapse;font-size:8pt}
+.setup td{padding:1px 6px 1px 0;vertical-align:top}
+.setup td:first-child{color:#8a8a94;font-weight:700;white-space:nowrap;width:74px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.st{display:flex;gap:5px;margin-bottom:3.2px;align-items:flex-start}
+.st i{flex:0 0 auto;width:13px;height:13px;border-radius:50%;background:#0d9488;color:#fff;font-size:6.4pt;
+  font-style:normal;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1.5px}
+.st i.b{background:#ea580c}.st i.p{background:#7c3aed}
+.st .body{flex:1;min-width:0}
+.lbl{font-weight:800;font-size:7.6pt;color:#52525b;letter-spacing:.03em}
+.calc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:8.1pt;line-height:1.42;color:#16161a;
+  background:#f6f4f0;border-radius:4px;padding:2px 5px;margin-top:1px;display:block;white-space:pre-wrap;word-break:break-word}
+.hi{background:#fff3c4;border-radius:2px;padding:0 2px;font-weight:700}
+.star{border:1.3px solid #ea580c;background:#fff8f4;border-radius:6px;padding:4px 6px;margin-bottom:3.2px}
+table.up{width:100%;border-collapse:collapse;font-size:8.1pt;font-family:ui-monospace,Menlo,monospace}
+table.up th,table.up td{border:1px solid #e3e0da;padding:2px 6px;text-align:left}
+table.up th{background:#f6f4f0;font-family:-apple-system,Segoe UI,sans-serif;font-size:7.6pt;font-weight:800;color:#52525b}
+.vf{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;font-size:8.2pt}
+.vf div{border:1px solid #e3e0da;border-radius:6px;padding:4px}
+.vf .big{font-size:11pt;font-weight:800;font-family:ui-monospace,Menlo,monospace;display:block;margin-top:1px}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}
+.notes div{background:#f6f4f0;border-radius:6px;padding:6px 8px;font-size:8pt;line-height:1.42}
+.notes b{color:#0f766e}
+.down{color:#0d9488;font-weight:800}.up{color:#e11d48;font-weight:800}
+</style></head><body>
+
+<h1>One full VAE training step, by hand</h1>
+<div class="sub">Every weight written down, every derivative computed, then re-run to prove the loss falls. No step skipped.</div>
+
+<div class="card setup">
+<table>
+<tr><td>data</td><td class="mono"><b>x = 2.0</b></td>
+    <td class="mono">encoder &nbsp; <b>&#956; = w&#956;x + b&#956;</b>, &nbsp; <b>log&#963;&#178; = w_v x + b_v</b></td></tr>
+<tr><td>weights</td><td class="mono">w&#956;=0.5 &nbsp; b&#956;=0 &nbsp; w_v=0.2 &nbsp; b_v=&#8722;0.5</td>
+    <td class="mono">decoder &nbsp; <b>x&#770; = w_d z + b_d</b> &nbsp; w_d=0.8, b_d=0.1</td></tr>
+<tr><td>noise</td><td class="mono">&#949; = 0.3 &nbsp; (drawn from N(0,1))</td>
+    <td class="mono">reparam &nbsp; <b>z = &#956; + &#963;&#183;&#949;</b> &nbsp;&nbsp; learning rate &#945; = 0.01</td></tr>
+</table>
+</div>
+
+<div class="cols">
+
+<!-- ================= FORWARD ================= -->
+<div class="card">
+<h2>Forward pass</h2>
+
+<div class="st"><i>1</i><div class="body"><span class="lbl">encode &mdash; the mean</span>
+<span class="calc">&#956; = w&#956;&#183;x + b&#956; = 0.5(2.0) + 0 = <span class="hi">1.000000</span></span></div></div>
+
+<div class="st"><i>2</i><div class="body"><span class="lbl">encode &mdash; the log-variance</span>
+<span class="calc">log&#963;&#178; = w_v&#183;x + b_v = 0.2(2.0) &#8722; 0.5 = <span class="hi">&#8722;0.100000</span></span></div></div>
+
+<div class="st"><i>3</i><div class="body"><span class="lbl">variance</span>
+<span class="calc">&#963;&#178; = e^(&#8722;0.1) = 0.904837</span></div></div>
+
+<div class="st"><i>4</i><div class="body"><span class="lbl">standard deviation</span>
+<span class="calc">&#963; = &#8730;0.904837 = <span class="hi">0.951229</span></span></div></div>
+
+<div class="st"><i>5</i><div class="body"><span class="lbl">reparameterize (&epsilon; is an INPUT, not a layer)</span>
+<span class="calc">z = &#956; + &#963;&#183;&#949; = 1.000000 + 0.951229(0.3)
+  = 1.000000 + 0.285369 = <span class="hi">1.285369</span></span></div></div>
+
+<div class="st"><i>6</i><div class="body"><span class="lbl">decode</span>
+<span class="calc">x&#770; = w_d&#183;z + b_d = 0.8(1.285369) + 0.1
+   = 1.028295 + 0.1 = <span class="hi">1.128295</span></span></div></div>
+
+<div class="st"><i>7</i><div class="body"><span class="lbl">reconstruction term</span>
+<span class="calc">recon = (x &#8722; x&#770;)&#178; = (2.0 &#8722; 1.128295)&#178;
+      = (0.871705)&#178; = <span class="hi">0.759869</span></span></div></div>
+
+<div class="st"><i>8</i><div class="body"><span class="lbl">KL term</span>
+<span class="calc">KL = &#189;(&#956;&#178; + &#963;&#178; &#8722; 1 &#8722; log&#963;&#178;)
+   = &#189;(1.000000 + 0.904837 &#8722; 1 + 0.100000)
+   = &#189;(1.004837) = <span class="hi">0.502419</span></span></div></div>
+
+<div class="st"><i>9</i><div class="body"><span class="lbl">loss</span>
+<span class="calc">loss = recon + KL = 0.759869 + 0.502419
+     = <span class="hi">1.262288</span></span></div></div>
+
+<div class="star" style="border-color:#0d9488;background:#f1fbf9">
+<span class="lbl" style="color:#0f766e">READ THE FORWARD RESULT</span>
+<div style="font-size:7.9pt;line-height:1.42;margin-top:2px">
+x&#770; = 1.128 is <b>well below</b> x = 2.0, so the model is badly <b>undershooting</b>.
+<br><br>That is why <b>every</b> gradient in the right-hand column turns out negative:
+raising w_d, raising b_d, raising &#956; (&#8594; raises z), raising w&#956; &#8212; every one of them
+pushes x&#770; <i>upward</i>, toward the target. The signs all agree because the error has one clear direction.
+</div></div>
+</div>
+
+<!-- ================= BACKWARD ================= -->
+<div class="card">
+<h2>Backward pass</h2>
+
+<div class="st"><i class="b">1</i><div class="body"><span class="lbl">the sum splits</span>
+<span class="calc">&#8706;L/&#8706;recon = 1 &nbsp;&nbsp; &#8706;L/&#8706;KL = 1</span></div></div>
+
+<div class="st"><i class="b">2</i><div class="body"><span class="lbl">local derivative of squared error</span>
+<span class="calc">&#8706;recon/&#8706;x&#770; = &#8722;2(x &#8722; x&#770;) = &#8722;2(0.871705)
+                 = <span class="hi">&#8722;1.743410</span></span></div></div>
+
+<div class="st"><i class="p">3</i><div class="body"><span class="lbl">&#8711; to decoder weight &nbsp;(&#8706;x&#770;/&#8706;w_d = z)</span>
+<span class="calc">&#8711;w_d = &#8722;1.743410 &#215; 1.285369 = <span class="hi">&#8722;2.240925</span></span></div></div>
+
+<div class="st"><i class="p">4</i><div class="body"><span class="lbl">&#8711; to decoder bias</span>
+<span class="calc">&#8711;b_d = &#8722;1.743410 &#215; 1 = <span class="hi">&#8722;1.743410</span></span></div></div>
+
+<div class="st"><i class="b">5</i><div class="body"><span class="lbl">gradient heading toward z &nbsp;(&#8706;x&#770;/&#8706;z = w_d)</span>
+<span class="calc">dz = &#8722;1.743410 &#215; 0.8 = <span class="hi">&#8722;1.394728</span></span></div></div>
+
+<div class="st"><i class="b">6</i><div class="body"><span class="lbl">KL &rarr; &#956;</span>
+<span class="calc">&#8706;KL/&#8706;&#956; = &#956; = <span class="hi">1.000000</span></span></div></div>
+
+<div class="st"><i class="b">7</i><div class="body"><span class="lbl">KL &rarr; log&#963;&#178;</span>
+<span class="calc">&#8706;KL/&#8706;log&#963;&#178; = &#189;(&#963;&#178; &#8722; 1) = &#189;(&#8722;0.095163) = <span class="hi">&#8722;0.047581</span></span></div></div>
+
+<div class="st"><i class="b">8</i><div class="body"><span class="lbl">reparam node's local derivatives</span>
+<span class="calc">&#8706;z/&#8706;&#956; = 1 &nbsp; &#8706;z/&#8706;&#963; = &#949; = 0.3
+&#8706;&#963;/&#8706;log&#963;&#178; = &#189;&#963; = 0.475614</span></div></div>
+
+<div class="star">
+<div class="st" style="margin:0"><i class="p">9</i><div class="body">
+<span class="lbl">ACCUMULATE AT &#956; &mdash; the two forces in one line</span>
+<span class="calc">&#8706;L/&#8706;&#956; = dz(1) + &#8706;KL/&#8706;&#956;
+      = &#8722;1.394728 + 1.000000
+        &#8593;recon      &#8593;KL
+      = <span class="hi">&#8722;0.394728</span></span>
+<span style="font-size:7.4pt;color:#c2410c">KL cancelled 72% of reconstruction's pull.</span>
+</div></div>
+</div>
+
+<div class="st"><i class="p">10</i><div class="body"><span class="lbl">accumulate at log&#963;&#178;</span>
+<span class="calc">&#8706;L/&#8706;log&#963;&#178; = dz&#183;&#949;&#183;&#189;&#963; + &#8706;KL/&#8706;log&#963;&#178;
+     = (&#8722;1.394728)(0.3)(0.475614) &#8722; 0.047581
+     = &#8722;0.199006 &#8722; 0.047581 = <span class="hi">&#8722;0.246587</span></span></div></div>
+
+<div class="st"><i class="p">11</i><div class="body"><span class="lbl">&#8711; to encoder weights &nbsp;(&#8706;&#956;/&#8706;w&#956; = x = 2.0)</span>
+<span class="calc">&#8711;w&#956; = &#8722;0.394728 &#215; 2 = <span class="hi">&#8722;0.789456</span>
+&#8711;w_v = &#8722;0.246587 &#215; 2 = <span class="hi">&#8722;0.493174</span></span></div></div>
+
+<div class="st"><i class="p">12</i><div class="body"><span class="lbl">&#8711; to encoder biases</span>
+<span class="calc">&#8711;b&#956; = <span class="hi">&#8722;0.394728</span> &nbsp;&nbsp; &#8711;b_v = <span class="hi">&#8722;0.246587</span></span></div></div>
+
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px">
+<div class="card" style="margin:0">
+<h2>One update &nbsp;param &#8592; param &#8722; &#945;&#183;&#8711; &nbsp;(&#945; = 0.01)</h2>
+<table class="up">
+<tr><th>param</th><th>old</th><th>&#8711;</th><th>new</th></tr>
+<tr><td>w_d</td><td>0.8</td><td class="mono">&#8722;2.240925</td><td><b>0.822409</b></td></tr>
+<tr><td>b_d</td><td>0.1</td><td class="mono">&#8722;1.743410</td><td><b>0.117434</b></td></tr>
+<tr><td>w&#956;</td><td>0.5</td><td class="mono">&#8722;0.789456</td><td><b>0.507895</b></td></tr>
+<tr><td>b&#956;</td><td>0.0</td><td class="mono">&#8722;0.394728</td><td><b>0.003947</b></td></tr>
+<tr><td>w_v</td><td>0.2</td><td class="mono">&#8722;0.493174</td><td><b>0.204932</b></td></tr>
+<tr><td>b_v</td><td>&#8722;0.5</td><td class="mono">&#8722;0.246587</td><td><b>&#8722;0.497534</b></td></tr>
+</table>
+</div>
+
+<div class="card" style="margin:0">
+<h2>Proof &mdash; re-run the forward pass</h2>
+<div class="calc" style="font-size:7.9pt">&#956; = 1.019737 &nbsp; log&#963;&#178; = &#8722;0.087670
+&#963; = 0.957101 &nbsp; z = 1.306868 &nbsp; x&#770; = 1.192223</div>
+<div class="vf" style="margin-top:5px">
+<div>recon<span class="big">0.652515</span><span class="down">&#9660; from 0.759869</span></div>
+<div>KL<span class="big">0.521798</span><span class="up">&#9650; from 0.502419</span></div>
+<div>loss<span class="big">1.174313</span><span class="down">&#9660; from 1.262288</span></div>
+</div>
+<div style="text-align:center;font-size:8.2pt;margin-top:4px;font-weight:800;color:#0d9488">loss fell by 0.087975 &#10003;</div>
+</div>
+</div>
+
+<div class="notes">
+<div><b>KL went UP while loss went DOWN.</b> The encoder deliberately made its code less prior-like to make it more informative. Not a bug &#8212; that <i>is</i> the algorithm, and it is the same signature the 12,000-step simulation showed.</div>
+<div><b>Step 9 is the whole VAE in one line.</b> Reconstruction pulls &#956; down with &#8722;1.395; KL pulls it back with +1.000. If &#956; were near 0, KL's term would vanish &#8212; which is exactly why collapsed dimensions are the ones sitting at &#956; &#8776; 0.</div>
+</div>
+</body></html>

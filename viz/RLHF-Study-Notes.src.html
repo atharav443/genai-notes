@@ -1,0 +1,1014 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>RLHF — Study Notes (p128–146)</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+@page { size: A4; margin: 13mm 13mm 12mm 13mm; }
+* { box-sizing: border-box; }
+body { font-family: ui-sans-serif, -apple-system, "Helvetica Neue", Arial, sans-serif;
+       font-size: 9.8pt; line-height: 1.42; color: #1f2937; margin: 0; }
+h1 { font-size: 19pt; margin: 0 0 2px 0; color: #881337; letter-spacing: -.4px; }
+.sub { font-size: 10.5pt; color: #6b7280; margin: 0 0 10px 0; }
+h2 { font-size: 12.6pt; color: #be123c; border-bottom: 2px solid #ffe4e6;
+     padding-bottom: 3px; margin: 15px 0 6px 0; page-break-after: avoid; }
+h3 { font-size: 10.6pt; color: #881337; margin: 10px 0 4px 0; page-break-after: avoid; }
+p  { margin: 5px 0; }
+.mathblock { margin: 7px 0 8px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+td .katex, li .katex, p .katex { font-size: 0.99em; }
+table { width: 100%; border-collapse: collapse; font-size: 8.7pt; margin: 7px 0;
+        page-break-inside: avoid; }
+th { background: #fff1f2; text-align: left; padding: 4px 6px;
+     border-bottom: 1.5px solid #fecdd3; font-size: 8.5pt; color: #881337; }
+td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt;
+       background: #fff1f2; padding: 0 3px; border-radius: 2px; color: #9f1239; }
+pre.f { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 8.25pt;
+        line-height: 1.38; background: #fff5f6; border-left: 3px solid #fb7185;
+        padding: 6px 9px; margin: 6px 0; white-space: pre; page-break-inside: avoid;
+        color: #4c0519; }
+.card { border: 1px solid #ffe4e6; border-radius: 6px; padding: 8px 10px;
+        margin: 8px 0; background: #fffafa; page-break-inside: avoid; }
+.key  { border-left: 4px solid #be123c; background: #fff1f2; padding: 7px 10px;
+        margin: 8px 0; page-break-inside: avoid; }
+.warn { border-left: 4px solid #dc2626; background: #fef2f2; padding: 7px 10px;
+        margin: 8px 0; page-break-inside: avoid; }
+.ok   { border-left: 4px solid #059669; background: #ecfdf5; padding: 7px 10px;
+        margin: 8px 0; page-break-inside: avoid; }
+.add  { border-left: 4px solid #2563eb; background: #eff6ff; padding: 7px 10px;
+        margin: 8px 0; page-break-inside: avoid; }
+.tag { font-size: 7.2pt; font-weight: 700; letter-spacing: .05em; padding: 1px 5px;
+       border-radius: 3px; vertical-align: 1px; white-space: nowrap; }
+.t-lec { background: #ffe4e6; color: #9f1239; }
+.t-err { background: #fee2e2; color: #b91c1c; }
+.t-add { background: #dbeafe; color: #1d4ed8; }
+small.src { color: #9ca3af; font-size: 7.8pt; font-variant-numeric: tabular-nums; }
+ul, ol { margin: 5px 0; padding-left: 18px; }
+li { margin: 2px 0; }
+.legend span { margin-right: 10px; }
+.tight li { margin: 1px 0; }
+@media screen {
+  body { max-width: 64rem; margin: 0 auto; padding: 2.2rem 1.6rem 4rem 1.6rem;
+         font-size: 11.2pt; background: #fff; }
+}
+table.brk { page-break-inside: auto; }
+table.brk tr { page-break-inside: avoid; }
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/RLHF-Study-Notes.html</code> instead. This file is input to <code>viz/build/build-notes.js</code>.</div>
+
+<h1>RLHF &mdash; Alignment of Autoregressive LMs</h1>
+<p class="sub">GenAI (IIT-M) &middot; source pages <b>128&ndash;146</b> &middot; merged with the lecture transcript</p>
+
+<div class="card">
+  <b>Provenance.</b> Three inputs, merged and reconciled:
+  <ul class="tight">
+    <li><b>The ink</b> &mdash; <code>GenAI-IITM.pdf</code> p128&ndash;146 (handwritten, vector ink, lossy text layer). Cited as <small class="src">p129</small>.</li>
+    <li><b>The lecture</b> &mdash; <code>transript_RLHF.rtf</code>, 54 min, the professor's own words. Cited as <small class="src">t=21:03</small>.</li>
+    <li><b>Derivations</b> &mdash; the algebra the notes gesture at but do not write out. Marked <span class="tag t-add">ADDED</span>.</li>
+  </ul>
+  <div class="legend" style="margin-top:6px">
+    <span><span class="tag t-lec">LECTURE</span> stated in the transcript</span>
+    <span><span class="tag t-err">ERRATUM</span> wrong in notes and/or lecture</span>
+    <span><span class="tag t-add">ADDED</span> not in either source</span>
+  </div>
+</div>
+
+<div class="key">
+  <b>The chapter in one sentence.</b> You cannot supervise-train a model to be
+  &ldquo;good&rdquo;, because &ldquo;good&rdquo; is a scalar over whole sequences &mdash; so you
+  frame the LM as a policy, take the gradient of expected reward, estimate that
+  gradient with the policy-gradient theorem, stabilise it with importance sampling
+  and clipping (PPO), and source the reward either from a learned Bradley&ndash;Terry
+  preference model (PPO) or implicitly from the policy itself (DPO).
+</div>
+
+<h2>&sect;1 &nbsp;Why alignment is an RL problem at all</h2>
+
+<h3>1.1 &nbsp;The three paradigms <small class="src">t=3:39</small></h3>
+\[ \begin{aligned}
+&\text{supervised:} && (x,y)\sim p(x,y) &&\Longrightarrow\; \text{learn } p(y\mid x)\\[2pt]
+&\text{unsupervised:} && x\sim p(x) &&\Longrightarrow\; \text{learn } p(x)\\[2pt]
+&\text{reinforcement:} && \text{no dataset} &&\Longrightarrow\; \text{learn } \pi_\theta(a\mid s)
+\end{aligned} \]
+<p>Supervised learning <i>imitates a label</i>. RL <i>optimises a scalar obtained by
+acting</i>. There is no dataset of correct actions &mdash; there is an environment that
+returns a number.</p>
+
+<h3>1.2 &nbsp;Alignment is a training-time operation, not an inference-time one <small class="src">t=1:42</small></h3>
+<p>The professor is explicit: alignment is <b>not</b> achieved by top-<i>k</i>, temperature,
+or a system prompt. <b>The parameters themselves are changed</b> so that the
+distribution the model samples from is aligned:</p>
+\[ \theta \leftarrow \theta - \eta\,\nabla_\theta \mathcal{L}_{\text{SFT}}
+\quad\text{becomes}\quad
+\theta \leftarrow \theta + \eta\,\nabla_\theta J(\theta) \]
+<p>with the goal, written on p128:</p>
+\[ \text{goal of alignment: make } p_\theta \text{ compatible with a desired,
+pre-defined rule / behaviour,} \]
+\[ \text{specified by human annotations or by fixed rules.} \]
+
+<h3>1.3 &nbsp;Why not just supervised fine-tuning?</h3>
+<p><span class="tag t-add">ADDED</span>
+The notes jump straight from &ldquo;goal of alignment&rdquo; to &ldquo;overview of RL&rdquo; with no
+justification. The justification is two blockers:</p>
+<table>
+<tr><th style="width:16%"></th><th style="width:38%">SFT</th><th>RLHF</th></tr>
+<tr><td><b>Signal</b></td><td>a target token at every position</td><td>one scalar per <i>whole</i> completion</td></tr>
+<tr><td><b>Granularity</b></td><td>dense, per-token</td><td>sparse, per-sequence</td></tr>
+<tr><td><b>Label type</b></td><td>&ldquo;copy this&rdquo;</td><td>&ldquo;A was better than B&rdquo;</td></tr>
+<tr><td><b>Capability</b></td><td>imitate</td><td>optimise</td></tr>
+</table>
+<ol class="tight">
+  <li><b>Format blocker.</b> Preference data is <i>comparative</i>, not generative. A
+  human ranks two answers reliably; they cannot <i>write</i> the ideal answer. There is
+  no target string, so there is nothing to put through cross-entropy.</li>
+  <li><b>Locality blocker.</b> &ldquo;Helpful&rdquo; is a property of the <i>whole sequence</i>
+  &mdash; a derivation is correct or not, a refusal is appropriate or not. You cannot
+  assign a per-token label to that. The signal lives at the end.</li>
+</ol>
+<p>So you need an objective on complete sequences, optimised in expectation over
+your own sampling distribution. That <i>is</i> an MDP with a policy. Hence RL.</p>
+
+<h3>1.4 &nbsp;Verifiable rewards &mdash; the load-bearing idea</h3>
+<div class="warn">
+  <span class="tag t-add">ADDED</span> <b>Nothing on p128&ndash;146 mentions this. It is the most
+  useful idea in the first five minutes of the lecture.</b> <small class="src">t=2:02&ndash;3:14</small>
+</div>
+\[ \underbrace{r:\ S\times A\to\mathbb{R}}_{\text{verifiable}}
+\quad:\quad r \text{ is deterministic and checkable}
+\quad\text{vs.}\quad
+\underbrace{r \text{ is a judgement, not a check}}_{\text{non-verifiable}} \]
+<ul class="tight">
+  <li><b>Math and code are where RLHF works best</b> <small class="src">t=2:37</small> &mdash; the
+  reward is a test-case outcome, essentially binary:
+  \( r(s_T,a_T)\in\{0,1\} \), cheap, noiseless, unlimited supply.</li>
+  <li><b>Chat is the hard case</b> <small class="src">t=3:06</small> &mdash; the reward is
+  &ldquo;vague&rdquo;. You cannot verify politeness, so you must <i>learn</i>
+  \( r_\phi \) from preferences, and every error in it becomes an error in your policy.</li>
+</ul>
+<div class="key">
+  <b>The spine of the whole chapter</b> <small class="src">t=32:36</small>:<br>
+  &ldquo;your policy gradient algorithm is as good as your reward model.&rdquo;
+</div>
+
+<h3>1.5 &nbsp;The monster picture <small class="src">t=35:20</small></h3>
+<pre class="f">pre-train on the whole internet   ->  <b>ugly monster</b>   (unsupervised / pre-training)
+        + supervised fine-tuning  ->  <b>pink face</b>     (still monstrous)
+        + RLHF                    ->  <b>smiley face</b></pre>
+<p>Alignment is a <b>thin veneer over a pre-trained distribution nobody chose</b>. It is
+also expensive: millions of dollars just to make the model say &ldquo;thank you&rdquo;
+<small class="src">t=36:09</small> &mdash; because the advantage function needs rewards, and rewards need
+human labels.</p>
+
+<h2>&sect;2 &nbsp;The Markov Decision Process <small class="src">p129, t=7:27</small></h2>
+<table>
+<tr><th style="width:13%">symbol</th><th style="width:27%">name</th><th>form</th></tr>
+<tr><td>\( \mathcal{S} \)</td><td>state space</td><td>\( \{s_1,\dots,s_M\} \) &mdash; finite, for this course</td></tr>
+<tr><td>\( \mathcal{A} \)</td><td>action space</td><td>\( \{a_1,\dots,a_n\} \)</td></tr>
+<tr><td>\( p \)</td><td>transition kernel</td><td>\( p(s_{t+1}\mid s_t,a_t) \) &mdash; first-order Markov \(\Rightarrow\) &ldquo;MDP&rdquo;</td></tr>
+<tr><td>\( r \)</td><td>reward</td><td>\( r:\mathcal{S}\times\mathcal{A}\to\mathbb{R} \), scalar, may be negative</td></tr>
+<tr><td>\( \gamma \)</td><td>discount factor</td><td>\( \gamma\in(0,1) \)</td></tr>
+<tr><td>\( \rho_0 \)</td><td>initial state distribution</td><td>\( \rho_0(s_0) \)</td></tr>
+<tr><td>\( \pi_\theta \)</td><td>policy</td><td>\( \pi_\theta(a_t\mid s_t) \), parameterised by \( \theta \)</td></tr>
+</table>
+<div class="ok">
+<b>&ldquo;MDP&rdquo; explained</b> <small class="src">t=9:38</small> &mdash; &ldquo;it's called Markov because the
+transition kernel is <i>first-order</i> Markov by definition.&rdquo; The next state depends
+only on the current state and action, never on history:
+\( p(s_{t+1}\mid s_t,a_t,\dots,s_0)=p(s_{t+1}\mid s_t,a_t) \).
+</div>
+<div class="ok">
+<b>Agent &equiv; policy</b> <small class="src">t=13:27</small> &mdash; &ldquo;if there is an agent there is a policy,
+because that's what defines what an agent is.&rdquo; The two words are interchangeable
+for the rest of the chapter.
+</div>
+
+<h3>2.1 &nbsp;What \( \gamma \) is actually for</h3>
+<p>The notes introduce \( \gamma \) with no justification at all. The lecture's answer
+<small class="src">t=14:02</small>: \( \gamma^t \) controls <b>how much weight distant reward
+gets</b>. \( \gamma\to 0 \) &rarr; only the immediate reward matters;
+\( \gamma\to 1 \) &rarr; all reward equally weighted, and the infinite sum may diverge.</p>
+<div class="warn">
+<span class="tag t-err">ERRATUM</span> The lecture's phrasing &mdash; &ldquo;if you want the
+<i>recent</i> rewards to have the highest impact, scale \( \gamma \) accordingly&rdquo; &mdash;
+is loose. Mechanically \( \gamma^t \) <b>decays with \( t \)</b>, so reward far in the
+future is squashed. The right word is <b>discounting the future</b>, not
+&ldquo;recency&rdquo;. Say it that way and you never confuse yourself.
+</div>
+
+<h2>&sect;3 &nbsp;Trajectory, return, objective <small class="src">p130, t=10:04</small></h2>
+\[ \tau=(s_0,a_0,s_1,a_1,\dots,s_T,a_T) \]
+\[ p_\theta(\tau)=\rho_0(s_0)\prod_{t=0}^{T}\pi_\theta(a_t\mid s_t)\,p(s_{t+1}\mid s_t,a_t) \]
+<p>Three factors, and <b>exactly one of them contains \( \theta \)</b> &mdash; the middle one.
+Hold onto this; it is the engine of &sect;4.</p>
+\[ R(\tau)=\sum_{t=0}^{T}\gamma^t r(s_t,a_t) \qquad\text{(discounted return)} \]
+\[ J(\theta)=\mathbb{E}_{\tau\sim p_\theta}\big[R(\tau)\big]=\int p_\theta(\tau)\,R(\tau)\,d\tau,
+\qquad \theta^\star=\arg\max_\theta J(\theta) \]
+<p>&ldquo;It's just the chain rule of probability&rdquo; <small class="src">t=13:04</small>. Start in
+accordance with \( \rho_0 \), then for each \( t \) multiply the policy probability of
+the action by the kernel probability of the next state.</p>
+<p>All RL methods solve <i>this same problem</i> <small class="src">t=15:24</small>: return
+the parameters maximising expected discounted return over all trajectories. The
+chapter only uses gradient methods, because the policy is a neural network and we
+already know how to backprop through it <small class="src">t=16:08</small>.</p>
+
+<h2>&sect;4 &nbsp;The Policy Gradient Theorem <small class="src">p131&ndash;132, t=17:52</small></h2>
+
+<h3>4.1 &nbsp;The obstruction</h3>
+\[ \nabla_\theta J(\theta)=\nabla_\theta\int p_\theta(\tau)R(\tau)d\tau
+=\int \underbrace{\nabla_\theta p_\theta(\tau)}_{\text{the measure}}\,R(\tau)\,d\tau \]
+<p>Look at where \( \theta \) sits. It is <b>not</b> in the reward &mdash; it is in the
+<i>measure</i>. You are not differentiating a function of \( \theta \); you are
+differentiating a distribution. And since \( \nabla_\theta R(\tau)=0 \),
+\( \mathbb{E}[\nabla_\theta R(\tau)]=0 \) identically and uselessly. The integral is
+inaccessible twice over: \( p_\theta \) is unknown, and the trajectory space
+\( |\mathcal{V}|^T \) cannot be enumerated.</p>
+<p><small class="src">t=18:15</small> &ldquo;Note that we don't have this distribution \( p_\theta \)
+with us &mdash; the same problem that we are encountering all over the course.&rdquo; Exactly
+the shape of the VAE's intractable integral. Same fix: get \( \theta \) inside a
+log, then Monte-Carlo it.</p>
+
+<h3>4.2 &nbsp;The log-derivative trick <small class="src">t=18:44</small></h3>
+\[ \nabla_\theta p_\theta(\tau)=p_\theta(\tau)\,\nabla_\theta\log p_\theta(\tau)
+\qquad\Big(\text{since } p\cdot\tfrac{1}{p}\nabla p=\nabla p\Big) \]
+\[ \nabla_\theta J(\theta)=\int p_\theta(\tau)\,\nabla_\theta\log p_\theta(\tau)\,R(\tau)\,d\tau
+=\mathbb{E}_{\tau\sim p_\theta}\Big[\nabla_\theta\log p_\theta(\tau)\,R(\tau)\Big] \]
+<p>Now \( \nabla_\theta\log p_\theta(\tau) \) is computable &mdash; and the expectation can be
+estimated by sample averaging over rollouts.</p>
+
+<h3>4.3 &nbsp;The three factors collapse to one</h3>
+\[ \log p_\theta(\tau)=\underbrace{\log\rho_0(s_0)}_{\theta\text{-free}}
++\sum_t\underbrace{\log\pi_\theta(a_t\mid s_t)}_{\text{only term with }\theta}
++\sum_t\underbrace{\log p(s_{t+1}\mid s_t,a_t)}_{\theta\text{-free}} \]
+\[ \Longrightarrow\quad \nabla_\theta\log p_\theta(\tau)=\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t) \]
+<p>\( \rho_0 \) and the kernel differentiate to zero. They simply <b>cancel away</b>
+<small class="src">t=20:25</small>.</p>
+
+<div class="key">
+<b>The result</b> <small class="src">p131</small>:
+\[ \nabla_\theta J(\theta)=\mathbb{E}_{\tau\sim p_\theta}\Big[\Big(\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)\Big)R(\tau)\Big] \]
+</div>
+
+<h3>4.4 &nbsp;Why this is the &ldquo;very very strong result&rdquo; <small class="src">t=21:03</small></h3>
+<div class="key">
+<b>You do not need the state-transition distribution.</b> &ldquo;As long as you know how
+the agent behaves and you have access to the reward function, you can train the
+policy <i>without knowing what the transition probabilities are</i>.&rdquo; The gradient
+contains no \( p(s_{t+1}\mid s_t,a_t) \) term at all.
+</div>
+<p>That is the whole point. In an LLM the &ldquo;environment&rdquo; is the world, and its
+transition kernel is <b>not written down anywhere</b> &mdash; there is no model of how the
+world responds to a token. The theorem says you never need one.</p>
+<p>Every method in the rest of the chapter &mdash; REINFORCE, PPO, TRPO, DPO, GRPO
+&mdash; is a modification of this one equation <small class="src">t=21:49</small>.</p>
+
+<h2>&sect;5 &nbsp;Variance reduction: baseline, value, advantage <small class="src">p132&ndash;134, t=23:49</small></h2>
+
+<h3>5.1 &nbsp;The estimator is high-variance</h3>
+<p>\( \nabla_\theta J \) is now an expectation, so it will be approximated by a sample
+average &mdash; and as soon as you have an estimator you have bias and variance
+<small class="src">t=23:25</small>. Empirically the plain estimator has a lot of
+variance <small class="src">t=24:39</small>. The fix: subtract a baseline \( b(s_t) \)
+from the return.</p>
+\[ R_t=\sum_{k\ge t}\gamma^{k-t}r(s_k,a_k) \qquad\text{(reward-to-go, p132)} \]
+\[ R_t \;\longmapsto\; R_t-b(s_t) \]
+<p>The notes shift the time index from \( t \) to \( k \) on p132 and never say why
+<small class="src">t=24:02</small>: it is so that \( R_0 \) is the full return and
+\( R_t \) is the return from time \( t \) onward.</p>
+
+<h3>5.2 &nbsp;Why a baseline is free</h3>
+\[ \mathbb{E}_{a_t\sim\pi}\big[\nabla_\theta\log\pi_\theta(a_t\mid s_t)\,b(s_t)\big]
+=b(s_t)\sum_a\nabla_\theta\pi_\theta(a\mid s_t)
+=b(s_t)\,\nabla_\theta\underbrace{\sum_a\pi_\theta(a\mid s_t)}_{=\,1}
+=b(s_t)\cdot 0=0 \]
+<p>So subtracting any \( b(s_t) \) that does not depend on the action leaves the
+gradient <b>exactly unbiased</b>. It changes the estimator's variance only.</p>
+
+<div class="warn">
+<span class="tag t-err">ERRATUM &mdash; lecture</span> <small class="src">t=24:57</small>
+&ldquo;Suppose you take an estimator that has high variance. You subtract a constant
+&mdash; the variance of the estimator would simply change.&rdquo; <b>This is false for a
+constant.</b>
+\[ \mathrm{Var}(X-c)=\mathrm{Var}(X)\quad\text{for any constant }c
+\qquad\text{but}\qquad
+\mathrm{Var}(X-b)=\mathrm{Var}(X)-2\,\mathrm{Cov}(X,b)+\mathrm{Var}(b) \]
+<p>Subtracting a constant does <b>nothing</b>. Variance falls only because
+\( b(s) \) is <i>correlated with the return</i> and varies across states &mdash; you are
+removing the between-state variance. A state-dependent baseline helps; a constant
+one is a no-op.</p>
+</div>
+
+<h3>5.3 &nbsp;The standard choice: the value function <small class="src">p132&ndash;133, t=25:44</small></h3>
+\[ V^\pi(s)=\mathbb{E}_\pi\big[R_t\mid s_t=s\big],\qquad
+Q^\pi(s,a)=\mathbb{E}_\pi\big[R_t\mid s_t=s,\,a_t=a\big] \]
+\[ A^\pi(s,a)=Q^\pi(s,a)-V^\pi(s) \]
+<div class="ok">
+<b>Intuition, in the professor's words</b> <small class="src">t=28:29</small>: the \( Q \)
+function is the accumulated reward given that you started at \( s \) <i>and took this
+particular action</i>; the value function is the accumulated reward given only that
+you started at \( s \) &mdash; &ldquo;I don't care what the action is.&rdquo; The difference asks:
+<b>&ldquo;does taking this action lead to a better reward or not?&rdquo;</b> Hence the name
+<i>advantage</i>.
+</div>
+
+<h3>5.4 &nbsp;\( R_t-V(s_t) \) is an unbiased estimate of the advantage <small class="src">t=30:01</small></h3>
+\[ \begin{aligned}
+\mathbb{E}\big[R_t-V^\pi(s_t)\mid s_t{=}s,\,a_t{=}a\big]
+&=\underbrace{\mathbb{E}\big[R_t\mid s_t{=}s,\,a_t{=}a\big]}_{Q^\pi(s,a)}-V^\pi(s)
+&&\text{(linearity; }V^\pi(s)\text{ is constant given }s)\\[2pt]
+&=Q^\pi(s,a)-V^\pi(s)=A^\pi(s,a) &&\text{(definitions)}
+\end{aligned} \]
+<p>Therefore \( R_t-V(s_t) \) is a <b>single-sample estimator</b> of the advantage: drop
+the expectation from an unbiased estimator and what remains is a one-sample estimate
+of it <small class="src">t=31:02</small>.</p>
+
+<h3>5.5 &nbsp;The key equation of every RLHF paper <small class="src">p134, t=31:37</small></h3>
+<div class="key">
+\[ \nabla_\theta J(\theta)\;\approx\;\mathbb{E}_{\tau\sim\pi_\theta}\Big[\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)\;hat A^\pi(s_t,a_t)\Big] \]
+&ldquo;This equation is the key equation that you see in all RLHF papers.&rdquo;
+</div>
+<p>Note the \( \approx \): it is not <i>equal</i> to the advantage, it is a single-sample
+estimate of it. The professor is careful about this <small class="src">t=31:37</small>.</p>
+
+<h2>&sect;6 &nbsp;An autoregressive LM as an RL policy <small class="src">p134&ndash;135, t=34:29</small></h2>
+\[ \begin{aligned}
+s_0 &= \text{prompt}=x_{<1} &&\leftarrow \rho_0 \text{ is the prompt distribution}\\
+a_0 &= x_1 &&\text{first output token}\\
+s_1 &= [\,s_0,a_0\,],\quad a_1=x_2 &&\text{concatenate, then predict}\\
+&\ \ \vdots\\
+\mathcal{A} &= \mathcal{V},\qquad \pi_\theta(a_t\mid s_t)=\mathrm{softmax}(z_t)\in\Delta^{|\mathcal{V}|}
+\end{aligned} \]
+<div class="card">
+<b>Three consequences, all stated in the lecture:</b>
+<ol class="tight">
+  <li><b>The LM is the policy</b> <small class="src">t=37:07</small> &mdash; &ldquo;the transformer
+  that gives you a distribution over the tokens of the vocabulary <i>is</i> taken as a
+  policy.&rdquo; No separate head, no wrapper.</li>
+  <li><b>The action space is the vocabulary</b>, so \( |\mathcal{A}|\approx 5\times10^4\!-\!2\times10^5 \)
+  &mdash; enormous by RL standards. And \( a_t \) is a <i>token id</i>, a one-hot over
+  \( \mathcal{V} \), not the token's embedding.</li>
+  <li><b>Updating the policy = changing the transformer's weights</b>
+  <small class="src">t=38:45</small>. &ldquo;Training a language model using RL is equivalent to
+  changing the parameters of the language model itself.&rdquo;</li>
+</ol>
+</div>
+<div class="add">
+<span class="tag t-add">ADDED</span> <b>Where is \( r \) nonzero?</b> Neither source says it
+plainly, and it matters.
+\[ r(s_t,a_t)=0\ \ \forall\,t<T,\qquad r(s_T,a_T)=r_\phi(x,y)\;\in\;\mathbb{R} \]
+<p style="margin-bottom:0">The reward arrives <b>once, at the end of the episode</b>,
+because a preference is a judgement about a complete response. This is why the
+advantage estimate in LLM-PPO is dominated by &ldquo;how did the episode end&rdquo; and why the
+value head exists at all (&sect;8). Episodes terminate at EOS or max length, so in
+practice \( \gamma=1 \) &mdash; a quiet mismatch with the infinite-horizon discounted
+MDP of &sect;2.</p>
+</div>
+
+<h2>&sect;7 &nbsp;PPO, part 1: importance sampling and clipping <small class="src">p136&ndash;140, t=39:10&ndash;52:42</small></h2>
+
+<h3>7.1 &nbsp;The on-policy problem <small class="src">p136, t=41:18</small></h3>
+\[ \theta_{t+1}=\theta_t+\alpha\,\nabla_\theta J(\theta_t),\qquad
+\nabla_\theta J(\theta)=\mathbb{E}_{\tau\sim\pi_\theta}\Big[\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)\hat A_t\Big] \]
+<p>The expectation is over trajectories <b>from the very policy being optimised</b>.
+That is what <b>on-policy</b> means: every update needs fresh rollouts, because the
+moment \( \theta \) moves, the sample you just collected is from the wrong
+distribution.</p>
+<p>For an LLM a rollout means running inference on the model you are training &mdash;
+generating full responses, several per prompt. Expensive. You want to <b>reuse</b>
+them.</p>
+
+<h3>7.2 &nbsp;Importance sampling <small class="src">p137, t=42:34</small></h3>
+<p>You want an expectation under \( p \) but only have samples from \( q \):</p>
+\[ \mathbb{E}_{x\sim p}\big[f(x)\big]=\int p(x)f(x)\,dx
+=\int q(x)\,\underbrace{\frac{p(x)}{q(x)}}_{\text{importance weight}}\,f(x)\,dx
+=\mathbb{E}_{x\sim q}\Big[\frac{p(x)}{q(x)}f(x)\Big] \]
+<p>Price paid: you must be able to <b>evaluate the density ratio</b> at every point.
+The professor's framing <small class="src">t=44:39</small>: the advantage is you can
+estimate an expectation without samples from the target; <b>the cost is the ratio</b>.</p>
+
+<h3>7.3 &nbsp;Why a transformer is the perfect place to pay that price <small class="src">t=45:48</small></h3>
+\[ r_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} \]
+<p>You can compute the <b>log-likelihood a token got under the old checkpoint</b>
+(it was written to the rollout buffer) and under the current one (one forward
+pass). The ratio is two numbers and a subtraction. That is only possible because
+the policy is an <i>explicit likelihood model</i> &mdash; you could never do this with a
+\( Q \)-learning agent.</p>
+
+<h3>7.4 &nbsp;The surrogate objective <small class="src">p138, t=46:48</small></h3>
+<p>Two forms circulate. They are <b>not the same function</b> &mdash; the lecture is explicit
+about this <small class="src">t=47:28</small>:</p>
+\[ \underbrace{\mathbb{E}_{\pi_{\text{old}}}\big[r_t(\theta)\,\nabla_\theta\log\pi_\theta(a_t\mid s_t)\,\hat A_t\big]}_{\text{policy gradient}}
+\quad\text{vs.}\quad
+\underbrace{\mathbb{E}_{\pi_{\text{old}}}\big[r_t(\theta)\,\hat A_t\big]}_{\text{surrogate }L(\theta)} \]
+<p>They differ by <i>ratio times grad-log</i> versus <i>grad-ratio</i>. The bridge:</p>
+\[ \nabla_\theta r_t(\theta)=\nabla_\theta\frac{\pi_\theta}{\pi_{\text{old}}}
+=\frac{\pi_\theta}{\pi_{\text{old}}}\nabla_\theta\log\pi_\theta
+=r_t(\theta)\,\nabla_\theta\log\pi_\theta \]
+<div class="key">
+\[ \nabla_\theta L(\theta)\big|_{\theta=\theta_{\text{old}}}
+=\nabla_\theta J(\theta)\big|_{\theta=\theta_{\text{old}}} \]
+&ldquo;Take this as homework and do it&rdquo; <small class="src">t=48:00</small>. Note the
+qualifier: the surrogacy holds <b>at</b> \( \theta_{\text{old}} \), i.e. it is a
+first-order approximation to \( J \) around the current policy &mdash; not an identity
+everywhere.
+</div>
+<div class="add">
+<span class="tag t-add">ADDED</span> In an LLM implementation the ratio is
+<b>per-token</b>, \( r_t \) for the single token being scored, not the product over
+the whole trajectory. The trajectory-level product telescopes to
+\( \pi_\theta(y\mid x)/\pi_{\text{old}}(y\mid x) \) and is dominated by the first
+tokens, which destroys credit assignment. Every real PPO-for-LLM clips per token.
+</div>
+
+<h3>7.5 &nbsp;Off-policy, and why it is <i>better</i> here <small class="src">t=46:16</small></h3>
+<p>With the ratio, rollouts come from \( \pi_{\text{old}} \), not \( \pi_\theta \). This
+is the <b>off-policy</b> version. The lecture's claim that off-policy is preferred is
+about <b>stability</b>: taking a gradient from a rollout of the <i>current</i> policy at
+that exact instant is unstable; taking several gradient steps against a slightly
+stale policy, reweighted, is smoother and cheaper per sample.</p>
+
+<h3>7.6 &nbsp;The failure mode <small class="src">p139, t=49:22</small></h3>
+\[ \pi_\theta \text{ far from } \pi_{\text{old}}
+\;\Longrightarrow\; r_t(\theta) \text{ explodes}
+\;\Longrightarrow\; L(\theta) \text{ explodes}
+\;\Longrightarrow\; \text{high-variance, unstable updates} \]
+
+<h3>7.7 &nbsp;TRPO: a trust region <small class="src">p140, t=50:04</small></h3>
+\[ \max_{\theta}\;\mathbb{E}_{\pi_{\text{old}}}\big[r_t(\theta)\hat A_t\big]
+\quad\text{s.t.}\quad
+\mathbb{E}_{s\sim\pi_{\text{old}}}\Big[D_{\mathrm{KL}}\big(\pi_{\text{old}}(\cdot\mid s)\,\big\|\,\pi_\theta(\cdot\mid s)\big)\Big]\le\delta \]
+<p>\( \delta \) is a hyperparameter and the region it defines is the <b>trust region</b>
+&mdash; the set of policies close enough to the old one that the surrogate is still
+trustworthy.</p>
+<div class="warn">
+<b>Problem</b> <small class="src">t=51:53</small>: <b>solving this constrained problem is
+non-trivial</b> &mdash; the KL is expensive at scale and constrained optimisation wants
+a second-order solver. So PPO replaces the constraint with a cheap <i>surrogate for</i>
+it.
+</div>
+
+<h3>7.8 &nbsp;PPO: clip instead of constrain <small class="src">p140, t=52:05</small></h3>
+\[ L^{\text{CLIP}}(\theta)=\mathbb{E}_t\Big[\min\Big(r_t(\theta)\hat A_t,\;\;
+\mathrm{clip}\big(r_t(\theta),\,1-\epsilon,\,1+\epsilon\big)\hat A_t\Big)\Big],
+\qquad \epsilon\approx 0.1\!-\!0.2 \]
+<p>Read the \( \min \) as a <b>pessimistic bound</b>. Two regimes:</p>
+<table>
+<tr><th style="width:12%">\( \hat A_t \)</th><th style="width:30%">unclipped term wants</th><th>what clip does</th><th style="width:24%">result</th></tr>
+<tr><td><b>\( >0 \)</b></td><td>\( r \) as large as possible (raise the good action's prob)</td>
+    <td>caps the gain at \( r=1+\epsilon \)</td><td>no incentive past \( 1+\epsilon \)</td></tr>
+<tr><td><b>\( <0 \)</b></td><td>\( r \) as small as possible (lower the bad action's prob)</td>
+    <td>caps the gain at \( r=1-\epsilon \)</td><td>no incentive below \( 1-\epsilon \)</td></tr>
+</table>
+<p>\( \min \) picks the <i>worse</i> of the two, so the objective can never be gamed by a
+runaway ratio. A ratio stuck inside \( [1-\epsilon,1+\epsilon] \) is, approximately,
+a bound on the KL <small class="src">t=52:17</small> &mdash; a cheap surrogate for the trust
+region.</p>
+<div class="ok">
+<b>Lineage</b> <small class="src">t=50:43</small>, worth memorising as one chain:
+<pre class="f">REINFORCE  -- no importance sampling, on-policy, plain grad J
+   -> PPO  -- importance sampling, off-policy, surrogate L = r * A
+   -> TRPO -- PPO + explicit KL constraint (trust region)
+   -> PPO  -- TRPO's constraint replaced by clipping
+   -> GRPO -- a TRPO-family variant whose advantage needs no reward model</pre>
+</div>
+
+<h2>&sect;8 &nbsp;The full PPO loss <small class="src">p141, t=52:42</small></h2>
+\[ L^{\text{PPO}}(\theta)=\underbrace{L^{\text{CLIP}}(\theta)}_{\text{policy}}
+-\underbrace{c_1\big(V_\theta(s_t)-\hat R_t\big)^2}_{\text{value regression}}
++\underbrace{c_2\,\mathcal{H}\big(\pi_\theta(\cdot\mid s_t)\big)}_{\text{entropy bonus}},
+\qquad \theta^\star=\arg\max_\theta L^{\text{PPO}}(\theta) \]
+<table>
+<tr><th style="width:24%">term</th><th>what it is</th><th style="width:32%">what it is for</th></tr>
+<tr><td>\( L^{\text{CLIP}} \)</td><td>clipped policy-gradient surrogate</td><td>raise the probability of high-advantage actions</td></tr>
+<tr><td>\( \big(V_\theta(s)-\hat R\big)^2 \)</td><td>a second head on the network, trained by regression onto the observed return</td><td>you need \( V \) to compute \( A=Q-V \); this trains it</td></tr>
+<tr><td>\( \mathcal{H}\big(\pi_\theta\big) \)</td><td>entropy of the policy</td><td>keep the policy stochastic; stop premature collapse onto one response</td></tr>
+</table>
+<div class="warn">
+<span class="tag t-err">ERRATUM &mdash; notes</span> Two problems with p141 as written:
+<ol class="tight">
+  <li><b>Signs are garbled</b> in the ink. Since the notes write
+  \( \theta^\star=\arg\max \), the value term must be <b>subtracted</b> (you
+  <i>minimise</i> the squared error) and the entropy <b>added</b> (you <i>maximise</i>
+  entropy). Written as a loss to <i>minimise</i>, all signs flip:
+  \( -L^{\text{CLIP}}+c_1\,\text{MSE}-c_2\,\mathcal{H} \). Pick one convention and
+  stay in it.</li>
+  <li><b>A term is missing that makes RLHF-PPO what it is.</b> The notes never include
+  the <b>KL penalty to a frozen reference policy</b> &mdash; yet p144 relies on exactly that
+  term when motivating DPO. In RLHF the per-token reward is shaped as
+  \[ r_t=-\beta\log\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\text{ref}}(a_t\mid s_t)} \]
+  plus the terminal \( r_\phi(x,y) \). Without it, PPO will happily drift into
+  degenerate text that games the reward model (&sect;9.4).</li>
+</ol>
+</div>
+<div class="add">
+<span class="tag t-add">ADDED</span> <b>Advantage estimation in practice.</b> Neither source
+says how \( \hat A \) is actually computed. The standard is <b>GAE</b>
+(generalised advantage estimation), a geometric interpolation between one-step TD
+error and the full Monte-Carlo return:
+\[ \delta_t=r_t+\gamma V_\theta(s_{t+1})-V_\theta(s_t),\qquad
+\hat A_t=\sum_{l\ge 0}(\gamma\lambda)^l\,\delta_{t+l},\qquad \lambda\approx 0.95 \]
+\( \lambda\to 0 \): low variance, high bias (trusts \( V \)).
+\( \lambda\to 1 \): high variance, unbiased (trusts the observed return).
+</div>
+
+<h2>&sect;9 &nbsp;Reward modelling <small class="src">p141&ndash;143, t=53:07</small></h2>
+
+<h3>9.1 &nbsp;The naive route, and why it fails <small class="src">p142</small></h3>
+<p>In principle one could regress \( r:\mathcal{S}\times\mathcal{A}\to\mathbb{R} \)
+on \( \big[(s,a),\,r\big] \) tuples by ERM. &ldquo;However, obtaining such data is not
+easy.&rdquo; The lecture's phrasing <small class="src">t=53:32</small>: absolute reward labels
+are expensive, noisy, and inconsistent across annotators &mdash; two people give the same
+response 6/10 and 9/10.</p>
+<p>So switch the <b>data format</b>: ask for <i>comparisons</i> instead of scores.
+Humans are far more reliable at &ldquo;which of these two is better&rdquo; than at &ldquo;rate
+this 0&ndash;10&rdquo;.</p>
+\[ \mathcal{D}=\Big\{\big(x,\,y_w,\,y_l\big)\Big\},\qquad
+x=\text{prompt},\quad y_w=\text{preferred},\quad y_l=\text{non-preferred} \]
+<p>The notes end p142 with the live question that &sect;9.2 answers:
+<b>&ldquo;Given preferential data, how would one build a reward model?&rdquo;</b></p>
+
+<h3>9.2 &nbsp;The Bradley&ndash;Terry model <small class="src">p143</small></h3>
+\[ P(y_w\succ y_l\mid x)=\frac{\exp\big(r_\phi(x,y_w)\big)}{\exp\big(r_\phi(x,y_w)\big)+\exp\big(r_\phi(x,y_l)\big)}
+=\sigma\Big(r_\phi(x,y_w)-r_\phi(x,y_l)\Big) \]
+\[ \sigma(t)=\frac{1}{1+e^{-t}} \]
+<p>Fit by maximum likelihood on the preference labels:</p>
+\[ \mathcal{L}_{\text{RM}}(\phi)=\mathbb{E}_{(x,y_w,y_l)\sim\mathcal{D}}\Big[\log\sigma\Big(r_\phi(x,y_w)-r_\phi(x,y_l)\Big)\Big],
+\qquad \phi^\star=\arg\max_\phi \mathcal{L}_{\text{RM}}(\phi) \]
+<p>The two lines on p143 are the same object: dividing numerator and denominator by
+\( e^{r_\phi(x,y_w)} \) turns the softmax form into the sigmoid-of-difference form.
+Both appear in the notes; do not be confused by the duplication.</p>
+
+<h3>9.3 &nbsp;What \( \sigma \) is doing, mechanically</h3>
+\[ r_\phi(x,y_w)-r_\phi(x,y_l)\to\begin{cases}
++\infty & P(y_w\succ y_l)\to 1\quad\text{confidently right}\\
+0 & P(y_w\succ y_l)\to \tfrac12\quad\text{cannot tell them apart}\\
+-\infty & P(y_w\succ y_l)\to 0\quad\text{confidently \textit{wrong}}
+\end{cases} \]
+<p>So the loss is a logistic loss on the <b>reward difference</b>. The gradient pushes
+\( r_\phi(x,y_w) \) up and \( r_\phi(x,y_l) \) down with weight
+\( \sigma\big(r_\phi(x,y_l)-r_\phi(x,y_w)\big) \) &mdash; how wrong the model currently
+is. A pair the model already gets right contributes almost nothing.</p>
+
+<div class="warn">
+<span class="tag t-err">ERRATUM &mdash; both sources</span> Three properties of Bradley&ndash;Terry
+that neither the notes nor the lecture state, and that a practitioner needs:
+<ol class="tight">
+  <li><b>Only differences are identifiable.</b>
+  \[ r_\phi \longmapsto r_\phi+c \;\Longrightarrow\; \mathcal{L}_{\text{RM}} \text{ unchanged}\quad\forall c\in\mathbb{R} \]
+  So the <i>absolute scale and offset of the reward are meaningless</i> &mdash; only gaps
+  matter. This is not a technicality: it is exactly the freedom DPO exploits in
+  &sect;10.3 to cancel \( Z(x) \).</li>
+  <li><b>Ties are unrepresentable.</b> BT demands a strict preference. Real annotation
+  has ties and near-ties; you either drop them or model them (Rao&ndash;Kupper). Dropping
+  them biases the reward toward whichever side won the coin flip.</li>
+  <li><b>BT assumes the preference is stochastic with a logistic link on a scalar
+  difference.</b> It is a modelling assumption, not a theorem. If human preference
+  depends on features that no scalar \( r \) captures, the reward model is
+  misspecified and PPO optimises the misspecification.</li>
+</ol>
+</div>
+
+<h3>9.4 &nbsp;Reward hacking &mdash; the failure mode that shapes RLHF</h3>
+<div class="add">
+<span class="tag t-add">ADDED</span> \( r_\phi \) is a <b>proxy</b> trained on finite
+data. PPO is an optimiser with no other objective. Give it enough steps and it will
+find inputs where \( r_\phi \) is high and human preference is not &mdash; sycophancy,
+excessive length, confident-sounding nonsense. This is <b>Goodhart's law with a
+gradient</b>. The mitigation is the KL leash:
+\[ \max_\theta\;\mathbb{E}_{x,\;y\sim\pi_\theta(\cdot\mid x)}\big[r_\phi(x,y)\big]
+-\beta\,D_{\mathrm{KL}}\big(\pi_\theta(\cdot\mid x)\,\big\|\,\pi_{\text{ref}}(\cdot\mid x)\big) \]
+<p style="margin-bottom:0">Which is the term missing from p141 (&sect;8). \( \beta \)
+trades reward against faithfulness. <b>This exact objective is what DPO will solve in
+closed form</b> &mdash; the next section is one algebraic step away.</p>
+</div>
+
+<h2>&sect;10 &nbsp;Direct Preference Optimisation (DPO) <small class="src">p144&ndash;146</small></h2>
+
+<h3>10.1 &nbsp;The goal <small class="src">p144</small></h3>
+\[ \text{optimise } \pi_\theta \text{ on preference data } \mathcal{D}
+\quad\text{without a reward model} \]
+<p>Start from the constrained objective of &sect;9.4 &mdash; the notes' line
+\( L_{\text{policy}}=\mathbb{E}[r]-\beta\,D_{\mathrm{KL}} \):</p>
+\[ \max_{\theta}\;\mathcal{L}_{\text{policy}}(\theta)=\mathbb{E}_{x\sim\mathcal{D},\;y\sim\pi_\theta(\cdot\mid x)}\big[r(x,y)\big]
+-\beta\,D_{\mathrm{KL}}\big(\pi_\theta(\cdot\mid x)\,\big\|\,\pi_{\text{ref}}(\cdot\mid x)\big) \]
+
+<h3>10.2 &nbsp;It has a closed-form solution <small class="src">p144</small></h3>
+\[ \pi_r(y\mid x)=\frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\exp\!\Big(\frac{1}{\beta}\,r(x,y)\Big),
+\qquad Z(x)=\sum_{y}\pi_{\text{ref}}(y\mid x)\exp\!\Big(\frac{1}{\beta}\,r(x,y)\Big) \]
+<div class="add">
+<span class="tag t-add">ADDED</span> <b>Why this is the solution.</b> The objective
+separates over \( x \), so fix \( x \) and maximise over the distribution
+\( \pi(\cdot\mid x) \) pointwise, subject to \( \sum_y\pi(y\mid x)=1 \):
+\[ \begin{aligned}
+\mathcal{L}&=\sum_y \pi(y)\Big[r(y)-\beta\log\frac{\pi(y)}{\pi_{\text{ref}}(y)}\Big]+\mu\Big(\sum_y\pi(y)-1\Big)\\[2pt]
+\frac{\partial\mathcal{L}}{\partial\pi(y)}&=r(y)-\beta\log\frac{\pi(y)}{\pi_{\text{ref}}(y)}-\beta+\mu=0\\[2pt]
+\Longrightarrow\quad \pi(y)&\;\propto\;\pi_{\text{ref}}(y)\exp\!\big(r(y)/\beta\big)
+\underbrace{\exp\!\big((\mu-\beta)/\beta\big)}_{\text{constant in }y\;\Rightarrow\;\text{absorbed into }Z(x)}
+\end{aligned} \]
+<p style="margin-bottom:0">The KL term is precisely what makes this tractable &mdash; without it
+the optimum is the degenerate &ldquo;put all mass on \( \arg\max r \)&rdquo;.</p>
+</div>
+<p><b>But \( Z(x) \) is intractable</b> &mdash; it is a sum over every possible response.
+That is the obstruction the notes name on p144, and why you cannot just sample from
+\( \pi_r \) and be done.</p>
+
+<h3>10.3 &nbsp;Invert the closed form <small class="src">p145</small></h3>
+<p>Take logs and rearrange &mdash; \( Z(x) \) does not depend on \( y \), so it is a
+constant you can isolate:</p>
+\[ \begin{aligned}
+\log\pi_r(y\mid x)&=\log\pi_{\text{ref}}(y\mid x)-\log Z(x)+\tfrac{1}{\beta}r(x,y)\\[2pt]
+\Longrightarrow\quad r(x,y)&=\beta\log\frac{\pi_r(y\mid x)}{\pi_{\text{ref}}(y\mid x)}+\beta\log Z(x)
+\end{aligned} \]
+<div class="ok">
+<b>This line is the pivot of the whole algorithm.</b> It says the optimal reward
+<i>is</i> the log-ratio of the optimal policy to the reference policy, plus a
+per-prompt constant. So the reward is not something you need to learn separately &mdash;
+<b>it is implicitly present in the policy itself.</b>
+</div>
+
+<h3>10.4 &nbsp;Substitute into Bradley&ndash;Terry &mdash; \( Z(x) \) cancels <small class="src">p145&ndash;146</small></h3>
+\[ \begin{aligned}
+P(y_w\succ y_l\mid x)&=\sigma\Big(r(x,y_w)-r(x,y_l)\Big)\\[2pt]
+&=\sigma\Big(\beta\log\frac{\pi_r(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}
+\underbrace{+\beta\log Z(x)}_{}
+-\beta\log\frac{\pi_r(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}
+\underbrace{-\beta\log Z(x)}_{\text{cancels}}\Big)\\[2pt]
+&=\sigma\Big(\beta\log\frac{\pi_r(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}
+-\beta\log\frac{\pi_r(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}\Big)
+\end{aligned} \]
+<div class="key">
+<b>Why the cancellation works:</b> \( Z(x) \) is a function of \( x \) <b>only</b> &mdash;
+and \( y_w \), \( y_l \) share the <b>same prompt \( x \)</b>. So it appears twice with
+the same value and subtracts out. <b>That is the entire trick of DPO.</b> If the two
+responses had come from different prompts, DPO would not exist.
+</div>
+<p>Now replace \( \pi_r \) with the policy you are actually training, \( \pi_\theta \),
+take the negative log-likelihood, done:</p>
+<div class="key">
+\[ \boxed{\;\mathcal{L}_{\text{DPO}}(\theta)=-\mathbb{E}_{(x,y_w,y_l)\sim\mathcal{D}}\Big[\log\sigma\Big(
+\beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}
+-\beta\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}\Big)\Big]\;} \]
+<small class="src">p146</small> &mdash; the notes' &ldquo;objective for DPO&rdquo;.
+</div>
+<p>The notes close p146 with: &ldquo;<i>The above expression is independent of the reward
+\( r_\phi \).</i>&rdquo; Correct &mdash; and that is the headline. No reward model, no PPO,
+no rollouts, no value head. Just preference pairs and a log-ratio.</p>
+
+<h3>10.5 &nbsp;Reading the loss</h3>
+\[ \hat r_\theta(x,y)\;\triangleq\;\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}
+\qquad\text{(the \textit{implicit reward})} \]
+\[ \mathcal{L}_{\text{DPO}}=-\mathbb{E}\Big[\log\sigma\Big(\hat r_\theta(x,y_w)-\hat r_\theta(x,y_l)\Big)\Big] \]
+<p>It is <b>formally identical to the Bradley&ndash;Terry reward-model loss of &sect;9.2</b>
+&mdash; the same \( -\log\sigma(\text{gap}) \) &mdash; with \( r_\phi \) replaced by
+\( \hat r_\theta \). That is the entire content of DPO:</p>
+<div class="key">
+<b>DPO is Bradley&ndash;Terry reward modelling with the policy as its own reward
+function.</b> The reward is not absent. It is <i>implicit</i>, and it is
+\( \beta\log(\pi_\theta/\pi_{\text{ref}}) \).
+</div>
+\[ \nabla_\theta\mathcal{L}_{\text{DPO}}=-\beta\,\mathbb{E}\Big[\sigma\big(\hat r_\theta(x,y_l)-\hat r_\theta(x,y_w)\big)
+\Big(\nabla_\theta\log\pi_\theta(y_w\mid x)-\nabla_\theta\log\pi_\theta(y_l\mid x)\Big)\Big] \]
+<p>Two readings worth keeping:</p>
+<ul class="tight">
+  <li><b>Weight = surprise.</b> \( \sigma(\hat r_\theta(x,y_l)-\hat r_\theta(x,y_w)) \)
+  is large when the model currently prefers the <i>loser</i>. Pairs the model already
+  ranks correctly get almost no gradient. Same structure as &sect;9.3.</li>
+  <li><b>Push and pull.</b> Raise the log-likelihood of \( y_w \), lower that of
+  \( y_l \) &mdash; but both are <i>relative to \( \pi_{\text{ref}} \)</i>, so the model
+  is only ever asked to <b>change its mind about which of two responses is better</b>,
+  not to relearn language from scratch.</li>
+</ul>
+
+<h3>10.6 &nbsp;PPO vs DPO</h3>
+<table class="brk">
+<tr><th style="width:22%"></th><th style="width:39%">PPO / RLHF</th><th>DPO</th></tr>
+<tr><td><b>Reward</b></td><td>explicit \( r_\phi \), trained separately</td><td>implicit \( \beta\log(\pi_\theta/\pi_{\text{ref}}) \)</td></tr>
+<tr><td><b>Data</b></td><td>on-policy rollouts, generated live</td><td>offline preference pairs \( (x,y_w,y_l) \)</td></tr>
+<tr><td><b>Models in memory</b></td><td>4 &mdash; policy, ref, reward, value</td><td>2 &mdash; policy, ref</td></tr>
+<tr><td><b>Cost per step</b></td><td>high (generation dominates)</td><td>one forward+backward per pair</td></tr>
+<tr><td><b>Failure mode</b></td><td>reward hacking (&sect;9.4)</td><td>likelihood displacement / over-optimisation on the offline set</td></tr>
+<tr><td><b>Theory status</b></td><td>policy gradient, unbiased-ish, stable-ish</td><td>exact MLE under the BT model <i>if</i> the reference is the true optimum</td></tr>
+</table>
+<div class="warn">
+<span class="tag t-err">ERRATUM &mdash; caveat on &ldquo;without the reward model&rdquo;</span>
+DPO's derivation assumes \( \pi_{\text{ref}} \) is the policy that <i>would</i> be
+optimal under some reward, so that
+\( r=\beta\log(\pi^\star/\pi_{\text{ref}})+\beta\log Z \) holds exactly. In
+reality \( \pi_{\text{ref}} \) is just your SFT checkpoint. And the loss only ever
+sees \( y_w \), \( y_l \) as <b>strings</b> &mdash; so it can lower
+\( \log\pi_\theta(y_l\mid x) \) by pushing mass onto responses that are
+<i>neither</i> (&ldquo;likelihood displacement&rdquo;). DPO is simpler, not strictly better.
+</div>
+
+<h2>&sect;11 &nbsp;Error ledger</h2>
+<table class="brk">
+<tr><th style="width:9%">where</th><th style="width:34%">what is written</th><th>what is true</th></tr>
+<tr><td><b>p130</b></td><td>&ldquo;policy updating using grad <b>descent</b>&rdquo; next to \( \theta\leftarrow\theta+\alpha\nabla_\theta J \)</td>
+    <td>The plus sign means <b>ascent</b>. Words wrong, formula right. The lecture self-corrects: &ldquo;gradient descent or gradient ascent rather&rdquo; <small class="src">t=22:52</small>.</td></tr>
+<tr><td><b>p130</b></td><td>\( R(\tau)=\sum_t r(s_t,a_t) \)</td>
+    <td>\( \gamma \) was declared on p129, so the return must be \( \sum_t\gamma^t r(s_t,a_t) \). The lecture writes the discounted form <small class="src">t=14:08</small>; the ink does not.</td></tr>
+<tr><td><b>t=24:57</b></td><td>&ldquo;subtract a <b>constant</b> &hellip; the variance would simply change&rdquo;</td>
+    <td><b>False.</b> \( \mathrm{Var}(X-c)=\mathrm{Var}(X) \). Variance falls only for a <i>state-dependent</i> baseline \( b(s) \) correlated with the return.</td></tr>
+<tr><td><b>t=14:02</b></td><td>\( \gamma \) makes &ldquo;<b>recent</b> rewards&rdquo; matter most</td>
+    <td>Mechanically \( \gamma^t \) <b>discounts the future</b>. Recency is the wrong word; the mechanism is exponential decay in \( t \).</td></tr>
+<tr><td><b>p132</b></td><td>baseline \( b(s_t) \) reduces variance &mdash; no condition given</td>
+    <td>Reduces variance <b>only</b> if \( \mathrm{Cov}(X,b)>0 \). And unbiasedness requires \( b \) to not depend on \( a_t \). Neither caveat is stated.</td></tr>
+<tr><td><b>p141</b></td><td>full PPO loss has no reference-policy KL</td>
+    <td>RLHF-PPO needs \( -\beta D_{\mathrm{KL}}(\pi_\theta\|\pi_{\text{ref}}) \), or it reward-hacks. p144 then silently assumes this term exists when motivating DPO. Internal inconsistency.</td></tr>
+<tr><td><b>p141</b></td><td>signs of the value and entropy terms are unclear in the ink</td>
+    <td>With \( \arg\max \): \( -c_1\text{MSE}+c_2\mathcal{H} \). With a minimised loss: all signs flip.</td></tr>
+<tr><td><b>p143</b></td><td>BT gives the likelihood, nothing else</td>
+    <td>Only <b>differences</b> are identifiable (\( r\mapsto r+c \) is a symmetry); ties are unmodellable; the logistic link is an <i>assumption</i>. All three matter downstream.</td></tr>
+<tr><td><b>p128&ndash;146</b></td><td>no mention of verifiable rewards</td>
+    <td>The lecture's central practical point <small class="src">t=2:02</small>: RLHF works best when \( r \) is checkable (math, code). Chat is the hard case.</td></tr>
+<tr><td><b>p135</b></td><td>state/action mapping drawn, reward timing never stated</td>
+    <td>The reward is <b>terminal only</b> &mdash; one scalar per response. It governs everything about the advantage estimate.</td></tr>
+</table>
+
+<h2>&sect;12 &nbsp;The whole chapter in one table</h2>
+<table class="brk">
+<tr><th style="width:11%">layer</th><th style="width:19%">what it adds</th><th>the object</th></tr>
+<tr><td><b>0 &nbsp;why</b></td><td>the premise</td>
+    <td>MLE matches a corpus; &ldquo;good&rdquo; is a scalar over whole sequences; preference data is comparative, so there is no per-token target \( \Rightarrow \) frame the LM as a policy.</td></tr>
+<tr><td><b>1 &nbsp;MDP</b><br><small class="src">p129&ndash;130</small></td><td>defines the game</td>
+    <td>\[ p_\theta(\tau)=\rho_0(s_0)\prod_t\pi_\theta(a_t\mid s_t)p(s_{t+1}\mid s_t,a_t) \]
+        \[ J(\theta)=\mathbb{E}_{\tau\sim p_\theta}[R(\tau)] \]</td></tr>
+<tr><td><b>2 &nbsp;gradient</b><br><small class="src">p131&ndash;134</small></td><td>makes it computable</td>
+    <td>\[ \nabla_\theta J=\mathbb{E}\Big[\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)\hat A_t\Big] \]
+        <small>kernel-free &mdash; the payoff</small></td></tr>
+<tr><td><b>3 &nbsp;stability</b><br><small class="src">p136&ndash;141</small></td><td>makes it reusable</td>
+    <td>\[ r_t=\frac{\pi_\theta}{\pi_{\text{old}}},\quad L=\mathbb{E}_{\pi_{\text{old}}}[r_t\hat A_t],\quad L^{\text{CLIP}}=\mathbb{E}\big[\min(r_t\hat A_t,\mathrm{clip}(r_t,1\pm\epsilon)\hat A_t)\big] \]</td></tr>
+<tr><td><b>4 &nbsp;reward</b><br><small class="src">p141&ndash;143</small></td><td>supplies \( r \)</td>
+    <td>\[ P(y_w\succ y_l)=\sigma\big(r_\phi(x,y_w)-r_\phi(x,y_l)\big) \]
+        <small>\( r_\phi \) is a proxy \( \Rightarrow \) Goodhart \( \Rightarrow \) KL leash to \( \pi_{\text{ref}} \)</small></td></tr>
+<tr><td><b>5 &nbsp;DPO</b><br><small class="src">p144&ndash;146</small></td><td>deletes the reward model</td>
+    <td>\[ r=\beta\log\frac{\pi^\star}{\pi_{\text{ref}}}+\beta\log Z(x),\quad Z \text{ cancels in } r_w-r_l \]
+        \[ \mathcal{L}_{\text{DPO}}=-\mathbb{E}\big[\log\sigma\big(\hat r_\theta(x,y_w)-\hat r_\theta(x,y_l)\big)\big] \]</td></tr>
+</table>
+
+<h2>&sect;13 &nbsp;Glossary &mdash; every symbol in the chapter</h2>
+<table class="brk">
+<tr><th style="width:15%">symbol</th><th style="width:44%">meaning</th><th>where / trap</th></tr>
+<tr><td>\( \mathcal{S},\ \mathcal{A} \)</td><td>state space, action space</td><td>for an LLM, \( \mathcal{A}=\mathcal{V} \) (the vocabulary)</td></tr>
+<tr><td>\( p(s'\mid s,a) \)</td><td>transition kernel</td><td>never needed by the policy-gradient theorem &mdash; that is the point</td></tr>
+<tr><td>\( r(s,a) \)</td><td>reward, a scalar</td><td>may be negative; for LLMs it is terminal-only</td></tr>
+<tr><td>\( \gamma \)</td><td>discount factor \( \in(0,1) \)</td><td>discounts the <i>future</i>, not &ldquo;favours recency&rdquo; (&sect;2.1)</td></tr>
+<tr><td>\( \rho_0(s_0) \)</td><td>initial state distribution</td><td>for an LLM this is the <b>prompt distribution</b></td></tr>
+<tr><td>\( \pi_\theta(a\mid s) \)</td><td>the policy</td><td>is literally the transformer + softmax head</td></tr>
+<tr><td>\( \tau \)</td><td>trajectory \( (s_0,a_0,\dots,s_T,a_T) \)</td><td>a rollout is a batch of these</td></tr>
+<tr><td>\( p_\theta(\tau) \)</td><td>trajectory distribution</td><td>only the \( \pi \) factor carries \( \theta \)</td></tr>
+<tr><td>\( R(\tau) \)</td><td>discounted return</td><td>has <b>no</b> \( \theta \) &rArr; \( \mathbb{E}[\nabla R]=0 \)</td></tr>
+<tr><td>\( R_t \)</td><td>reward-to-go from \( t \)</td><td>\( \sum_{k\ge t}\gamma^{k-t}r_k \)</td></tr>
+<tr><td>\( V^\pi(s) \)</td><td>value: expected return from \( s \)</td><td>the standard baseline</td></tr>
+<tr><td>\( Q^\pi(s,a) \)</td><td>action-value</td><td>&ldquo;I don't care about the action&rdquo; is \( V \), not \( Q \)</td></tr>
+<tr><td>\( A^\pi(s,a) \)</td><td>advantage \( =Q^\pi-V^\pi \)</td><td>&ldquo;did this action help?&rdquo; &mdash; what PPO optimises</td></tr>
+<tr><td>\( \hat A_t \)</td><td>single-sample estimate of the advantage</td><td>in practice GAE, not a raw return</td></tr>
+<tr><td>\( b(s_t) \)</td><td>baseline</td><td>must <b>not</b> depend on the action, or it biases the gradient</td></tr>
+<tr><td>\( r_t(\theta) \)</td><td>importance ratio \( \pi_\theta/\pi_{\text{old}} \)</td><td>per-<b>token</b> in LLM implementations</td></tr>
+<tr><td>\( \epsilon \)</td><td>PPO clip range</td><td>typically \( 0.1 \)&ndash;\( 0.2 \)</td></tr>
+<tr><td>\( \delta \)</td><td>TRPO trust-region radius</td><td>the KL bound PPO replaces with clipping</td></tr>
+<tr><td>\( r_\phi(x,y) \)</td><td>a learned reward model</td><td>a <b>proxy</b> &rarr; reward hacking is its failure mode</td></tr>
+<tr><td>\( \pi_{\text{ref}} \)</td><td>frozen reference policy (the SFT model)</td><td>the KL anchor; appears in both PPO and DPO</td></tr>
+<tr><td>\( \beta \)</td><td>KL leash strength</td><td>small &rarr; chase reward; large &rarr; stay near \( \pi_{\text{ref}} \)</td></tr>
+<tr><td>\( Z(x) \)</td><td>partition function</td><td>intractable &mdash; but <b>cancels</b> in DPO because both responses share \( x \)</td></tr>
+<tr><td>\( \hat r_\theta \)</td><td>DPO implicit reward \( \beta\log(\pi_\theta/\pi_{\text{ref}}) \)</td><td>DPO is not reward-free; the reward is implicit</td></tr>
+<tr><td>\( \lambda \)</td><td>GAE decay</td><td>\( \lambda\to 0 \) low variance; \( \lambda\to 1 \) low bias</td></tr>
+</table>
+
+<h2>&sect;14 &nbsp;Numbers and defaults worth remembering</h2>
+<table class="brk">
+<tr><th style="width:30%">quantity</th><th style="width:22%">typical</th><th>why</th></tr>
+<tr><td>PPO clip \( \epsilon \)</td><td>\( 0.1 \)&ndash;\( 0.2 \)</td><td>wide enough to learn, tight enough that the surrogate stays valid</td></tr>
+<tr><td>\( |\mathcal{A}| \) (action space)</td><td>\( \sim 5\times10^4 \)&ndash;\( 2\times10^5 \)</td><td>enormous for RL; makes on-policy sampling the bottleneck</td></tr>
+<tr><td>models in memory, PPO</td><td>4</td><td>policy, reference, reward, value &mdash; plus optimiser states</td></tr>
+<tr><td>models in memory, DPO</td><td>2</td><td>policy, reference</td></tr>
+<tr><td>KL penalty \( \beta \)</td><td>\( 10^{-2} \)&ndash;\( 10^{-1} \)</td><td>below &rarr; reward hacking; above &rarr; the model never moves</td></tr>
+<tr><td>DPO loss at init</td><td>\( \ln 2\approx 0.6931 \)</td><td>all log-ratios are 0 &rArr; gap 0 &rArr; \( \sigma(0)=\tfrac12 \)</td></tr>
+</table>
+
+<h2>&sect;15 &nbsp;Worked example &mdash; one PPO term, one DPO step</h2>
+
+<h3>15.1 &nbsp;The PPO clip, numerically</h3>
+\[ \text{vocab}=\{A,B,C\},\quad \epsilon=0.1,\quad
+\pi_{\text{old}}(A)=0.50,\quad \pi_\theta(A)=0.60 \]
+\[ r=\frac{\pi_\theta(A)}{\pi_{\text{old}}(A)}=\frac{0.60}{0.50}=1.20
+\;\;\Longrightarrow\;\;
+\mathrm{clip}(r,\,0.9,\,1.1)=1.10 \quad(r \text{ is above the band}) \]
+<table>
+<tr><th style="width:10%">\( \hat A \)</th><th style="width:20%">unclipped \( r\hat A \)</th><th style="width:20%">clipped \( 1.1\hat A \)</th><th style="width:10%">\( \min \)</th><th>reading</th></tr>
+<tr><td><b>\( +0.8 \)</b></td><td>\( 1.20(0.8)=0.96 \)</td><td>\( 1.10(0.8)=0.88 \)</td><td><b>0.88</b></td>
+    <td>the clipped one wins &rarr; constant &rarr; <b>no gradient</b>. We already raised a good action's probability by more than \( \epsilon \); stop rewarding it.</td></tr>
+<tr><td><b>\( -0.8 \)</b></td><td>\( 1.20(-0.8)=-0.96 \)</td><td>\( 1.10(-0.8)=-0.88 \)</td><td><b>\( -0.96 \)</b></td>
+    <td>the <i>unclipped</i> one wins &rarr; <b>gradient flows</b>. We wrongly raised a <i>bad</i> action's probability; the objective keeps pushing \( r \) down.</td></tr>
+</table>
+<div class="key">
+<b>The asymmetry is the algorithm.</b> \( \min \) makes the objective <b>flat</b>
+when you have moved too far in the <i>beneficial</i> direction, but keeps it
+<b>sloped</b> when you have moved too far in the <i>harmful</i> direction. Clipping
+never protects a bad update &mdash; it only refuses to reward a good one further. A
+\( \max \) would invert this and let the policy run away.
+</div>
+
+<h3>15.2 &nbsp;One DPO step, numerically</h3>
+<p>With \( \beta=0.1 \) and the model having drifted <i>toward the loser</i>:</p>
+<table>
+<tr><th></th><th>\( \pi_{\text{ref}}(y\mid x) \)</th><th>\( \pi_\theta(y\mid x) \)</th><th>\( \log\frac{\pi_\theta}{\pi_{\text{ref}}} \)</th><th>\( \hat r_\theta=\beta\log\frac{\pi_\theta}{\pi_{\text{ref}}} \)</th></tr>
+<tr><td>\( y_w \)</td><td>0.10</td><td>0.10</td><td>\( 0 \)</td><td>\( 0 \)</td></tr>
+<tr><td>\( y_l \)</td><td>0.05</td><td>0.10</td><td>\( +0.6931 \)</td><td>\( +0.0693 \)</td></tr>
+</table>
+\[ \text{gap}=\hat r_\theta(x,y_w)-\hat r_\theta(x,y_l)=-0.0693,\qquad
+\mathcal{L}_{\text{DPO}}=-\log\sigma(-0.0693)=-\log(0.4827)=0.7283 \;>\;\ln 2 \]
+<p>And after the model has learned:</p>
+<table>
+<tr><th></th><th>\( \pi_{\text{ref}} \)</th><th>\( \pi_\theta \)</th><th>\( \log\frac{\pi_\theta}{\pi_{\text{ref}}} \)</th><th>\( \hat r_\theta \)</th></tr>
+<tr><td>\( y_w \)</td><td>0.10</td><td>0.20</td><td>\( +0.6931 \)</td><td>\( +0.0693 \)</td></tr>
+<tr><td>\( y_l \)</td><td>0.05</td><td>0.04</td><td>\( -0.2231 \)</td><td>\( -0.0223 \)</td></tr>
+</table>
+\[ \text{gap}=+0.0916,\qquad
+\mathcal{L}_{\text{DPO}}=-\log\sigma(0.0916)=-\log(0.5229)=0.6482 \;<\;\ln 2 \]
+<div class="ok">
+<b>Two checks you can run on any DPO implementation.</b>
+<ol class="tight">
+  <li><b>At initialisation the loss is exactly</b> \( \ln 2\approx 0.6931 \). When
+  \( \pi_\theta=\pi_{\text{ref}} \) every log-ratio is 0, so the gap is 0, so
+  \( \sigma(0)=\tfrac12 \). If your first step is not \( \approx 0.693 \), your
+  reference model is not a frozen copy of the policy &mdash; a classic bug.</li>
+  <li><b>The gradient weight is</b>
+  \( \sigma\big(\hat r_\theta(x,y_l)-\hat r_\theta(x,y_w)\big)=0.5173 \) in the
+  first case. That is the &ldquo;surprise&rdquo; factor from &sect;10.5: the model currently
+  ranks the loser above the winner, so it gets a large correction.</li>
+</ol>
+</div>
+
+<h2>&sect;16 &nbsp;Common confusions, one line each</h2>
+<table class="brk">
+<tr><th style="width:36%">the wrong statement</th><th>the correction</th></tr>
+<tr><td>&ldquo;PPO is on-policy.&rdquo;</td><td><b>REINFORCE</b> is on-policy. PPO is <b>off-policy</b> via importance sampling &mdash; that is the entire reason the ratio exists.</td></tr>
+<tr><td>&ldquo;The advantage <i>is</i> the reward.&rdquo;</td><td>\( A=Q-V \). It is the reward <b>minus a baseline</b>. A high-reward action in a high-value state can have zero advantage.</td></tr>
+<tr><td>&ldquo;A constant baseline reduces variance.&rdquo;</td><td>\( \mathrm{Var}(X-c)=\mathrm{Var}(X) \). Only a <b>state-dependent</b> baseline correlated with the return helps (&sect;5.2).</td></tr>
+<tr><td>&ldquo;Clipping keeps each update small.&rdquo;</td><td>Clipping flattens the <i>objective</i> outside the band; it does not bound the gradient. It is a cheap proxy for a KL constraint, not a step-size limit.</td></tr>
+<tr><td>&ldquo;The reward model gets better during PPO.&rdquo;</td><td>\( r_\phi \) is <b>frozen</b>. Only \( \pi_\theta \) and the value head move. Otherwise the reward would chase the policy.</td></tr>
+<tr><td>&ldquo;Higher reward means a better model.&rdquo;</td><td>It means a better <b>proxy</b> score. Past a point, reward up &rarr; quality down. That is reward hacking (&sect;9.4).</td></tr>
+<tr><td>&ldquo;DPO is reward-free.&rdquo;</td><td>The reward is <b>implicit</b>: \( \hat r_\theta=\beta\log(\pi_\theta/\pi_{\text{ref}}) \). What DPO removes is the separate reward <i>network</i> and the rollouts.</td></tr>
+<tr><td>&ldquo;Larger \( \beta \) means stronger alignment.&rdquo;</td><td>Larger \( \beta \) means a <b>tighter leash to \( \pi_{\text{ref}} \)</b> &mdash; <i>less</i> optimisation. Too large and the model never changes.</td></tr>
+<tr><td>&ldquo;\( \delta \) and \( \epsilon \) are the same knob.&rdquo;</td><td>\( \delta \) is a <b>KL radius</b> (TRPO). \( \epsilon \) is a <b>probability-ratio band</b> (PPO). Related, not equivalent.</td></tr>
+<tr><td>&ldquo;The value head is part of the final model.&rdquo;</td><td>It is a <b>training-only</b> artefact for estimating the advantage. Discarded at inference.</td></tr>
+<tr><td>&ldquo;Reward scale matters.&rdquo;</td><td>\( r\mapsto r+c \) is a symmetry of Bradley&ndash;Terry. Only <b>differences</b> are identified.</td></tr>
+<tr><td>&ldquo;DPO needs no preference data.&rdquo;</td><td>It needs <b>exactly</b> preference pairs and nothing else &mdash; no rollouts, no reward model. That is the trade.</td></tr>
+</table>
+
+<h2>&sect;17 &nbsp;Where the pieces sit in a real pipeline</h2>
+<div class="add" style="page-break-inside:auto">
+<span class="tag t-add">ADDED</span> Neither source draws the full pipeline; the notes stop at
+&ldquo;End of RLHF&rdquo; on p146.
+<pre class="f">RLHF / PPO pipeline                        DPO pipeline
+-----------------                          -------------
+1. SFT on demonstrations  -> pi_SFT        1. SFT on demonstrations  -> pi_SFT
+2. collect preference pairs (x,y_w,y_l)    2. collect preference pairs (x,y_w,y_l)
+3. fit r_phi by Bradley-Terry MLE          3. run L_DPO(theta) directly
+4. PPO: maximise r_phi                     4. deploy pi_theta
+   - beta*KL(pi_theta||pi_SFT)
+   - with a value head for A_hat
+5. deploy pi_theta</pre>
+<p style="margin-bottom:0">Two things to notice. First, <b>\( \pi_{\text{ref}} \) in both
+pipelines is \( \pi_{\text{SFT}} \)</b> &mdash; the KL leash is anchored to the
+supervised model, not to the pre-trained base. Second, <b>steps 1 and 2 are
+identical</b>; DPO and PPO differ only in what you do with the pairs. That is why DPO
+displaced PPO in most preference-alignment work: same data, two models instead of
+four, no rollouts. PPO (and its GRPO descendants) survives where the reward is
+<b>verifiable</b> &mdash; math and code &mdash; because there you can skip step 2 entirely
+and compute \( r \) from a test harness.</p>
+</div>
+
+<h2>&sect;18 &nbsp;Appendix &mdash; the five derivations, stripped to exam length</h2>
+<p>Reproduce these from blank paper. Each line is annotated with the <b>reason</b>
+for the step, because that is what gets marked.</p>
+
+<p><b>1. &nbsp;Policy gradient</b></p>
+\[ \begin{aligned}
+\nabla_\theta J&=\int \nabla_\theta p_\theta(\tau)\,R(\tau)\,d\tau &&\text{gradient moves inside the integral}\\
+&=\int p_\theta(\tau)\,\nabla_\theta\log p_\theta(\tau)\,R(\tau)\,d\tau &&\text{log-derivative trick}\\
+&=\mathbb{E}_{\tau\sim p_\theta}\big[\nabla_\theta\log p_\theta(\tau)\,R(\tau)\big] &&\text{back to an expectation}\\
+\nabla_\theta\log p_\theta(\tau)&=\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t) &&\rho_0,\,p \text{ are } \theta\text{-free}
+\end{aligned} \]
+
+<p><b>2. &nbsp;A baseline is free</b> (needs \( b \) independent of the action)</p>
+\[ \mathbb{E}_{a\sim\pi}\big[\nabla_\theta\log\pi_\theta(a\mid s)b(s)\big]
+=b(s)\sum_a\nabla_\theta\pi_\theta(a\mid s)
+=b(s)\nabla_\theta\sum_a\pi_\theta(a\mid s)=b(s)\nabla_\theta 1=0 \]
+
+<p><b>3. &nbsp;\( R_t-V(s_t) \) estimates the advantage</b></p>
+\[ \begin{aligned}
+\mathbb{E}\big[R_t-V^\pi(s_t)\mid s_t{=}s,a_t{=}a\big]
+&=\mathbb{E}\big[R_t\mid s_t{=}s,a_t{=}a\big]-V^\pi(s) &&\text{linearity; }V^\pi(s)\text{ fixed}\\
+&=Q^\pi(s,a)-V^\pi(s)=A^\pi(s,a) &&\text{definitions}
+\end{aligned} \]
+
+<p><b>4. &nbsp;The surrogate matches the gradient at \( \theta_{\text{old}} \)</b></p>
+\[ \begin{aligned}
+\nabla_\theta r_t(\theta)&=\nabla_\theta\frac{\pi_\theta}{\pi_{\text{old}}}
+=\frac{\pi_\theta}{\pi_{\text{old}}}\nabla_\theta\log\pi_\theta=r_t(\theta)\nabla_\theta\log\pi_\theta &&\text{chain rule on a log}\\
+\Longrightarrow\ \nabla_\theta\mathbb{E}\big[r_t\hat A_t\big]&=\mathbb{E}\big[r_t\nabla_\theta\log\pi_\theta\hat A_t\big]=\nabla_\theta J
+&&\text{at } r_t=1,\ \text{i.e. } \theta=\theta_{\text{old}}
+\end{aligned} \]
+
+<p><b>5. &nbsp;DPO</b></p>
+\[ \begin{aligned}
+\text{(a) closed form:}\quad
+&\max_{\pi}\ \sum_y\pi(y)\Big[r(y)-\beta\log\frac{\pi(y)}{\pi_{\text{ref}}(y)}\Big]
+\quad\text{s.t.}\quad\sum_y\pi(y)=1\\[3pt]
+&\frac{\partial}{\partial\pi(y)}=0\;\Longrightarrow\;
+\pi(y)\propto\pi_{\text{ref}}(y)\exp\big(r(y)/\beta\big)
+&&\text{the Lagrange multiplier is constant in }y\Rightarrow Z(x)\\[3pt]
+\text{(b) invert:}\quad
+&\log\pi=\log\pi_{\text{ref}}-\log Z+r/\beta
+\;\Longrightarrow\; r=\beta\log\frac{\pi}{\pi_{\text{ref}}}+\beta\log Z(x)\\[3pt]
+\text{(c) substitute:}\quad
+&r_w-r_l=\beta\log\frac{\pi(y_w)}{\pi_{\text{ref}}(y_w)}-\beta\log\frac{\pi(y_l)}{\pi_{\text{ref}}(y_l)}
+\underbrace{+\beta\log Z(x)-\beta\log Z(x)}_{=0}
+&&Z(x)\text{ depends only on }x;\ y_w,y_l\text{ share }x
+\end{aligned} \]
+
+<div class="ok">
+<b>The four sentences that unlock all five.</b><br>
+1. Differentiate the <i>measure</i>, not the integrand &mdash; then convert with
+\( \nabla p=p\,\nabla\log p \).<br>
+2. Any action-independent term has zero expected gradient, because
+\( \sum_a\pi(a\mid s)=1 \).<br>
+3. \( A=Q-V \) removes the state's own value, leaving only the action's contribution.<br>
+4. Two constants that depend only on \( x \) cannot change the <i>ranking</i> of two
+responses to that same \( x \) &mdash; so any such constant is invisible to
+Bradley&ndash;Terry.
+</div>
+
+<h2>&sect;19 &nbsp;GRPO &mdash; the advantage without a reward model <small class="src">t=50:25, t=21:49</small></h2>
+<div class="add">
+<span class="tag t-add">ADDED</span> The lecture mentions GRPO twice &mdash; &ldquo;GRPO is a
+version of TRPO where the advantage function is computed <i>without rewards</i>&rdquo;
+<small class="src">t=50:25</small> &mdash; but p128&ndash;146 never introduces it. It is the
+one algorithm that closes the loop between &sect;1.4 (verifiable rewards) and &sect;7
+(PPO), so it belongs here.
+</div>
+<p>Recall the problem (&sect;8): \( \hat A_t \) needs a reward and a value function, and
+\( V_\theta \) is an entire extra network. But if the reward is <b>verifiable</b>
+(&sect;1.4) there is no reward model at all &mdash; the verifier <i>is</i> the reward
+function. And the baseline does not have to be a learned \( V \); it only has to be
+something action-independent and correlated with the return (&sect;5.2).</p>
+<p><b>GRPO's move:</b> sample a <i>group</i> of \( G \) completions for the same prompt,
+score each with the verifier, and use the group's own statistics as the baseline.</p>
+\[ \mathcal{A}_i=\frac{r_i-\operatorname{mean}\big(r_1,\dots,r_G\big)}{\operatorname{std}\big(r_1,\dots,r_G\big)},
+\qquad i=1,\dots,G \]
+<p>Each \( \mathcal{A}_i \) replaces \( \hat A_t \) in the <i>same</i> clipped objective of
+&sect;7.8, with \( \rho_{i,t}=\pi_\theta(y_{i,t}\mid x,y_{i,<t})/\pi_{\theta_{\text{old}}}(\cdot) \)
+per token, plus the KL leash to \( \pi_{\text{ref}} \).</p>
+<table>
+<tr><th style="width:22%"></th><th style="width:26%">PPO / RLHF</th><th style="width:26%">GRPO</th><th>DPO</th></tr>
+<tr><td><b>reward from</b></td><td>learned \( r_\phi \)</td><td><b>verifier</b> (test case, exact match)</td><td>preference pairs</td></tr>
+<tr><td><b>baseline</b></td><td>learned \( V_\theta \)</td><td><b>group mean of \( G \) samples</b></td><td>&mdash;</td></tr>
+<tr><td><b>networks</b></td><td>4</td><td>2 (policy, ref)</td><td>2 (policy, ref)</td></tr>
+<tr><td><b>needs rollouts</b></td><td>yes</td><td>yes, \( G \) per prompt</td><td>no</td></tr>
+<tr><td><b>works for chat?</b></td><td>yes</td><td><b>no</b> &mdash; needs a checkable \( r \)</td><td>yes</td></tr>
+</table>
+<div class="ok">
+<b>Why it matters.</b> GRPO is the algorithm behind modern &ldquo;reasoning&rdquo; training on
+math and code: drop the reward model (the verifier is exact), drop the value head
+(the group is the baseline), and spend the compute on <i>more samples per prompt</i>
+instead. It is exactly the payoff of the observation in &sect;1.4 &mdash; RLHF is
+strongest where the reward can be <b>checked</b>.
+</div>
+<div class="warn">
+<b>Not free.</b> The normalisation by \( \operatorname{std} \) makes the advantage
+scale-free, which is convenient but means a group where <i>every</i> sample scores
+identically (all pass, or all fail) has \( \mathcal{A}_i=0 \) &mdash; the prompt
+contributes no gradient. Hard-but-solvable prompts carry the whole signal.
+</div>
+
+<h2>&sect;20 &nbsp;Self-test</h2>
+
+<div class="card"><b>Part 1 &mdash; foundations (&sect;1&ndash;&sect;7).</b>
+<b>A.</b> Why can't supervised fine-tuning do alignment? Name the format blocker and the locality blocker.<br>
+<b>B.</b> Define verifiable reward. Why do math and code dominate? What breaks in chat?<br>
+<b>C.</b> Write \( p_\theta(\tau) \) and identify which factor carries \( \theta \). Why does that make \( \nabla J \) hard?<br>
+<b>D.</b> Derive the policy gradient theorem in four lines. What does it free you from needing?<br>
+<b>E.</b> Prove \( \mathbb{E}[R_t-V(s_t)\mid s_t,a_t]=A(s_t,a_t) \). Then why is \( R_t-V(s_t) \) only an <i>estimator</i>?<br>
+<b>F.</b> Does subtracting a <i>constant</i> baseline reduce variance? One line of algebra.<br>
+<b>G.</b> Instantiate the MDP for an LLM: \( s_t, a_t, \mathcal{A}, \rho_0, r \). When is \( r \) nonzero?<br>
+<b>H.</b> Why is the plain policy-gradient estimator on-policy, and what exactly does importance sampling buy? What does it cost?
+</div>
+<div class="card"><b>Part 2 &mdash; PPO and DPO (&sect;7&ndash;&sect;10).</b>
+<b>I.</b> Show \( \nabla_\theta L=\nabla_\theta J \) at \( \theta_{\text{old}} \). Why the qualifier &ldquo;at \( \theta_{\text{old}} \)&rdquo;?<br>
+<b>J.</b> Explain the PPO clip in both regimes of \( \hat A_t \). Why \( \min \) and not \( \max \)?<br>
+<b>K.</b> Write the full PPO loss. What is each of the three terms for? Which term is missing from p141?<br>
+<b>L.</b> Write the Bradley&ndash;Terry likelihood and its MLE objective. Which two properties are unmodelled?<br>
+<b>M.</b> Derive DPO: closed-form optimum, invert, substitute, cancel. <i>Exactly why</i> does \( Z(x) \) cancel?<br>
+<b>N.</b> Is DPO reward-free? Answer precisely.<br>
+<b>O.</b> PPO needs 4 models, DPO needs 2. What does PPO buy for that cost?
+</div>
+
+<p style="margin-top:10px;color:#9ca3af;font-size:8.4pt">
+Generated from <code>GenAI-IITM.pdf</code> p128&ndash;146 + <code>transript_RLHF.rtf</code>.
+Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
+<code>viz/build/build-notes.js</code>.</p>
+
+</body></html>

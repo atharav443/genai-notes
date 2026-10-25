@@ -1,0 +1,130 @@
+{
+  "site": {
+    "title": "Generative AI — Cheat Sheets",
+    "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes, each turned into a self-contained interactive cheat sheet and an undergraduate-level PDF — plus an essay in the mnemonic medium.",
+    "footer": "Each HTML file is fully self-contained (KaTeX pre-rendered, fonts inlined). Arithmetic and notation follow the source notes; the interactive demos are illustrative."
+  },
+  "topics": [
+    {
+      "id": "rlhf-curious",
+      "status": "ready",
+      "tag": "RLHF · essay",
+      "tagColor": "#111827",
+      "title": "RLHF, for the very curious",
+      "blurb": "The same material in a mnemonic medium: story-first prose, 47 inline recall cards, an Anki-importable deck. Source pages 128–146 + the lecture.",
+      "html": "html/RLHF-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "PDF",
+          "href": "pdf/RLHF-Curious.pdf"
+        },
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/rlhf/flashcards.tsv"
+        }
+      ]
+    },
+    {
+      "id": "rlhf-study-notes",
+      "status": "ready",
+      "tag": "RLHF",
+      "tagColor": "#be123c",
+      "title": "RLHF &amp; Alignment",
+      "blurb": "MDP → policy gradient → baseline/advantage → PPO → Bradley–Terry → DPO. Source pages 128–146, merged with the lecture transcript.",
+      "html": "html/RLHF-Study-Notes.html",
+      "cta": "Open reference sheet",
+      "extras": [
+        {
+          "label": "PDF",
+          "href": "pdf/RLHF-Study-Notes.pdf"
+        },
+        {
+          "label": "FULL.md",
+          "href": "notes/rlhf/FULL.md"
+        }
+      ]
+    },
+    {
+      "id": "gan",
+      "status": "ready",
+      "tag": "GAN",
+      "tagColor": "#7c3aed",
+      "title": "Generative Adversarial Networks",
+      "blurb": "f-divergence → VDM → GAN → WGAN → BiGAN → cGAN → FID. Source pages 7–42.",
+      "html": "html/GAN.html",
+      "cta": "Open cheat sheet",
+      "extras": [
+        {
+          "label": "PDF",
+          "href": "pdf/GAN.pdf"
+        }
+      ]
+    },
+    {
+      "id": "vae",
+      "status": "ready",
+      "tag": "VAE",
+      "tagColor": "#0d9488",
+      "title": "Variational Auto-Encoders",
+      "blurb": "MLE → Jensen → ELBO → EM/GMM → reparameterization → β-VAE → VQ-VAE. Source pages 43–71.",
+      "html": "html/VAE.html",
+      "cta": "Open cheat sheet",
+      "extras": [
+        {
+          "label": "PDF",
+          "href": "pdf/VAE.pdf"
+        }
+      ]
+    },
+    {
+      "id": "diffusion",
+      "status": "ready",
+      "tag": "Diffusion",
+      "tagColor": "#ea580c",
+      "title": "Diffusion Models",
+      "blurb": "DDPM → ELBO → denoising → U-Net → score → guidance → LDM → DDIM. Source pages 72–110.",
+      "html": "html/Diffusion.html",
+      "cta": "Open cheat sheet",
+      "extras": [
+        {
+          "label": "PDF",
+          "href": "pdf/Diffusion.pdf"
+        }
+      ]
+    },
+    {
+      "id": "vae-curious",
+      "status": "planned",
+      "tag": "VAE · essay",
+      "tagColor": "#0d9488",
+      "title": "VAEs, for the very curious",
+      "blurb": "The ELBO story in the mnemonic medium: why we maximise a bound, and what the reparameterization trick is really buying you.",
+      "html": null,
+      "cta": null,
+      "extras": []
+    },
+    {
+      "id": "diffusion-curious",
+      "status": "planned",
+      "tag": "Diffusion · essay",
+      "tagColor": "#ea580c",
+      "title": "Diffusion, for the very curious",
+      "blurb": "Noise as a curriculum: the forward process, the score, and why predicting epsilon is the same as denoising.",
+      "html": null,
+      "cta": null,
+      "extras": []
+    },
+    {
+      "id": "genai-maths-misc",
+      "status": "planned",
+      "tag": "Foundations",
+      "tagColor": "#475569",
+      "title": "Generative maths — misc",
+      "blurb": "Whatever else the Mathematical Foundations of Generative AI course covers: normalising flows, score matching, optimal transport.",
+      "html": null,
+      "cta": null,
+      "extras": []
+    }
+  ]
+}

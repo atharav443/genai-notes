@@ -1,0 +1,474 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>Diffusion Phase A - study sheet</title>
+<style>
+@page{size:A4 portrait;margin:11mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:8.4pt/1.32 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,sans-serif;color:#16161a;background:#fff}
+h1{font-size:14.5pt;letter-spacing:-.02em;line-height:1.1}
+.sub{font-size:8.2pt;color:#5c5c66;margin:2px 0 7px;border-bottom:2.5px solid #ea580c;padding-bottom:6px}
+h2{font-size:9.3pt;margin:7px 0 3px;padding-left:9px;border-left:3.5px solid #ea580c;font-weight:800;page-break-after:avoid}
+h3{font-size:8.8pt;margin:6px 0 2px;font-weight:800}
+p{margin:3px 0}
+.calc{font-family:ui-monospace,Menlo,monospace;font-size:7.8pt;line-height:1.34;background:#f6f4f0;
+  border:1px solid #e3e0da;border-left:3px solid #ea580c;border-radius:6px;padding:3px 7px;margin:3px 0;
+  white-space:pre-wrap;page-break-inside:avoid}
+.key{background:#16161a;color:#fff;border-radius:7px;padding:5px 9px;margin:4px 0;font-size:8.3pt;
+  line-height:1.38;page-break-inside:avoid}
+.key b{color:#fdba74}
+.warn{border:1.2px solid #f5b9ab;background:#fff6f3;border-radius:7px;padding:6px 9px;margin:5px 0;page-break-inside:avoid}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:5px 0}
+.three div{border:1px solid #e3e0da;border-radius:6px;padding:5px 7px;background:#fdfcfb;font-size:8pt}
+table.t{width:100%;border-collapse:collapse;font-size:8.2pt;margin:5px 0;page-break-inside:avoid}
+table.t th,table.t td{border:1px solid #e3e0da;padding:3px 6px;text-align:left;vertical-align:top}
+table.t th{background:#f6f4f0;font-weight:800;font-size:7.6pt}
+.mono{font-family:ui-monospace,Menlo,monospace}
+.qa{border:1px solid #e3e0da;border-radius:8px;margin:4px 0;overflow:hidden;page-break-inside:avoid}
+.q{background:#f6f4f0;padding:3.5px 8px;font-weight:700;font-size:8.3pt}
+.qn{display:inline-block;background:#ea580c;color:#fff;border-radius:4px;padding:1px 6px;font-size:7.4pt;font-weight:800;margin-right:6px}
+.ans{padding:3.5px 8px;background:#fff;border-bottom:1px solid #f0eee9}
+.al,.cl{display:block;font-size:7pt;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#8a8a94;margin-bottom:2px}
+.mine{font-style:italic;color:#3f3f46}
+.none{font-style:italic;color:#b3aea6}
+.verdict{padding:2px 9px;font-size:7.6pt;font-weight:800;letter-spacing:.04em}
+.verdict.ok{background:#e6f6f4;color:#0f766e}
+.verdict.part{background:#fff7ed;color:#9a3412}
+.verdict.miss{background:#fef2f2;color:#b91c1c}
+.corr{padding:3.5px 8px;background:#f1fbf9}
+.corr .cl{color:#0f766e}
+.corr p{margin:2px 0}
+</style></head><body>
+<h1>Diffusion &mdash; Study Sheet</h1>
+<div class="sub">Phases A &amp; B. Theory first, then the questions, my answers, and the corrections.</div>
+
+<h2 style="border-left-color:#16161a;margin-top:2px">PHASE A &mdash; What a DDPM actually is</h2>
+
+<h2>1 &middot; The goal hasn't changed</h2>
+<div class="calc">Data:    x&#8320; ~ P_{x&#8320;}              (data distribution)
+Goal:    learn to sample from P_{x&#8320;}</div>
+<p>Identical to the VAE goal. Everything in diffusion serves this one sentence.</p>
+
+<h2>2 &middot; Where we came from</h2>
+<div class="calc">        Encoder              Decoder
+x &#9472;&#9472;&#9654; z &#9472;&#9472;&#9654; x&#770;
+   one bottleneck, compressed (k &#8810; d)</div>
+
+<h2>3 &middot; The leap: a chain of latents (h-VAE)</h2>
+<div class="calc">ENCODING   x &#9654; z&#8321; &#9654; z&#8322; &#9654; z&#8323; &#9654; &#8230; &#9654; z_T
+DECODING   z_T &#9654; z_{T-1} &#9654; &#8230; &#9654; x
+
+A DDPM is an h-VAE. But the latents are NOT more abstract &#8212;
+they are MORE DESTROYED. A hierarchy of damage, not of abstraction.</div>
+
+<h2>4 &middot; The three properties that make it a DDPM</h2>
+<div class="three">
+<div><b>(a)</b> Multiple latent spaces<br><span class="mono">z&#8321; &#8230; z_T</span></div>
+<div><b>(b)</b> Same size as data<br><span class="mono">dim(z_t) = dim(x)</span></div>
+<div><b>(c)</b> Encoder is <b>FIXED</b><br>not learnable</div>
+</div>
+<div class="key">Property <b>(c)</b> is the deep one. Your notes (p73):<br>
+<span class="mono">VAE&nbsp; : q&#966;(z|x) : &#966; is a NN that learned<br>
+DDPM: q(z|x)&nbsp; : is FIXED &amp; not learnable</span><br><br>
+<b>&#8594; Diffusion removes one of VAE's two unknowns entirely.</b> There is no forward-side posterior to approximate &#8212; the forward process is arithmetic you define and control.</div>
+
+<h2>5 &middot; The notation trap</h2>
+<div class="calc">VAE:    x&#8321;, x&#8322;, &#8230;, x&#8345;     subscript = WHICH data point  (n examples)
+DDPM:   x&#8320;, x&#8321;, &#8230;, x_T     subscript = HOW MUCH NOISE     (T versions of ONE)
+
+x&#8320; &#9472;noise&#9472;&#9654; x&#8321; &#9472;noise&#9472;&#9654; x&#8322; &#9472;&#9654; &#8230; &#9472;&#9654; x_T
+image      slightly     more                pure
+           corrupted  corrupted             static</div>
+<p>Same symbol, different meaning. <b>T is a hyperparameter</b> (~1000 in practice).</p>
+
+<h2>6 &middot; What is learned vs what is fixed</h2>
+<table class="t">
+<tr><th>&nbsp;</th><th>VAE</th><th>Diffusion (DDPM)</th></tr>
+<tr><td>latents</td><td>one, <span class="mono">z</span></td><td>T of them, <span class="mono">x&#8321;&#8230;x_T</span></td></tr>
+<tr><td>latent dimension</td><td><span class="mono">k &#8810; d</span> (compressed)</td><td><span class="mono">k = d</span> (same size)</td></tr>
+<tr><td>encoder</td><td><b>learned</b> <span class="mono">q&#966;(z|x)</span></td><td><b>FIXED</b></td></tr>
+<tr><td>q is...</td><td>unknown &#8594; approximated</td><td>known exactly</td></tr>
+<tr><td>decoder</td><td>learned <span class="mono">P&#952;(x|z)</span></td><td>learned <span class="mono">P&#952;(x_{t-1}|x_t)</span></td></tr>
+<tr><td>ELBO</td><td>2 terms</td><td><b>3 terms</b></td></tr>
+<tr><td>sampling</td><td>1 pass from <span class="mono">N(0,I)</span></td><td><b>T sequential passes</b></td></tr>
+</table>
+<div class="calc">LEARNED  :  the REVERSE chain   x_T &#8594; x_{T-1} &#8594; &#8230; &#8594; x&#8320;
+FIXED    :  the FORWARD chain   x&#8320; &#8594; x&#8321; &#8594; &#8230; &#8594; x_T
+
+Train by destroying. Generate by un-destroying.</div>
+
+<h2>7 &middot; Why the bottleneck moved from size to noise</h2>
+<div class="calc">VAE bottleneck   =  TOO FEW NUMBERS   (k &#8810; d &#8212; information cannot fit)
+DDPM bottleneck  =  TOO MUCH NOISE    (information is destroyed)
+
+t = 0      &#257;_t = 1.0    &#8594;  the image, exact      100% signal
+t = T/2    &#257;_t ~ 0.5    &#8594;  half signal, half static
+t = T      &#257;_t ~ 0      &#8594;  x_T &#8776; &#949;               0% signal</div>
+<p>At <span class="mono">t=T</span>, <span class="mono">x_T</span> carries <b>no information</b> about <span class="mono">x&#8320;</span> &#8212; it is statistically independent of it. So the model cannot copy; it must <b>invent</b> what was destroyed, and it can only invent from what it has learned about the data distribution. That is the learning pressure VAE got from a narrow <span class="mono">z</span>.</p>
+<div class="key"><b>One-line summary.</b> A DDPM is a hierarchical VAE with <b>T</b> latents the same size as the data, where the encoder is <b>fixed arithmetic</b> instead of a learned network &#8212; so the only thing you learn is the reverse (denoising) chain, and the only thing you generate with is that same chain run backwards.</div>
+
+<h2 style="margin-top:13px">8 &middot; The questions, my answers, and the corrections</h2>
+
+<div class="qa">
+<div class="q"><span class="qn">Q1</span>What does the subscript mean in <span class="mono">x&#8321;&#8230;x&#8345;</span> (VAE) vs <span class="mono">x&#8320;&#8230;x_T</span> (DDPM) &#8212; and what is <span class="mono">x&#8323;</span> in each?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">In VAE all x1&#8230;xn are data points, but in DDPM x0 is data and other are latent variable at its respective T.</span></div>
+<div class="verdict ok">&#10003; CORRECT</div>
+<div class="corr"><span class="cl">Complete answer</span>
+<p>The <span class="mono">x&#8323;</span> comparison, spelled out:</p>
+<p><b>VAE:</b> <span class="mono">x&#8323;</span> = the <b>3rd image</b> in the dataset &#8212; a completely different picture from <span class="mono">x&#8321;</span>.<br>
+<b>DDPM:</b> <span class="mono">x&#8323;</span> = the <b>same single image</b> as <span class="mono">x&#8320;</span>, after 3 rounds of noise.</p>
+<p>So <span class="mono">x&#8321;&#8594;x&#8322;</span> in VAE means <i>different example</i>; in DDPM it means <i>same example, more damage</i>.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">Q2</span>DDPM has <span class="mono">dim(x_t) = dim(x&#8320;)</span>, yet VAE insists <span class="mono">k &#8810; d</span>. Why no compressed latent? What plays the bottleneck's role instead?</div>
+<div class="ans"><span class="al">My answer</span><span class="none">(not attempted)</span></div>
+<div class="verdict miss">&#8212; SKIPPED</div>
+<div class="corr"><span class="cl">Answer</span>
+<p>VAE's bottleneck is <b>dimensional</b>: you cannot fit 784 numbers into 32, so the model must discard information and keep only what matters.</p>
+<p>DDPM keeps full size, so the bottleneck must come from elsewhere: <b>the noise</b>. At <span class="mono">t = T</span>, <span class="mono">x_T</span> is essentially <span class="mono">&#949;</span> &#8212; the information is <i>gone</i>, not merely squeezed. So the model still cannot copy; it must supply the missing structure from what it learned.</p>
+<p>And it is arguably <i>better</i>: VAE has <b>one</b> bottleneck level, DDPM has <b>T</b> &#8212; a smooth ramp from 100% signal to 0%, giving T distinct training difficulties instead of one.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">Q3</span>&ldquo;DDPM: only decoding is learned.&rdquo; Which VAE machinery does that let us <b>skip</b> &#8212; and why was it needed in VAE?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">the fied encoder facilittes the DDPM to skip encoder mechanism of VAE</span></div>
+<div class="verdict part">&#9888; RIGHT INSTINCT &mdash; NEEDED PRECISION</div>
+<div class="corr"><span class="cl">Corrected</span>
+<p>Not just &ldquo;skip the encoder&rdquo;. What is actually skipped:</p>
+<div class="calc">a LEARNED encoder q&#966;(z|x)      &#8594; no encoder network at all
+the variational APPROXIMATION    &#8594; q is KNOWN exactly (fixed arithmetic)
+the ELBO gap on the forward side &#8594; q is dictated, not chosen</div>
+<p>In VAE you had to <i>invent</i> <span class="mono">q</span> because the true posterior was intractable, then live with a loose bound. In DDPM there is nothing to invent &#8212; the forward process <b>is</b> the <span class="mono">q</span>.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">Q4</span>True or false: <i>&ldquo;x_T is a compact, abstract representation of x&#8320;, like z in a VAE.&rdquo;</i></div>
+<div class="ans"><span class="al">My answer</span><span class="mine">False , in vae it was latent represntation of x , but in DDPM its noisy</span></div>
+<div class="verdict ok">&#10003; CORRECT CONCLUSION &mdash; ONE WORD TO SHARPEN</div>
+<div class="corr"><span class="cl">Sharper</span>
+<p>&ldquo;Noisy&rdquo; suggests the information is still there, just hidden. <b>It isn't.</b></p>
+<div class="calc">"noisy"    &#8594;  information present but obscured
+REALITY    &#8594;  information GONE
+
+q(x_T) ~ N(0,I)  REGARDLESS of which x&#8320; you started from
+                 &#8756; knowing x_T tells you NOTHING about x&#8320;</div>
+<p><b>Better phrasing:</b> <i>&ldquo;In VAE, z is a compressed semantic representation of x. In DDPM, x_T is pure noise, statistically independent of x&#8320; &#8212; it represents nothing at all.&rdquo;</i></p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">Q2',</span>In one sentence each: what is VAE's bottleneck <b>made of</b>, and what is DDPM's <b>made of</b>?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">VAE's bottleneck made of single hard compressin from x -&gt; z , but DDPM is made of T steps . This helps DDPM denoising the noisy image .</span></div>
+<div class="verdict part">&#9888; RIGHT SHAPE &mdash; WRONG SUBSTANCE</div>
+<div class="corr"><span class="cl">Corrected</span>
+<p>You described the <b>granularity</b>, not the <b>substance</b>:</p>
+<div class="calc">VAE bottleneck   =  TOO FEW NUMBERS    (k &#8810; d)
+DDPM bottleneck  =  TOO MUCH NOISE     (information destroyed)</div>
+<p>&ldquo;T steps&rdquo; is a genuine bonus (more granularity, T training signals instead of 1) &#8212; but it is not <i>what the constraint is</i>. The constraint is that at <span class="mono">t=T</span> the signal is zero.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">Q3',</span>VAE needed the reparameterization trick to make the encoder trainable. DDPM also samples randomly (<span class="mono">&#949;_t</span>), yet never needs it. Why not?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">the reparameterization is not skipped but the term isalray their i equation</span></div>
+<div class="verdict ok">&#10003; CORRECT</div>
+<div class="corr"><span class="cl">Completed &mdash; the precise reason</span>
+<div class="calc">VAE :  z ~ q&#966;(z|x)     distribution PARAMETERISED BY &#966;
+       &#8711;&#966; E_q[ &#183; ]    &#8594; cannot move &#8711; inside: q depends on &#966;
+                       &#8756; needed the trick to expose &#956;, &#963;
+
+DDPM:  &#949; ~ N(0, I)       INDEPENDENT of &#952;
+       &#8711;&#952; E_&#949;[ &#183; ]    &#8594; CAN move &#8711; inside: &#949; does not depend on &#952;
+                       &#8756; nothing to fix</div>
+<p>The forward equation <span class="mono">x_t = &#8730;&#945;_t x_{t-1} + &#8730;(1&#8722;&#945;_t)&#949;_t</span> <b>is already</b> the reparameterized form &#8212; mean + std &#215; external noise. The solution derived in VAE's Phase D is simply <i>given</i> here.</p>
+<div class="key" style="margin-top:4px"><b>Key distinction:</b> in VAE the randomness sits <b>between the parameters and the loss</b>. In DDPM it sits <b>upstream of everything</b>, baked into the input. <span class="mono">x_t</span> is an <i>input</i> to the network, not an output of it &#8212; so <span class="mono">&#8711;&#952;</span> never passes through a random draw.</div></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">Q5</span>If DDPM keeps <span class="mono">dim(x_t) = dim(x&#8320;)</span>, why doesn't it just learn the identity and copy the input?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">to make the DDPM learn we create that noisy image at X_t just so that it doesnt copy the same input to produces output at x_t</span></div>
+<div class="verdict ok">&#10003; CORRECT</div>
+<div class="corr"><span class="cl">Sharpened</span>
+<p>Right &#8212; and the reason is stronger than &ldquo;can't copy&rdquo;. Without noise the task would be <span class="mono">x_t = x&#8320; &#8594; x&#770; = x&#8320;</span>: learn the identity, learn nothing.</p>
+<div class="key" style="margin-top:4px">The noise is not merely a blocker &#8212; <b>it is what creates the learning signal.</b> The corrupted parts of <span class="mono">x_t</span> are <i>gone</i>. To restore them the model must <b>invent</b> them, and it can only invent from what it has learned about how data looks.<br><br>Same function as VAE's bottleneck: <b>destroy information so the model must supply it from learned knowledge rather than passing it through.</b></div></div>
+</div>
+<div style="page-break-before:always"></div>
+
+<h1 style="font-size:13.5pt;border-top:2.5px solid #ea580c;padding-top:7px;margin-top:0">Phase B &mdash; Forward: the fixed destruction</h1>
+<div class="sub">Source p74&ndash;75. The shortest phase in the topic &mdash; <b>nothing is learned here.</b></div>
+
+<h2>B1 &middot; The equation</h2>
+<div class="calc">x_t  =  &#8730;&#945;_t &#183; x_{t-1}  +  &#8730;(1 &#8722; &#945;_t) &#183; &#949;_t ,      &#949;_t ~ N(0, I)
+        &#9472;&#9472;&#9472; signal &#9472;&#9472;&#9472;     &#9472;&#9472;&#9472;&#9472;&#9472;&#9472; new noise &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+
+x&#8321; = &#8730;&#945;&#8321; x&#8320; + &#8730;(1&#8722;&#945;&#8321;) &#949;&#8321;
+x&#8322; = &#8730;&#945;&#8322; x&#8321; + &#8730;(1&#8722;&#945;&#8322;) &#949;&#8322;
+   &#8942;
+x_T = &#8730;&#945;_T x_{T-1} + &#8730;(1&#8722;&#945;_T) &#949;_T</div>
+<p>And the key constraint (p74): <b><span class="mono">&#945;&#8321; &#8230; &#945;_T</span> are fixed scalars in <span class="mono">[0,1]</span>.</b> Chosen by us. Not learned. Not optimised.</p>
+
+<h2>B2 &middot; What actually happens</h2>
+<div class="calc">   x&#8320;          x&#8321;          x&#8322;       &#8230;      x_T
+ &#9484;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;   &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;        &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+ &#9474;image&#9474; &#8594;  &#9474;+ noise&#9474; &#8594; &#9474;+ more &#9474;  &#8594;     &#9474;  pure  &#9474;
+ &#9492;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;   &#9474;+ noise&#9474;        &#9474; static &#9474;
+                         &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;        &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+  100% signal  &#945;&#8321; signal   &#945;&#8322;&#945;&#8321; signal        ~0%
+
+  "clean" &#8594; "noisy" &#8594; "noisier" &#8594; &#8230; &#8594; "noise only"</div>
+<p>Each step mixes in a <b>fresh</b> noise draw. <span class="mono">&#949;&#8321; &#8800; &#949;&#8322; &#8800; &#949;&#8323;</span> &mdash; never reused.</p>
+
+<h2>B3 &middot; The Markov property</h2>
+<div class="calc">x_t  &#8869;&#8869;  x_{t-2} &#8230; x&#8320;  |  x_{t-1}</div>
+<p>Read as: <b>once you know <span class="mono">x_{t-1}</span>, everything earlier is irrelevant.</b> No memory beyond one step. This is what later lets you factorise <span class="mono">q(x_{1:T}|x&#8320;) = &#8719; q(x_t|x_{t-1})</span> &mdash; a product instead of an intractable joint.</p>
+
+<h2>B4 &middot; So each step is a simple Gaussian</h2>
+<div class="calc">q(x_t | x_{t-1})  =  N( x_t ;  &#8730;&#945;_t &#183; x_{t-1} ,  (1 &#8722; &#945;_t) I )
+                              &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;   &#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;
+                                  mean              variance</div>
+<p><b>You can write this down in closed form.</b> That is the entire point &mdash; no network, no ELBO, no approximation. Just <span class="mono">q</span>.</p>
+
+<h2>B5 &middot; Why exactly &#8730;&#945; and &#8730;(1&#8722;&#945;)?</h2>
+<p>They are chosen so that <b>variance is preserved</b>:</p>
+<div class="calc">Var(x_t) = Var( &#8730;&#945;_t x_{t-1} + &#8730;(1&#8722;&#945;_t) &#949;_t )
+         = &#945;_t &#183; Var(x_{t-1})  +  (1&#8722;&#945;_t) &#183; 1        (independent parts add; Var(&#949;)=1)
+
+if Var(x_{t-1}) = 1 :   = &#945;_t + (1 &#8722; &#945;_t)  =  1     &#10003;</div>
+<p>So <b>every</b> <span class="mono">x_t</span> has unit variance, including <span class="mono">x_T</span>. That is precisely why your notes can claim:</p>
+<div class="key"><b><span class="mono">q(x_T) ~ N(0, I)</span> &mdash; the stationary distribution of the Markov chain.</b><br><br>
+The schedule is <b>engineered so that <span class="mono">N(0,I)</span> is the fixed point</b> of the destruction process. Two consequences: (1) the final latent distribution is known exactly, so sampling starts from <span class="mono">N(0,I)</span> with no guesswork; (2) information decays <b>smoothly</b> from 100% to ~0%, giving T graded difficulty levels.</div>
+
+<h2>B6 &middot; What is NOT in this phase</h2>
+<p>No loss. No ELBO. No gradients. No network. If this phase felt anticlimactic &mdash; <b>good, it should.</b> The forward process is the setup, deliberately trivial so that training has a target with a known, exact answer.</p>
+
+<h2>B7 &middot; Preview: the closed-form shortcut</h2>
+<div class="calc">q(x_t | x&#8320;) = N( &#8730;&#257;_t &#183; x&#8320; ,  (1 &#8722; &#257;_t) I )        where  &#257;_t = &#8719;_{i=1..t} &#945;_i</div>
+<p>Your notes derive this on p85&ndash;86 (Phase E). It is what makes training practical: pick a random <span class="mono">t</span> and construct <span class="mono">x_t</span> <b>immediately</b>, with no loop.</p>
+
+<h2 style="margin-top:13px">Phase B &mdash; the questions, my answers, and the corrections</h2>
+
+<div class="qa">
+<div class="q"><span class="qn">B-Q1</span>Write the forward step <span class="mono">x_t</span> in terms of <span class="mono">x_{t-1}</span>, and say which symbol is (a) fixed by you, (b) drawn fresh each step.</div>
+<div class="ans"><span class="al">My answer (1st attempt)</span><span class="mine">I cant write the full equation , but the fixed part is second term and first part where we have x t_1 is which is calculated at each t step</span></div>
+<div class="verdict miss">&#10007; THE SPLIT WAS BACKWARDS</div>
+<div class="corr"><span class="cl">Corrected</span>
+<div class="calc">x_t  =  &#8730;&#945;_t &#183; x_{t-1}  +  &#8730;(1&#8722;&#945;_t) &#183; &#949;_t
+        &#9472;&#9516;&#9472;   &#9472;&#9516;&#9472;     &#9472;&#9472;&#9516;&#9472;&#9472;   &#9516;
+      fixed   carried   fixed   DRAWN FRESH</div>
+<p><b>The error:</b> &ldquo;the second term is fixed&rdquo; &mdash; but <span class="mono">&#949;_t</span> lives in the second term, and it is the one random thing. The alphas are fixed in <i>both</i> terms.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">B-Q1'</span>Retry: which symbol is fixed, which is drawn fresh, which is neither?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">the aplha terms are fixed , the x_t-1 is inherited from last steo and epislon term i s random noise added in each step different</span></div>
+<div class="verdict ok">&#10003; CORRECT &mdash; ALL THREE</div>
+<div class="corr"><span class="cl">Confirmed</span>
+<p>Exactly right now: <b>&#945;</b> fixed, <b>x_{t-1}</b> inherited, <b>&#949;_t</b> fresh and different every step. This is the foundation the rest of diffusion is built on &mdash; good that it is clean now.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">B-Q2</span>Where exactly does the <span class="mono">(1&#8722;&#945;_t)I</span> come from? Show the reasoning, don't just quote the formula.</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">it is to adjust the variance , if x_t-1 is 1 then variance become unit . so to have variance 1 we add the alpha -1 term</span></div>
+<div class="verdict ok">&#10003; CORRECT CONCEPT</div>
+<div class="corr"><span class="cl">Tightened</span>
+<div class="calc">Var(x_t) = &#945;_t &#183; Var(x_{t-1})  +  (1&#8722;&#945;_t) &#183; 1
+                                  &#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;
+                    if Var(x_{t-1}) = 1 :
+         = &#945;_t + (1 &#8722; &#945;_t)  =  1     &#10003;</div>
+<p><b>Why <span class="mono">(1&#8722;&#945;_t)</span> specifically:</b> <span class="mono">&#945;_t</span> is already used up scaling the signal. Whatever fraction of variance the signal keeps (<span class="mono">&#945;_t</span>), the noise must receive exactly the remainder to bring the total back to 1 &mdash; two halves of a budget that must sum to one.</p>
+<p class="small">Minor: the term is <span class="mono">(1&#8722;&#945;_t)</span>, not &ldquo;alpha&minus;1&rdquo;.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">B-Q3</span>Prove <span class="mono">Var(x_{t-1})=1 &#8658; Var(x_t)=1</span>, then explain why that lets the notes claim <span class="mono">q(x_T) ~ N(0,I)</span>.</div>
+<div class="ans"><span class="al">My answer (1st attempt)</span><span class="mine">BECAUSE X_T VARIANCE IS 1 THEN WE CAN SAY q(x_t) as N(0,I)</span></div>
+<div class="verdict part">&#9888; HALF RIGHT &mdash; VARIANCE IS NOT ENOUGH</div>
+<div class="corr"><span class="cl">Corrected</span>
+<p><span class="mono">N(0,I)</span> needs <b>two</b> things: mean <b>0</b> <i>and</i> variance <b>1</b>. You covered only the variance.</p>
+<div class="calc">q(x_t) = N( &#8730;&#257;_t &#183; x&#8320; ,  (1 &#8722; &#257;_t) I )
+          &#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;   &#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;
+           MEAN        VARIANCE
+
+at t = T,  &#257;_T &#8776; 0 :
+   mean     = &#8730;0 &#183; x&#8320;  =  0      &#10003;
+   variance = 1 &#8722; 0      =  1      &#10003;</div>
+<p><b>Why the mean matters more than it seems:</b> suppose variance were 1 but the mean were still <span class="mono">&#8730;&#257;_T x&#8320;</span> with <span class="mono">&#257;_T</span> not small. Then <span class="mono">x_T</span> would still be <i>centred on a scaled copy of x&#8320;</i> &mdash; you could read the image off the mean. It is the <b>vanishing mean</b> that destroys the information; unit variance merely makes it <i>standard</i>.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">B-Q3'</span>Name <b>both</b> conditions for <span class="mono">q(x_T) ~ N(0,I)</span> &mdash; and which single quantity causes both.</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">first means should go to zero , then only the variance becomes 1 . whcih makes N(0,I)</span></div>
+<div class="verdict part">&#9888; BOTH CONDITIONS NAMED &mdash; CAUSALITY WRONG</div>
+<div class="corr"><span class="cl">Corrected</span>
+<p>You named both conditions correctly. But <b>&ldquo;first&hellip;then&rdquo; is wrong</b> &mdash; they are not sequential, and the mean going to zero does not <i>cause</i> the variance to become 1.</p>
+<div class="calc">BOTH happen at once, from ONE cause:   &#257;_T &#8776; 0
+
+   &#257;_T &#8776; 0   &#8594;   mean     = &#8730;&#257;_T x&#8320;  &#8594; 0     (signal term dies)
+   &#257;_T &#8776; 0   &#8594;   variance = 1 &#8722; &#257;_T   &#8594; 1     (noise takes full budget)</div>
+<p><b>The single quantity is <span class="mono">&#257;_T</span></b> (the cumulative product of alphas). It does both jobs simultaneously &mdash; kills the signal <i>and</i> hands the full variance to the noise.</p>
+<div class="key" style="margin-top:4px"><b>Correct phrasing:</b> <i>&ldquo;<span class="mono">&#257;_T &#8776; 0</span> causes both: the mean &rarr; 0 and the variance &rarr; 1. Together that is <span class="mono">N(0,I)</span>.&rdquo;</i></div></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">B-Q4</span>The notes say <span class="mono">&#945;&#8321;&#8230;&#945;_T</span> are <i>&ldquo;fixed scalars&rdquo;</i>. What would go wrong if you <b>learned</b> them like network weights?</div>
+<div class="ans"><span class="al">My answer</span><span class="none">(didn't understand)</span></div>
+<div class="verdict miss">&#8212; NEEDED THE ANSWER</div>
+<div class="corr"><span class="cl">Answer &mdash; it would let the model CHEAT</span>
+<p>If <span class="mono">&#945;_t</span> were learnable, gradient descent would push <span class="mono">&#945;_t &#8594; 1</span>:</p>
+<div class="calc">&#945;_t = 1  &#8658;  x_t = &#8730;1 &#183; x_{t-1} + &#8730;0 &#183; &#949;_t = x_{t-1}
+         &#8658;  x_t = x_{t-1} = &#8230; = x&#8320;      &#8592; NO NOISE AT ALL
+
+task becomes:   input x_t = x&#8320;  &#8594;  predict x&#8320;  &#8594;  output x&#8320;</div>
+<div class="key" style="margin-top:4px">Learning <span class="mono">&#945;</span> would let the model choose <b>&ldquo;add no noise&rdquo;</b> &mdash; making training trivially easy (the identity function) and completely useless. <b>The noise is what CREATES the learning signal. If you let the model tune the noise away, it will.</b></div>
+<p><b>Three more reasons (for completeness):</b></p>
+<p><b>&#9312; The ELBO assumes q is fixed.</b> A learned q returns you to full variational inference &mdash; losing the entire Phase A advantage.</p>
+<p><b>&#9313; Training needs x_t in closed form.</b> You construct x_t yourself to get a free supervised target. If &#945; moved, the target drifts every step.</p>
+<p><b>&#9314; It is a design decision, not a data parameter.</b> &#945; encodes <i>&ldquo;how fast do I want to destroy the signal&rdquo;</i> &mdash; tuned for sample quality. It is not a property of the data distribution.</p></div>
+</div>
+
+
+<div style="page-break-before:always"></div>
+
+<h1 style="font-size:13.5pt;border-top:2.5px solid #ea580c;padding-top:7px;margin-top:0">Phase C &mdash; Reverse: the model itself</h1>
+<div class="sub">Source p76. Short phase &mdash; but this is the first one where we meet <b>the model</b> rather than the setup.</div>
+
+<h2>C1 &middot; The model is a factorisation</h2>
+<div class="calc">P&#952;(x&#8320;, x&#8321;, &#8230;, x_T)  =  P(x_T) &#183; &#8719;_{t=1}^{T} P&#952;(x_{t-1} | x_t)
+                        &#9472;&#9472;&#9516;&#9472;&#9472;   &#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;
+                     starting     each reverse
+                   distribution      step
+
+start  &#8594;  x_T  &#8594;  x_{T-1}  &#8594;  &#8230;  &#8594;  x&#8321;  &#8594;  x&#8320;
+        (noise)                          (image)</div>
+<p><b>This joint IS &ldquo;the diffusion model.&rdquo;</b> When someone says &ldquo;a diffusion model&rdquo;, this product is what they mean.</p>
+
+<h2>C2 &middot; One step, in detail</h2>
+<div class="calc">P&#952;(x_{t-1} | x_t)  =  N( x_{t-1} ;  &#956;&#952;(x_t) , &#931;&#952;(x_t) )
+                                     &#9472;&#9472;&#9516;&#9472;&#9472;   &#9472;&#9472;&#9516;&#9472;&#9472;
+                                  learned   learned</div>
+<p>Your notes (p76): <i>&ldquo;<b>&#956;&#952;(x_t) &amp; &#931;&#952;(x_t) are learned via ELBO.</b>&rdquo;</i></p>
+
+<h2>C3 &middot; &#9888; The direction trap</h2>
+<div class="calc">FORWARD  (q, FIXED):      q(x_t | x_{t-1})       cleaner &#8594; noisier
+                              &#8593;       &#8593;
+                           output    input
+
+REVERSE  (P&#952;, LEARNED):  P&#952;(x_{t-1} | x_t)     noisier &#8594; cleaner
+                              &#8593;       &#8593;
+                           output    input</div>
+<table class="t">
+<tr><th>at t = 500</th><th>question asked</th></tr>
+<tr><td>forward q</td><td>&ldquo;given x&#8324;&#8329;&#8329;, what does x&#8325;&#8320;&#8320; look like?&rdquo;</td></tr>
+<tr><td>reverse P&#952;</td><td>&ldquo;given x&#8325;&#8320;&#8320;, what was x&#8324;&#8329;&#8329;?&rdquo;</td></tr>
+</table>
+<div class="key">Same two letters. <b>Opposite arrow.</b> The vertical bar flipped sides &mdash; the input/output roles swapped.<br><br>If you ever feel lost in diffusion, <b>check which way the bar points.</b> Half the confusion evaporates.</div>
+
+<h2>C4 &middot; What is fixed vs what is learned</h2>
+<div class="calc">P(x_T)  =  N(0, I)                &#8592; FIXED. Not learned. Note: NO &#952;.
+                                      Known because the forward chain ends there.
+
+P&#952;(x_{t-1}|x_t) = N(&#956;&#952;, &#931;&#952;)      &#8592; LEARNED. This is ALL of the training.
+
+model  =  T learned transitions  +  1 fixed starting distribution</div>
+<div class="key">The starting distribution costs nothing because <b>Phase B engineered it</b>: the variance-preserving schedule makes <span class="mono">N(0,I)</span> the <b>stationary distribution</b> of the forward chain. The forward process <b>manufactured your starting distribution for free</b> &mdash; which is why diffusion can sample from nothing.</div>
+<p class="small">Notational note: the notes write <span class="mono">P&#952;(x_T)</span> in the factorisation but then <span class="mono">P(x_T) = N(0,I)</span> with no &#952;. The intent is that it is fixed, not learned.</p>
+
+<h2>C5 &middot; The VAE parallel</h2>
+<div class="calc">VAE:    P&#952;(x, z)      =  P&#952;(x | z)      &#183; P(z)
+                             decoder        prior
+
+DDPM:   P&#952;(x&#8320;, x&#8321;&#8230;x_T) =  P&#952;(x&#8320;|x&#8321;) &#183; P&#952;(x&#8321;|x&#8322;) &#183; &#8230; &#183; P(x_T)
+                             &#8593;  T decoders, chained</div>
+<p>VAE has <b>one</b> decode step <span class="mono">z &#8594; x</span>. DDPM has <b>T</b> decode steps. That is the entire structural difference.</p>
+
+<h2>C6 &middot; Why is the reverse Markov? (be careful)</h2>
+<p>Your notes say (p76): <i>&ldquo;arises because of the <b>Markovian (1st order) assumption in the reverse direction</b>&hellip;&rdquo;</i> &mdash; note the word <b>assumption</b>.</p>
+<div class="calc">FORWARD:   x_t depends ONLY on x_{t-1}        &#10003; genuinely Markov (by construction)
+
+REVERSE:   x_{t-1} depends on x_t AND x&#8320;
+           q(x_{t-1}|x_t) = &#8747; q(x_{t-1}|x_t,x&#8320;) &#183; q(x&#8320;|x_t) dx&#8320;
+                             &#9472;&#9472; tractable &#9472;&#9472;   &#9472;&#9472; the problem &#9472;&#9472;</div>
+<p><b>Many different x&#8320; can produce similar x_t</b>, so knowing x_t does not tell you which one it was. Reversing a Markov chain does <b>not</b> give a Markov chain.</p>
+<p><b>Analogy:</b> heat spreading through metal is perfectly Markov going forward. But you cannot reverse it from one frame &mdash; <i>&ldquo;the metal is warm in the middle&rdquo;</i> doesn&#8217;t tell you whether it started warm on the left or the right.</p>
+<div class="key"><b>Consequence:</b> <span class="mono">P&#952;(x_{t-1}|x_t)</span> is an <b>approximation</b>, not the true reverse. Its cost appears in Phase D&#8217;s <b>consistency term</b>, which compares our Markov model against the honest <span class="mono">q(x_{t-1}|x_t,x&#8320;)</span>.</div>
+
+<h2>C7 &middot; One network, T uses</h2>
+<div class="calc">&#10007;  T separate networks, one per timestep   &#8594;  T &#215; parameters. Absurd.
+&#10003;  ONE network, reused at every step, with t as an INPUT
+
+model =  &#949;&#952;(x_t, t)      or     &#956;&#952;(x_t, t)
+              &#8593;
+        the second argument is essential</div>
+<p><b>Why t must be an input:</b> the <i>same weights</i> must behave completely differently at</p>
+<div class="calc">t = 900   &#8594;  almost pure noise, must invent most of the image
+t = 5     &#8594;  barely noisy, only a small nudge needed</div>
+<p>One network cannot do both unless it knows <b>which timestep</b> it is in. That is why Phase F needs <b>positional embeddings of t</b> (p91).</p>
+<div class="key" style="background:#0d9488"><b>Phase C in one line.</b> The model is the product <span class="mono">P(x_T)&#8719;P&#952;(x_{t-1}|x_t)</span> &mdash; a fixed <span class="mono">N(0,I)</span> start times T learned Gaussian reverse steps, each conditioning on the <i>noisier</i> variable and producing the <i>cleaner</i> one, all sharing one t-conditioned network.</div>
+
+<h2 style="margin-top:13px">Phase C &mdash; the questions, my answers, and the corrections</h2>
+
+<div class="qa">
+<div class="q"><span class="qn">C-Q1</span>Write the DDPM joint as a product. Which factor(s) are <b>learned</b>, which is <b>fixed</b> &mdash; and why does the fixed one cost nothing?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">The distrbution we got from output of encoder p_0(x_t) is fixed here and the product of p_0(x_t-1 | x t) is what would be changing</span></div>
+<div class="verdict miss">&#10007; &#8220;ENCODER&#8221; IS THE WRONG INSTINCT</div>
+<div class="corr"><span class="cl">Corrected</span>
+<p><b>&#9312; There is no encoder in the reverse process.</b> In VAE, <span class="mono">z</span> came out of a <i>learned network</i>. Here <span class="mono">x_T</span> is simply <span class="mono">N(0,I)</span> &mdash; nothing computes it.</p>
+<div class="calc">GENERATIVE MODEL:   x_T ~ N(0, I)                  &#8592; sampled directly. No network.
+TRAINING DATA:      x&#8320; &#8592;forward q&#8594; x_T                &#8592; fixed arithmetic. No network.
+                    (q has NO learned parameters at all)</div>
+<p><b>&#9313; The symbol is <span class="mono">P(x_T)</span>, not <span class="mono">P&#952;(x_t)</span>.</b> The missing &#952; <i>is</i> the point &mdash; it signals &#8220;not learned&#8221;.</p>
+<div class="calc">P&#952;(x&#8320;&#8230;x_T) = P(x_T) &#183; &#8719;_{t=1..T} P&#952;(x_{t-1}|x_t)
+                &#9472;&#9472;&#9516;&#9472;&#9472;   &#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;
+             FIXED=N(0,I)   LEARNED (T factors)</div>
+<p><b>Why it costs nothing:</b> Phase B engineered the schedule so <span class="mono">N(0,I)</span> is the <b>stationary distribution</b> of the forward chain. The endpoint is <span class="mono">N(0,I)</span> <i>by construction</i> &mdash; nothing to learn or approximate. <b class="mono">The forward process manufactured your starting distribution for free.</b></p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">C-Q1'</span>Retry: (a) where does x_T come from, (b) which factor is fixed/learned, (c) why is the fixed factor free?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">a. x_T is encoders output , b. first term p0(x_T) second is learned c. fixed factor are alphas</span></div>
+<div class="verdict miss">&#10007; SAME ERROR REPEATED &mdash; PLUS A MISREAD OF (c)</div>
+<div class="corr"><span class="cl">Corrected &mdash; all three</span>
+<p><b>(a) &#10007;</b> Still the encoder. <b>No network produces <span class="mono">x_T</span></b>, in either context (see the calc box in C-Q1). VAE&#8217;s encoder was a <i>learned network with weights &#966;</i>; diffusion has nothing like that.</p>
+<p><b>(b) &#9888;</b> Right shape, two fixes: it is <span class="mono">P(x_T)</span> with <b>no &#952;</b>; and there are <b>T</b> learned factors, not one.</p>
+<p><b>(c) &#10007;</b> The alphas <i>are</i> fixed, but they are <b>schedule parameters</b>, not a factor in the joint. The fixed <b>factor</b> is <span class="mono">P(x_T) = N(0,I)</span>. And the reason it is free is the <b>stationary-distribution</b> property from Phase B &mdash; not the alphas themselves.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">C-Q2</span>Compare <span class="mono">q(x_t|x_{t-1})</span> with <span class="mono">P&#952;(x_{t-1}|x_t)</span>: which goes cleaner&#8594;noisier, which is learned, and what changes about the bar?</div>
+<div class="ans"><span class="al">My answer</span><span class="mine">q(x_t|x_t-1 ) gors from cleanear to noiser , the P_0 is what learned , it changes what direction its working</span></div>
+<div class="verdict ok">&#10003; CORRECT ON ALL THREE</div>
+<div class="corr"><span class="cl">Sharpened (c)</span>
+<div class="calc">q(x_t | x_{t-1})      INPUT (right of bar) = the CLEANER one  &#8594; output noisier
+                      FORWARD, fixed
+
+P&#952;(x_{t-1} | x_t)    INPUT (right of bar) = the NOISIER one  &#8594; output cleaner
+                      REVERSE, learned</div>
+<p>The bar keeps its position visually, but <b>the input/output roles swap</b>. Same index pair <span class="mono">(t-1, t)</span>, arrow running in opposite directions.</p></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">C-Q3</span>A colleague says: <i>&ldquo;The reverse is Markov because the forward is &mdash; reversibility preserves the property.&rdquo;</i> Correct?</div>
+<div class="ans"><span class="al">My answer</span><span class="none">(not attempted)</span></div>
+<div class="verdict miss">&#8212; ANSWERED</div>
+<div class="corr"><span class="cl">Answer &mdash; FALSE, and it is the key subtlety</span>
+<p><b>Reversing a Markov chain does not give a Markov chain.</b></p>
+<div class="calc">FORWARD:  x_t depends ONLY on x_{t-1}        &#10003; genuinely Markov
+REVERSE:  x_{t-1} depends on x_t AND x&#8320;
+          q(x_{t-1}|x_t) = &#8747; q(x_{t-1}|x_t,x&#8320;) q(x&#8320;|x_t) dx&#8320;</div>
+<p>Many different <span class="mono">x&#8320;</span> produce similar <span class="mono">x_t</span>, so <span class="mono">x_t</span> under-determines where you came from.</p>
+<p><b>Analogy:</b> heat spreading through metal is Markov forward, but one frame does not tell you whether it started warm on the left or the right.</p>
+<div class="key" style="margin-top:4px">So <span class="mono">P&#952;(x_{t-1}|x_t)</span> is an <b>approximation</b>. Its cost appears in Phase D&#8217;s <b>consistency term</b>, which compares it against the honest <span class="mono">q(x_{t-1}|x_t,x&#8320;)</span>.</div></div>
+</div>
+
+<div class="qa">
+<div class="q"><span class="qn">C-Q4</span>Why does &#952; appear in every transition, yet we need not use T separate networks? What must the network receive as input?</div>
+<div class="ans"><span class="al">My answer</span><span class="none">(not attempted)</span></div>
+<div class="verdict miss">&#8212; ANSWERED</div>
+<div class="corr"><span class="cl">Answer</span>
+<div class="calc">one network:   &#949;&#952;(x_t, t)    or    &#956;&#952;(x_t, t)
+                     &#8593;
+             t is an INPUT, not a parameter</div>
+<div class="calc">t = 900  &#8594;  almost pure noise, must invent most of the image
+t = 5    &#8594;  barely noisy, only a small nudge needed</div>
+<p>One set of weights cannot do both unless it knows <b>which timestep</b> it is in. Hence <span class="mono">t</span> is fed in &mdash; and Phase F gives it a <b>sinusoidal positional embedding</b> (p91).</p>
+<div class="key" style="margin-top:4px"><b>&#952; is one number-set; t is the switch that reconfigures it for each of the T steps.</b></div></div>
+</div>
+
+</body></html>

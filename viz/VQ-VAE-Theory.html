@@ -1,0 +1,186 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>VQ-VAE — complete theory</title>
+<style>
+@page{size:A4 portrait;margin:11mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:8.3pt/1.34 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,sans-serif;color:#16161a;background:#fff}
+.page{padding:0}
+h1{font-size:15pt;letter-spacing:-.02em;line-height:1.1}
+.sub{font-size:8.2pt;color:#5c5c66;margin:2px 0 6px;border-bottom:2.5px solid #0d9488;padding-bottom:6px}
+h2{font-size:9.3pt;letter-spacing:-.01em;margin:8px 0 4px;padding-left:9px;border-left:3.5px solid #0d9488;font-weight:800}
+h2 .pn{font-size:7.4pt;background:#0d9488;color:#fff;border-radius:4px;padding:1px 5px;margin-right:6px;vertical-align:1px}
+p{margin:3px 0}
+.card{border:1px solid #e3e0da;border-radius:8px;padding:6px 9px;background:#fdfcfb;margin:5px 0}
+.calc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:8.1pt;line-height:1.38;
+  background:#f6f4f0;border:1px solid #e3e0da;border-left:3px solid #0d9488;border-radius:6px;padding:4px 8px;margin:4px 0;white-space:pre-wrap}
+.calc.hot{border-left-color:#e11d48;background:#fff6f4}
+.key{background:#16161a;color:#fff;border-radius:8px;padding:6px 10px;margin:5px 0;font-size:8.6pt;line-height:1.45}
+.key b{color:#5eead4}
+.warn{border:1.3px solid #f5b9ab;background:#fff6f3;border-radius:8px;padding:7px 10px;margin:6px 0}
+.fix{border:1.3px solid #a8e0d6;background:#f1fbf9;border-radius:8px;padding:7px 10px;margin:6px 0}
+.lbl{font-size:7.4pt;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#8a8a94;margin-bottom:3px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:6px 0}
+.three .card,.two .card{margin:0}
+.three .lbl{color:#c2410c}
+table.t{width:100%;border-collapse:collapse;font-size:8.3pt;margin:6px 0}
+table.t th,table.t td{border:1px solid #e3e0da;padding:3.5px 7px;text-align:left;vertical-align:top}
+table.t th{background:#f6f4f0;font-weight:800;font-size:7.8pt}
+.yes{color:#0d9488;font-weight:800}.no{color:#e11d48;font-weight:800}
+.mono{font-family:ui-monospace,Menlo,monospace}
+svg{width:100%;height:auto;display:block;margin:5px 0}
+.step{display:flex;gap:7px;margin:4px 0}
+.step .n{flex:0 0 auto;width:17px;height:17px;border-radius:50%;background:#0d9488;color:#fff;font-size:8pt;
+  font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step .b{flex:1;min-width:0}
+.step h3{font-size:9pt;margin:0 0 2px}
+.small{font-size:8pt;color:#5c5c66}
+/* ---- natural pagination: let content flow, avoid ugly splits ---- */
+h1,.sub{page-break-after:avoid;break-after:avoid}
+h2{page-break-after:avoid;break-after:avoid}
+.card,.calc,.key,.warn,.fix,.step,table.t,svg{page-break-inside:avoid;break-inside:avoid}
+.step h3{page-break-after:avoid;break-after:avoid}
+</style></head><body>
+
+<!-- ═══════════════════════════ PAGE 1 ═══════════════════════════ -->
+<div class="page">
+<h1>VQ-VAE — Vector Quantized VAE</h1>
+<div class="sub">Replace the Gaussian latent with a learned dictionary. Discrete codes, no posterior collapse, and a clean split between learning a representation and learning a prior over it.</div>
+
+<h2><span class="pn">1</span>What problem does it attack?</h2>
+<p>Everything so far rests on one assumption — <span class="mono">q(z|x) = N(&#956;<sub>&#966;</sub>, &#963;<sub>&#966;</sub>&#178;)</span> — which brought three problems:</p>
+
+<div class="three">
+<div class="card"><div class="lbl">&#9312; posterior collapse</div>
+<p class="small"><span class="mono">&#963;&#8594;1, &#956;&#8594;0</span> is a <b>free</b> way to zero the KL term. The escape hatch is always open, and dimensions take it whenever reconstruction does not object.</p></div>
+<div class="card"><div class="lbl">&#9313; blur</div>
+<p class="small">Gaussian likelihood &#8594; <span class="mono">&#8722;&#8214;x&#8722;x&#770;&#8214;&#178;</span> &#8594; MSE. The optimum of MSE is the <b>mean</b>, and the mean of five different "7"s is a smudge.</p></div>
+<div class="card"><div class="lbl">&#9314; mushy code</div>
+<p class="small">A continuous cloud is an awkward fit for genuinely <b>categorical</b> structure — words, phonemes, class labels, discrete attributes.</p></div>
+</div>
+
+<div class="key"><b>VQ-VAE&#8217;s answer:</b> make the latent <b>discrete</b> &#8212; not by rounding, but by introducing an explicit <b>learned dictionary</b> and snapping the encoder&#8217;s output onto it.</div>
+
+<h2><span class="pn">2</span>The architecture</h2>
+<svg viewBox="0 0 900 196" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto"><path d="M0,0 L7.5,3 L0,6 z" fill="#3f3f46"/></marker>
+<marker id="ag" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto"><path d="M0,0 L7.5,3 L0,6 z" fill="#0d9488"/></marker></defs>
+
+<rect x="240" y="8" width="270" height="48" rx="8" fill="#f1fbf9" stroke="#0d9488" stroke-width="1.8"/>
+<text x="375" y="27" text-anchor="middle" font-size="11" font-weight="800" fill="#0f766e">LEARNED DICTIONARY  L</text>
+<text x="375" y="44" text-anchor="middle" font-size="10" font-family="ui-monospace,Menlo,monospace" fill="#0f766e">{ z&#8321;, z&#8322;, &#8230;, z_M } ,   each z&#11388; &#8712; &#8477;&#7503;</text>
+
+<line x1="375" y1="56" x2="375" y2="88" stroke="#0d9488" stroke-width="1.8" marker-end="url(#ag)"/>
+<text x="384" y="76" font-size="8" fill="#0f766e">nearest entry</text>
+
+<rect x="18" y="108" width="66" height="40" rx="7" fill="#f2f2f4" stroke="#3f3f46" stroke-width="1.5"/>
+<text x="51" y="133" text-anchor="middle" font-size="12" font-weight="700">x</text>
+<line x1="84" y1="128" x2="112" y2="128" stroke="#3f3f46" stroke-width="1.5" marker-end="url(#a)"/>
+
+<rect x="116" y="94" width="126" height="68" rx="8" fill="#f7f3ff" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="179" y="120" text-anchor="middle" font-size="10.5" font-weight="800">ENCODER &#966;</text>
+<text x="179" y="137" text-anchor="middle" font-size="8" fill="#6d28d9">continuous output</text>
+<line x1="242" y1="128" x2="292" y2="128" stroke="#3f3f46" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="267" y="121" text-anchor="middle" font-size="8" font-family="ui-monospace,Menlo,monospace" fill="#3f3f46">&#7825;&#8342;(x)</text>
+
+<rect x="296" y="94" width="158" height="68" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="375" y="118" text-anchor="middle" font-size="10.5" font-weight="800" fill="#92400e">QUANTIZE</text>
+<text x="375" y="134" text-anchor="middle" font-size="8" font-family="ui-monospace,Menlo,monospace" fill="#92400e">j* = argmin &#8214;z_e &#8722; z&#11388;&#8214;&#178;</text>
+<text x="375" y="149" text-anchor="middle" font-size="8" fill="#b45309">lookup, not learned</text>
+<line x1="454" y1="128" x2="504" y2="128" stroke="#3f3f46" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="479" y="121" text-anchor="middle" font-size="8" font-family="ui-monospace,Menlo,monospace" fill="#3f3f46">&#7825;_q(x)</text>
+
+<rect x="508" y="94" width="126" height="68" rx="8" fill="#f7f3ff" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="571" y="120" text-anchor="middle" font-size="10.5" font-weight="800">DECODER &#952;</text>
+<text x="571" y="137" text-anchor="middle" font-size="8" fill="#6d28d9">sees only indices</text>
+<line x1="634" y1="128" x2="684" y2="128" stroke="#3f3f46" stroke-width="1.5" marker-end="url(#a)"/>
+
+<rect x="688" y="108" width="66" height="40" rx="7" fill="#f2f2f4" stroke="#3f3f46" stroke-width="1.5"/>
+<text x="721" y="133" text-anchor="middle" font-size="12" font-weight="700">x&#770;</text>
+
+<text x="18" y="180" font-size="8" fill="#71717a">The <tspan font-weight="700" fill="#0f766e">only new object</tspan> is the codebook L. Everything else is an ordinary autoencoder.</text>
+</svg>
+
+<h2><span class="pn">3</span>The quantisation step, precisely</h2>
+<p>For <b>each</b> of the <span class="mono">p</span> vectors in the encoder output (your notes: <span class="mono">&#7825;_e(x_i) &#8712; &#8477;&#7503;&#215;&#7511;</span> — <span class="mono">p</span> vectors of dimension <span class="mono">k</span>):</p>
+<div class="calc">j*  =  argmin_{j=1..M}  &#8214; z_e(x_i) &#8722; z&#11388; &#8214;&#178;        &#8592; find the nearest dictionary entry
+z_q(x_i)  =  z_{j*}                              &#8592; replace with it</div>
+<div class="warn"><b>&#9888; The continuous vector is discarded.</b> What passes to the decoder is only a discrete <b>index</b> — <i>which</i> of the M entries, one per position. All the fine-grained continuous information is thrown away.</div>
+
+<h2><span class="pn">4</span>&#128165; The new problem: argmin kills the gradient</h2>
+<p><span class="mono">argmin</span> is a discrete selection — a staircase, not a slope. Ask <i>&#8220;if I nudge z_e, how does z_q change?&#8221;</i> and the answer is <b>it doesn&#8217;t</b>, until you cross a boundary and then it jumps entirely.</p>
+<div class="calc hot">&#8706;z_q / &#8706;z_e  =  0     almost everywhere
+&#8756;  the gradient dies at the quantiser.  The DECODER learns fine.
+    The ENCODER learns NOTHING &#8212; no gradient can cross argmin.</div>
+<div class="key">This is <b>structurally identical to Phase D</b>. There, an opaque <span class="mono">sample()</span> severed the path. Here, an opaque <span class="mono">argmin</span> severs it. Same disease &#8212; but VQ-VAE prescribes a <b>completely different medicine</b>.</div>
+
+<h2><span class="pn">5</span>The fix: straight-through + codebook loss</h2>
+<p>We cannot differentiate the quantiser honestly, so we <b>lie about it</b> &#8212; precisely and controllably.</p>
+
+<div class="step"><div class="n">1</div><div class="b">
+<h3>The straight-through estimator</h3>
+<div class="calc">FORWARD   :  z_q = z_{j*}                              (real quantisation, no approximation)
+BACKWARD  :  &#8706;L/&#8706;z_e  :=  &#8706;L/&#8706;z_q                      (fake it &#8212; "straight through")</div>
+<p class="small">We tell the encoder: <i>&#8220;behave as though your output had passed through unchanged.&#8221;</i> Mathematically wrong, and it works well &#8212; because the encoder only needs a sensible <b>direction</b>, and copying the decoder&#8217;s gradient gives it one.</p>
+</div></div>
+
+<div class="step"><div class="n">2</div><div class="b">
+<h3>Move the dictionary instead (this is in your notes)</h3>
+<div class="calc">&#8214; z_e(x) &#8722; z_q(x) &#8214;&#178;        &#8592; pulls the CHOSEN dictionary entry toward the encoder output</div>
+<p class="small">Without this the encoder drifts and the dictionary never follows.</p>
+</div></div>
+
+<div class="step"><div class="n">3</div><div class="b">
+<h3>The commitment term <span style="color:#e11d48;font-weight:800">(not in your notes)</span></h3>
+<div class="calc">&#946; &#183; &#8214; z_e(x) &#8722; z_q(x) &#8214;&#178;      &#8592; pulls z_e toward z_q:  "commit to your choice"</div>
+<p class="small">Without it, z_e can grow arbitrarily large while the dictionary chases it. <b>This &#946; is not &#946;-VAE&#8217;s &#946;</b> &#8212; same symbol, unrelated job.</p>
+</div></div>
+</div>
+
+<!-- ═══════════════════════════ PAGE 2 ═══════════════════════════ -->
+<div class="page">
+
+<h2><span class="pn">6</span>The loss and dictionary learning</h2>
+<div class="calc">J&#952;(q)  =  &#8214; x &#8722; x&#770;&#952;(&#7825;_q) &#8214;&#178;   +   &#8214; z_e(x_i) &#8722; z_q(x) &#8214;&#178;
+             &#8593; reconstruction        &#8593; codebook loss
+z&#11388;^{t+1}  &#8592;  z&#11388;^{t}  &#8722;  &#945; &#8711;_{z&#11388;}( J&#952;(q) )</div>
+<p>And a crucial point from your notes (p70): <b>&#8220;in addition to the Encoder &amp; Decoder parameters, the latent dictionary is also learned.&#8221;</b></p>
+<div class="key">Only the <b>chosen</b> entry receives a gradient. The other M&#8722;1 entries get <b>zero</b> and sit still at this step. Over the dataset, different inputs select different entries, and each migrates toward the region of encoder-space that selects it.<br><br>&#8594; The dictionary is not a fixed grid. It is <b>M points learning to tile the encoder&#8217;s output space</b> &#8212; a Voronoi diagram being fitted to the data.</div>
+
+<h2><span class="pn">7</span>Inference (p70)</h2>
+<div class="calc">VAE    :  embedding of x  =  &#956;&#966;(x)                                (a continuous point)
+VQ-VAE :  embedding of x  =  argmin_j &#8214; &#7825;_e(x) &#8722; z&#11388; &#8214;&#178;         (a discrete INDEX)</div>
+<p>Your &#8220;feature vector&#8221; is now a list of <b>p integers</b>, each between 1 and M.</p>
+
+<h2><span class="pn">8</span>Sampling: the decoupling insight (p71)</h2>
+<p><b>Problem:</b> to generate you must feed the decoder a z_q &#8212; but z_q must be <i>one of the dictionary entries</i>. Where does one come from? Your notes:</p>
+<div class="fix" style="font-size:8.3pt"><i>&#8220;To learn to sample from the dist. of &#7825;_q(&#183;), a generative model is fit to samples of z_q. Eg: GMM on the samples from the o/p of Encoder corresponding to all #p datapoints.&#8221;</i></div>
+<div class="calc">STAGE 1 :  train encoder + decoder + codebook     &#8594; learn a good DISCRETE representation
+STAGE 2 :  fit a prior over the code indices      &#8594; learn which codes co-occur
+           (GMM per your notes; PixelCNN / autoregressive in the paper)
+
+GENERATE:  sample code indices from Stage 2  &#8594;  decode  &#8594;  new x</div>
+<div class="key">In a normal VAE, modelling the data and modelling the prior are <b>entangled</b> inside one loss. VQ-VAE <b>separates</b> them &#8212; and since the codes are discrete, Stage 2 can be <i>any</i> model, including powerful autoregressive ones.<br><br>This is the design pattern behind much of modern generative modelling: <b>tokenise the data, then model the tokens.</b></div>
+
+<h2><span class="pn">9</span>What it fixes, and what it breaks</h2>
+<table class="t">
+<tr><th>&nbsp;</th><th>continuous VAE</th><th>VQ-VAE</th></tr>
+<tr><td><b>posterior collapse (&#963;&#8594;1)</b></td><td class="yes">possible &#8212; free cheat exists</td><td class="no">structurally impossible</td></tr>
+<tr><td><b>differentiability</b></td><td>reparameterization trick</td><td>straight-through estimator</td></tr>
+<tr><td><b>latent</b></td><td>continuous cloud</td><td>discrete index</td></tr>
+<tr><td><b>prior modelling</b></td><td>entangled in the loss</td><td class="yes">decoupled &#8212; any model</td></tr>
+<tr><td><b>its own failure mode</b></td><td>&#8212;</td><td class="no">codebook collapse</td></tr>
+</table>
+<p><b>Why continuous collapse is impossible here:</b> the free cheat was <span class="mono">&#956;=0, &#963;=1</span>. VQ-VAE has <b>no &#956; and no &#963;</b>. To make z_q uninformative every code would have to be identical &#8212; which reconstruction fights directly. There is no silent, zero-cost way to switch the code off.</p>
+<div class="warn"><b>But it has a cousin: codebook collapse.</b> Because only the <i>nearest</i> code gets a gradient, the encoder can drift into using a handful of entries while the rest sit dead &#8212; wasted capacity. Standard fixes: the commitment loss, EMA codebook updates, and restarting dead entries.<br>
+<span class="small"><b>Honest note:</b> your notes cover the codebook loss but not the straight-through estimator, the commitment term, or codebook collapse. All three are needed to actually train one.</span></div>
+
+<h2><span class="pn">10</span>Why the discrete code is so attractive</h2>
+<div class="calc">cost = p &#215; log&#8322;(M) bits       p=32, M=512  &#8594;  32 &#215; 9  =  288 bits
+vs 28&#215;28 greyscale = 6,272 bits      &#8594;  ~22&#215; compression</div>
+<p class="small">Every bit is a <b>learned, semantically meaningful choice</b> rather than a raw pixel.</p>
+
+<div class="key" style="background:#0d9488"><b>One-line summary.</b> VQ-VAE replaces the Gaussian latent with a learned dictionary. <span class="mono">argmin</span> kills the gradient, so it uses a straight-through estimator for the encoder and a codebook loss to learn the dictionary &#8212; and in return gets a discrete, compact code with no posterior collapse, plus a clean split between learning the representation and learning the prior over it.</div>
+
+</div>
+</body></html>
