@@ -916,6 +916,14 @@ $$\Rightarrow \text{ the forward process in DDIM with } \sigma_t=0, \text{ is al
    .js gate matters: with JS off there are no decks, so the inline cards come
    back and the article is still readable. */
 @media screen { .js .card-qa { display: none !important; } }
+
+/* Provenance marker for passages that go beyond the source notes. Its own class,
+   deliberately not p.small - that selector belongs to the essay footer. */
+.beyond-note {
+  font: italic 400 9.2pt/1.45 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  color: #a3a3aa;
+  margin: 2px 0 9px 0;
+}
 </style><script>/* Shared article chrome — injected by build/inject-nav.js.
    A. inline recall cards become postcards with click-to-reveal
    B. each Part gets a review deck built from those same cards
@@ -1239,7 +1247,10 @@ $$\Rightarrow \text{ the forward process in DDIM with } \sigma_t=0, \text{ is al
   }
 
   /* --------------------------------------------- B. one deck after each Part */
-  var footer = doc.querySelector('p.small');
+  // The footer credit is the LAST body-level p.small. Do not use querySelector:
+  // an in-article p.small earlier in the flow would capture the last deck.
+  var smalls = [].slice.call(doc.querySelectorAll('body > p.small'));
+  var footer = smalls.length ? smalls[smalls.length - 1] : null;
   parts.forEach(function (p, i) {
     if (!p.items.length) return;
     var deck = buildDeck(p.items, partLabel(p.title));

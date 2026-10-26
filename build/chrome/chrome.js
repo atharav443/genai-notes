@@ -321,7 +321,10 @@
   }
 
   /* --------------------------------------------- B. one deck after each Part */
-  var footer = doc.querySelector('p.small');
+  // The footer credit is the LAST body-level p.small. Do not use querySelector:
+  // an in-article p.small earlier in the flow would capture the last deck.
+  var smalls = [].slice.call(doc.querySelectorAll('body > p.small'));
+  var footer = smalls.length ? smalls[smalls.length - 1] : null;
   parts.forEach(function (p, i) {
     if (!p.items.length) return;
     var deck = buildDeck(p.items, partLabel(p.title));

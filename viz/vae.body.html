@@ -17,8 +17,7 @@ box is numbered, the questions are collected at the end, and the same list ships
 a plain-text file. On screen, each Part ends with a deck that deals its cards to you
 one at a time.</p>
 
-<p>Everything here follows pages 43&ndash;71 of an IIT Madras generative-AI course.
-The argument runs: we write down a model with a hidden variable, discover the
+<p>Everything here follows pages 43&ndash;71 of an IIT Madras generative-AI course. A few short passages are marked beyond the notes: those go further than the pages do. The argument runs: we write down a model with a hidden variable, discover the
 likelihood is intractable, bound it, find that the bound has a gradient we cannot
 take, and fix that with one line of algebra.</p>
 
@@ -75,6 +74,15 @@ still explains the long observation.</p>
   \(z \in \mathbb{R}^k\) with \(k \ll d\) gives each \(x_i\) a real-valued
   code — that is an embedding, and the machinery is an auto-encoder.</p>
 </div>
+
+<h3>Hierarchical priors</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>One latent layer forces the encoder to commit to a single description at a single
+scale. Stack the layers instead — a coarse code, then a finer code conditioned on the
+coarse one, and so on — and the model can separate “what is this” from “what exactly”.
+Each layer’s prior depends on the layer above it, which is the structural idea that
+diffusion later takes to its limit: a thousand layers, each making one small refinement
+to the last.</p>
 
 <div class="part">Part II &mdash; From "match the distribution" to "maximise likelihood"</div>
 
@@ -177,6 +185,27 @@ still a bound.</p>
   true posterior. The ELBO is exact exactly when \(q(z\mid x) = P_\theta(z\mid x)\),
   which is the quantity we were trying to avoid needing.</p>
 </div>
+
+<h3>Flows as posteriors</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>The Gaussian posterior is a guess of convenience, chosen because it makes the
+divergence computable. A normalising flow refuses that bargain: start with a Gaussian and
+push it through a chain of invertible maps, and the result can have any shape at all
+while its density stays exactly computable. The bound tightens as the posterior approaches
+the truth, so a more expressive posterior is a strictly better bound. The price is that
+every map must be invertible with a tractable Jacobian, which is why that literature is
+mostly a long sequence of clever ways to be invertible.</p>
+
+<h3>The importance-weighted bound</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>The ELBO is one sample’s worth of a lower bound. Draw several samples of the latent
+variable and average their likelihood ratios <i>before</i> taking the logarithm — the
+average of the ratios, not the average of the logs — and you get a bound that is provably
+tighter, approaching the true likelihood as the number of samples grows. The catch is
+instructive: a tighter bound is a different objective, and optimising the tighter one well
+can leave you with a worse model by the measure you actually care about. Every
+improvement in this family trades statistical tightness against where the gradient
+pressure lands.</p>
 
 <div class="part">Part IV &mdash; The classical answer, and why it stops working</div>
 
@@ -415,6 +444,18 @@ everything that goes wrong with VAEs is a consequence of that tension.</p>
   \(\|x_i - \hat{x}_\theta(z_j)\|_2^2\) over \(j\); add the KL.</p>
 </div>
 
+<h3>The KL between two Gaussians, derived once</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>The notes hand you the formula. It is worth seeing why it has exactly the shape it
+has. Compare a Gaussian with mean and variance to a standard normal, and ask what makes
+two bell curves different: only their position and their width. So the divergence has
+one term per difference. The mean term is the squared distance of the mean from zero.
+The variance terms are the variance plus one over the variance minus the logarithm of
+the variance — and that trio is doing real work. A variance above one is punished, a
+variance squeezed toward zero is punished harder, and the minimum sits quietly at one.
+Completing the square is how you get there; the interpretation is that the bound is
+charging you for every way your guess fails to be an ordinary bell curve.</p>
+
 <div class="part">Part VII &mdash; Using it, and the way it fails</div>
 
 <h2>8 &middot; Sampling and embedding</h2>
@@ -507,54 +548,6 @@ draw from.</p>
 </div>
 
 <hr class="rule">
-
-<h2>Beyond the notes</h2>
-
-<p>Pages 43–71 stop where they stop. Everything above this line came from them. What
-follows did not. These are four loose threads that the essay has been quietly pulling
-on, tied off properly, plus one derivation the notes assert and never show.</p>
-
-<h3>The KL between two Gaussians, derived once</h3>
-
-<p>The notes hand you the formula. It is worth seeing why it has exactly the shape it
-has. Compare a Gaussian with mean and variance to a standard normal, and ask what makes
-two bell curves different: only their position and their width. So the divergence has
-one term per difference. The mean term is the squared distance of the mean from zero.
-The variance terms are the variance plus one over the variance minus the logarithm of
-the variance — and that trio is doing real work. A variance above one is punished, a
-variance squeezed toward zero is punished harder, and the minimum sits quietly at one.
-Completing the square is how you get there; the interpretation is that the bound is
-charging you for every way your guess fails to be an ordinary bell curve.</p>
-
-<h3>Hierarchical priors</h3>
-
-<p>One latent layer forces the encoder to commit to a single description at a single
-scale. Stack the layers instead — a coarse code, then a finer code conditioned on the
-coarse one, and so on — and the model can separate “what is this” from “what exactly”.
-Each layer’s prior depends on the layer above it, which is the structural idea that
-diffusion later takes to its limit: a thousand layers, each making one small refinement
-to the last.</p>
-
-<h3>Flows as posteriors</h3>
-
-<p>The Gaussian posterior is a guess of convenience, chosen because it makes the
-divergence computable. A normalising flow refuses that bargain: start with a Gaussian and
-push it through a chain of invertible maps, and the result can have any shape at all
-while its density stays exactly computable. The bound tightens as the posterior approaches
-the truth, so a more expressive posterior is a strictly better bound. The price is that
-every map must be invertible with a tractable Jacobian, which is why that literature is
-mostly a long sequence of clever ways to be invertible.</p>
-
-<h3>The importance-weighted bound</h3>
-
-<p>The ELBO is one sample’s worth of a lower bound. Draw several samples of the latent
-variable and average their likelihood ratios <i>before</i> taking the logarithm — the
-average of the ratios, not the average of the logs — and you get a bound that is provably
-tighter, approaching the true likelihood as the number of samples grows. The catch is
-instructive: a tighter bound is a different objective, and optimising the tighter one well
-can leave you with a worse model by the measure you actually care about. Every
-improvement in this family trades statistical tightness against where the gradient
-pressure lands.</p>
 
 <h2>Appendix &middot; Every question in this essay</h2>
 

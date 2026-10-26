@@ -160,11 +160,12 @@ Every essay follows the same pattern, borrowed from the RLHF one:
    forger and the detective are the two networks; the foggy hillside walked east
    then north is coordinate ascent in EM.
 4. Admit where the analogy breaks, in an aside, rather than letting it quietly lie.
-5. Close with a **Beyond the notes** section: name what the source pages leave out,
-   then actually teach those concepts instead of deferring to "the literature". It
-   opens by stating plainly that everything above the line came from the notes and
-   nothing below it did, so a reader can always tell which claims are sourced. RLHF
-   does the same inside section 29 (Scale / Evaluation / Alternatives).
+5. Where a concept the reader needs is **not** in the source pages, add it at the point
+   in the argument where it belongs — never in a section bolted onto the end, which
+   reads as an appendix nobody reaches. Mark it with a `p.beyond-note` line
+   ("Beyond the notes — not in pages 7–42") so the provenance of every claim stays
+   visible. RLHF does the same inside its section 29 (Scale / Evaluation /
+   Alternatives).
 
 
 The rule of thumb: if a passage could be deleted without losing any intuition, it is

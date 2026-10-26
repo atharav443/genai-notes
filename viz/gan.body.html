@@ -19,8 +19,7 @@ spaced-repetition system. On screen, each Part ends with a deck that deals its
 cards to you one at a time.</p>
 
 <p>Everything here follows pages 7&ndash;42 of an IIT Madras generative-AI course:
-the handwritten notes, nothing added. Where the notes leave a gap, I say so rather
-than fill it in. What follows is one long argument, and it has a shape: we want a
+the handwritten notes. A few short passages are marked beyond the notes: those go further than the pages do, and the marking is there so you can always tell which is which. What follows is one long argument, and it has a shape: we want a
 number that measures how wrong a generator is, we cannot compute that number, we
 bound it, the bound turns into a game, the game breaks, and a softer number fixes
 it.</p>
@@ -364,6 +363,32 @@ the critic is imperfect.</p>
   critic's step, which is what makes the alternation well defined.</p>
 </div>
 
+<h3>The non-saturating loss</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 7&ndash;42.</p>
+<p>In Part V the generator minimised the log-probability that its output is fake. When
+the critic is confident, that probability is near zero and the expression flattens — so
+the gradient dies precisely when the generator is worst, which is the worst possible
+time for it to die. The fix is a sign flip: instead of minimising the log-probability
+that the sample is fake, maximise the log-probability that it is real. Same fixed
+point, entirely different gradient near the start. The original paper does this, and
+most people never notice they are training a different objective from the one the
+derivation hands them.</p>
+
+<h3>Mode collapse</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 7&ndash;42.</p>
+<p>The failure nobody in these pages warns you about, and the one practitioners
+complain about most. Notice what the objective actually asks for: not “cover the data
+distribution”, but “fool the critic”. If one image fools it reliably, the cheapest
+strategy is to produce that image, or a handful of variations, forever. The generator
+has found a region where the critic is wrong and stopped exploring. You notice it
+because the sample grid shows the same face forty times, while the loss keeps
+improving — which is another way of saying the number you are optimising has stopped
+measuring the thing you care about.</p>
+<p>The patches are unsentimental: let the critic see a batch at once so it can notice
+samplers repeating themselves; swap in an objective that never saturates; or add a
+little noise to the critic’s inputs so that memorising one output is no longer a
+stable strategy.</p>
+
 <div class="part">Part VI &mdash; Why the game breaks</div>
 
 <h2>7 &middot; A failed classifier is not a match</h2>
@@ -514,6 +539,16 @@ what makes WGAN training markedly more stable than the original game.</p>
   is unbounded and the distance is meaningless.</p>
 </div>
 
+<h3>The gradient penalty</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 7&ndash;42.</p>
+<p>We enforced the 1-Lipschitz condition by rescaling the critic’s weights after
+every step. It works, and it is a hack: clipping crowds the weights onto the boundary of
+a box and can cripple the critic until it is barely a critic at all. The later
+replacement drops the projection and adds a cost — penalise the norm of the critic’s
+gradient with respect to its own input, measured at points interpolated between real and
+generated samples. Same constraint, expressed as something the optimiser can trade off
+instead of something enforced by force.</p>
+
 <div class="part">Part VII &mdash; Running the machine backwards</div>
 
 <h2>11 &middot; Inversion: given the output, find the input</h2>
@@ -636,50 +671,6 @@ matrix term measuring how the shapes disagree. Lower is better.</p>
 </div>
 
 <hr class="rule">
-
-<h2>Beyond the notes</h2>
-
-<p>Pages 7–42 stop where they stop. Everything above this line came from them. What
-follows did not — these are three things you will meet within a week of reading
-further, and a name you have not been taught is worse than no name at all. Treat this
-section as a signpost with the first hundred metres of path visible.</p>
-
-<h3>Mode collapse</h3>
-
-<p>The failure nobody in these pages warns you about, and the one practitioners
-complain about most. Notice what the objective actually asks for: not “cover the data
-distribution”, but “fool the critic”. If one image fools it reliably, the cheapest
-strategy is to produce that image, or a handful of variations, forever. The generator
-has found a region where the critic is wrong and stopped exploring. You notice it
-because the sample grid shows the same face forty times, while the loss keeps
-improving — which is another way of saying the number you are optimising has stopped
-measuring the thing you care about.</p>
-
-<p>The patches are unsentimental: let the critic see a batch at once so it can notice
-samplers repeating themselves; swap in an objective that never saturates; or add a
-little noise to the critic’s inputs so that memorising one output is no longer a
-stable strategy.</p>
-
-<h3>The non-saturating loss</h3>
-
-<p>In Part V the generator minimised the log-probability that its output is fake. When
-the critic is confident, that probability is near zero and the expression flattens — so
-the gradient dies precisely when the generator is worst, which is the worst possible
-time for it to die. The fix is a sign flip: instead of minimising the log-probability
-that the sample is fake, maximise the log-probability that it is real. Same fixed
-point, entirely different gradient near the start. The original paper does this, and
-most people never notice they are training a different objective from the one the
-derivation hands them.</p>
-
-<h3>The gradient penalty</h3>
-
-<p>We enforced the 1-Lipschitz condition by rescaling the critic’s weights after
-every step. It works, and it is a hack: clipping crowds the weights onto the boundary of
-a box and can cripple the critic until it is barely a critic at all. The later
-replacement drops the projection and adds a cost — penalise the norm of the critic’s
-gradient with respect to its own input, measured at points interpolated between real and
-generated samples. Same constraint, expressed as something the optimiser can trade off
-instead of something enforced by force.</p>
 
 <h2>Appendix &middot; Every question in this essay</h2>
 

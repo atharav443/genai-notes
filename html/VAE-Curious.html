@@ -99,8 +99,7 @@ box is numbered, the questions are collected at the end, and the same list ships
 a plain-text file. On screen, each Part ends with a deck that deals its cards to you
 one at a time.</p>
 
-<p>Everything here follows pages 43&ndash;71 of an IIT Madras generative-AI course.
-The argument runs: we write down a model with a hidden variable, discover the
+<p>Everything here follows pages 43&ndash;71 of an IIT Madras generative-AI course. A few short passages are marked beyond the notes: those go further than the pages do. The argument runs: we write down a model with a hidden variable, discover the
 likelihood is intractable, bound it, find that the bound has a gradient we cannot
 take, and fix that with one line of algebra.</p>
 
@@ -157,6 +156,15 @@ still explains the long observation.</p>
   <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mo>∈</mo><msup><mi mathvariant="double-struck">R</mi><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">z \in \mathbb{R}^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span></span></span> with <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>≪</mo><mi>d</mi></mrow><annotation encoding="application/x-tex">k \ll d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7335em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≪</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span> gives each <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> a real-valued
   code — that is an embedding, and the machinery is an auto-encoder.</p>
 </div>
+
+<h3>Hierarchical priors</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>One latent layer forces the encoder to commit to a single description at a single
+scale. Stack the layers instead — a coarse code, then a finer code conditioned on the
+coarse one, and so on — and the model can separate “what is this” from “what exactly”.
+Each layer’s prior depends on the layer above it, which is the structural idea that
+diffusion later takes to its limit: a thousand layers, each making one small refinement
+to the last.</p>
 
 <div class="part">Part II &mdash; From "match the distribution" to "maximise likelihood"</div>
 
@@ -259,6 +267,27 @@ still a bound.</p>
   true posterior. The ELBO is exact exactly when <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo stretchy="false">(</mo><mi>z</mi><mo>∣</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mi>P</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><mi>z</mi><mo>∣</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">q(z\mid x) = P_\theta(z\mid x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mclose">)</span></span></span></span>,
   which is the quantity we were trying to avoid needing.</p>
 </div>
+
+<h3>Flows as posteriors</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>The Gaussian posterior is a guess of convenience, chosen because it makes the
+divergence computable. A normalising flow refuses that bargain: start with a Gaussian and
+push it through a chain of invertible maps, and the result can have any shape at all
+while its density stays exactly computable. The bound tightens as the posterior approaches
+the truth, so a more expressive posterior is a strictly better bound. The price is that
+every map must be invertible with a tractable Jacobian, which is why that literature is
+mostly a long sequence of clever ways to be invertible.</p>
+
+<h3>The importance-weighted bound</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>The ELBO is one sample’s worth of a lower bound. Draw several samples of the latent
+variable and average their likelihood ratios <i>before</i> taking the logarithm — the
+average of the ratios, not the average of the logs — and you get a bound that is provably
+tighter, approaching the true likelihood as the number of samples grows. The catch is
+instructive: a tighter bound is a different objective, and optimising the tighter one well
+can leave you with a worse model by the measure you actually care about. Every
+improvement in this family trades statistical tightness against where the gradient
+pressure lands.</p>
 
 <div class="part">Part IV &mdash; The classical answer, and why it stops working</div>
 
@@ -515,6 +544,18 @@ everything that goes wrong with VAEs is a consequence of that tension.</p>
   <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∥</mi><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><msub><mover accent="true"><mi>x</mi><mo>^</mo></mover><mi>θ</mi></msub><mo stretchy="false">(</mo><msub><mi>z</mi><mi>j</mi></msub><mo stretchy="false">)</mo><msubsup><mi mathvariant="normal">∥</mi><mn>2</mn><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\|x_i - \hat{x}_\theta(z_j)\|_2^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∥</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.1002em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6944em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal">x</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2222em;"><span class="mord">^</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord"><span class="mord">∥</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-2.4519em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2481em;"><span></span></span></span></span></span></span></span></span></span> over <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.854em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.05724em;">j</span></span></span></span>; add the KL.</p>
 </div>
 
+<h3>The KL between two Gaussians, derived once</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>The notes hand you the formula. It is worth seeing why it has exactly the shape it
+has. Compare a Gaussian with mean and variance to a standard normal, and ask what makes
+two bell curves different: only their position and their width. So the divergence has
+one term per difference. The mean term is the squared distance of the mean from zero.
+The variance terms are the variance plus one over the variance minus the logarithm of
+the variance — and that trio is doing real work. A variance above one is punished, a
+variance squeezed toward zero is punished harder, and the minimum sits quietly at one.
+Completing the square is how you get there; the interpretation is that the bound is
+charging you for every way your guess fails to be an ordinary bell curve.</p>
+
 <div class="part">Part VII &mdash; Using it, and the way it fails</div>
 
 <h2>8 &middot; Sampling and embedding</h2>
@@ -607,54 +648,6 @@ draw from.</p>
 </div>
 
 <hr class="rule">
-
-<h2>Beyond the notes</h2>
-
-<p>Pages 43–71 stop where they stop. Everything above this line came from them. What
-follows did not. These are four loose threads that the essay has been quietly pulling
-on, tied off properly, plus one derivation the notes assert and never show.</p>
-
-<h3>The KL between two Gaussians, derived once</h3>
-
-<p>The notes hand you the formula. It is worth seeing why it has exactly the shape it
-has. Compare a Gaussian with mean and variance to a standard normal, and ask what makes
-two bell curves different: only their position and their width. So the divergence has
-one term per difference. The mean term is the squared distance of the mean from zero.
-The variance terms are the variance plus one over the variance minus the logarithm of
-the variance — and that trio is doing real work. A variance above one is punished, a
-variance squeezed toward zero is punished harder, and the minimum sits quietly at one.
-Completing the square is how you get there; the interpretation is that the bound is
-charging you for every way your guess fails to be an ordinary bell curve.</p>
-
-<h3>Hierarchical priors</h3>
-
-<p>One latent layer forces the encoder to commit to a single description at a single
-scale. Stack the layers instead — a coarse code, then a finer code conditioned on the
-coarse one, and so on — and the model can separate “what is this” from “what exactly”.
-Each layer’s prior depends on the layer above it, which is the structural idea that
-diffusion later takes to its limit: a thousand layers, each making one small refinement
-to the last.</p>
-
-<h3>Flows as posteriors</h3>
-
-<p>The Gaussian posterior is a guess of convenience, chosen because it makes the
-divergence computable. A normalising flow refuses that bargain: start with a Gaussian and
-push it through a chain of invertible maps, and the result can have any shape at all
-while its density stays exactly computable. The bound tightens as the posterior approaches
-the truth, so a more expressive posterior is a strictly better bound. The price is that
-every map must be invertible with a tractable Jacobian, which is why that literature is
-mostly a long sequence of clever ways to be invertible.</p>
-
-<h3>The importance-weighted bound</h3>
-
-<p>The ELBO is one sample’s worth of a lower bound. Draw several samples of the latent
-variable and average their likelihood ratios <i>before</i> taking the logarithm — the
-average of the ratios, not the average of the logs — and you get a bound that is provably
-tighter, approaching the true likelihood as the number of samples grows. The catch is
-instructive: a tighter bound is a different objective, and optimising the tighter one well
-can leave you with a worse model by the measure you actually care about. Every
-improvement in this family trades statistical tightness against where the gradient
-pressure lands.</p>
 
 <h2>Appendix &middot; Every question in this essay</h2>
 
@@ -1005,6 +998,14 @@ Source: <i>viz/vae.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
    .js gate matters: with JS off there are no decks, so the inline cards come
    back and the article is still readable. */
 @media screen { .js .card-qa { display: none !important; } }
+
+/* Provenance marker for passages that go beyond the source notes. Its own class,
+   deliberately not p.small - that selector belongs to the essay footer. */
+.beyond-note {
+  font: italic 400 9.2pt/1.45 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  color: #a3a3aa;
+  margin: 2px 0 9px 0;
+}
 </style><script>/* Shared article chrome — injected by build/inject-nav.js.
    A. inline recall cards become postcards with click-to-reveal
    B. each Part gets a review deck built from those same cards
@@ -1328,7 +1329,10 @@ Source: <i>viz/vae.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
   }
 
   /* --------------------------------------------- B. one deck after each Part */
-  var footer = doc.querySelector('p.small');
+  // The footer credit is the LAST body-level p.small. Do not use querySelector:
+  // an in-article p.small earlier in the flow would capture the last deck.
+  var smalls = [].slice.call(doc.querySelectorAll('body > p.small'));
+  var footer = smalls.length ? smalls[smalls.length - 1] : null;
   parts.forEach(function (p, i) {
     if (!p.items.length) return;
     var deck = buildDeck(p.items, partLabel(p.title));

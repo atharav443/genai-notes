@@ -295,3 +295,11 @@
    .js gate matters: with JS off there are no decks, so the inline cards come
    back and the article is still readable. */
 @media screen { .js .card-qa { display: none !important; } }
+
+/* Provenance marker for passages that go beyond the source notes. Its own class,
+   deliberately not p.small - that selector belongs to the essay footer. */
+.beyond-note {
+  font: italic 400 9.2pt/1.45 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  color: #a3a3aa;
+  margin: 2px 0 9px 0;
+}

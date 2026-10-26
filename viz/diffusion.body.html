@@ -17,8 +17,7 @@ of a failed recall is what makes the next one stick. Each box is numbered, the
 questions are collected at the end, and the same list ships as a plain-text file.
 On screen, each Part ends with a deck that deals its cards to you one at a time.</p>
 
-<p>Everything here follows pages 72&ndash;110 of an IIT Madras generative-AI course.
-The plan: define the model, write its bound, discover that the bound collapses into
+<p>Everything here follows pages 72&ndash;110 of an IIT Madras generative-AI course. A few short passages are marked beyond the notes: those go further than the pages do. The plan: define the model, write its bound, discover that the bound collapses into
 a regression, then notice that the same regression has three different readings —
 which is where most of the field's vocabulary comes from.</p>
 
@@ -320,6 +319,16 @@ U-net in that slot and you have a trainable objective.</p>
   equivalent to predicting the clean image \(x_0\) — hence a <i>denoiser</i>.</p>
 </div>
 
+<h3>Learning the reverse covariance</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 72&ndash;110.</p>
+<p>We sidestepped something. Setting the reverse covariance equal to the forward one is a
+choice, and it is the reason the divergence collapsed into a regression on means — matching
+covariances is what makes the other terms cancel. Learn the covariance as well and the
+bound tightens, at the cost of a second output head and a much fussier optimisation.
+In practice most systems keep the fixed covariance and buy their quality with
+reweighting instead. Fewer moving parts, better results — a recurring pattern in this
+subject.</p>
+
 <div class="part">Part VI &mdash; One network, three descriptions</div>
 
 <p>You can describe a hillside by its height at each point, by its slope, or by the
@@ -415,6 +424,16 @@ the network plus fresh noise of size \(\sigma_q\):</p>
   \(t=1\) — so \(T\) passes for a single generated sample. That asymmetry is
   precisely what DDIM later attacks.</p>
 </div>
+
+<h3>Reweighting the loss</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 72&ndash;110.</p>
+<p>The notes keep the coefficient the derivation gives them in front of every term. That
+coefficient is large at low noise and small at high noise, so the plain objective spends
+most of its attention on the easy, nearly-clean images and almost none on the hard,
+nearly-random ones — exactly backwards. Delete it. Weight every noise level equally and
+the network has to work hardest where the structure is actually decided. That deletion, of
+a coefficient the mathematics told you to keep, is most of the difference between a
+diffusion model that trains and one that produces good pictures.</p>
 
 <div class="part">Part VIII &mdash; Steering it, shrinking it, speeding it up</div>
 
@@ -547,34 +566,8 @@ inversion, and it is the trick behind a great deal of image editing.</p>
 
 <hr class="rule">
 
-<h2>Beyond the notes</h2>
-
-<p>Pages 72–110 stop where they stop. Everything above this line came from them. What
-follows did not — but the first item on the list is, by most accounts, the single change
-that turned diffusion from a curiosity into the thing that works.</p>
-
-<h3>Reweighting the loss</h3>
-
-<p>The notes keep the coefficient the derivation gives them in front of every term. That
-coefficient is large at low noise and small at high noise, so the plain objective spends
-most of its attention on the easy, nearly-clean images and almost none on the hard,
-nearly-random ones — exactly backwards. Delete it. Weight every noise level equally and
-the network has to work hardest where the structure is actually decided. That deletion, of
-a coefficient the mathematics told you to keep, is most of the difference between a
-diffusion model that trains and one that produces good pictures.</p>
-
-<h3>Learning the reverse covariance</h3>
-
-<p>We sidestepped something. Setting the reverse covariance equal to the forward one is a
-choice, and it is the reason the divergence collapsed into a regression on means — matching
-covariances is what makes the other terms cancel. Learn the covariance as well and the
-bound tightens, at the cost of a second output head and a much fussier optimisation.
-In practice most systems keep the fixed covariance and buy their quality with
-reweighting instead. Fewer moving parts, better results — a recurring pattern in this
-subject.</p>
-
 <h3>Why DDIM shares the bound</h3>
-
+<p class="beyond-note">Beyond the notes &mdash; not in pages 72&ndash;110.</p>
 <p>The claim that a non-Markovian family has the same bound sounds like a trick. It is
 not, and the reason is narrow enough to state plainly: the bound depends on the forward
 process only through the distribution of a single noisy step given the clean image. DDIM
