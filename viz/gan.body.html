@@ -637,15 +637,49 @@ matrix term measuring how the shapes disagree. Lower is better.</p>
 
 <hr class="rule">
 
-<h2>What this essay does not tell you</h2>
+<h2>Beyond the notes</h2>
 
-<p>Three honest gaps. The notes never discuss <i>mode collapse</i> — the failure where
-the generator produces a few excellent samples and ignores the rest of the
-distribution — even though it is the failure practitioners complain about most. They
-never mention the non-saturating generator loss, the standard patch for the vanishing
-gradient in Part V. And the Lipschitz enforcement is weight normalisation, not the
-gradient-penalty approach that replaced it in later work. If you want those, they are
-in the literature, not in these pages.</p>
+<p>Pages 7–42 stop where they stop. Everything above this line came from them. What
+follows did not — these are three things you will meet within a week of reading
+further, and a name you have not been taught is worse than no name at all. Treat this
+section as a signpost with the first hundred metres of path visible.</p>
+
+<h3>Mode collapse</h3>
+
+<p>The failure nobody in these pages warns you about, and the one practitioners
+complain about most. Notice what the objective actually asks for: not “cover the data
+distribution”, but “fool the critic”. If one image fools it reliably, the cheapest
+strategy is to produce that image, or a handful of variations, forever. The generator
+has found a region where the critic is wrong and stopped exploring. You notice it
+because the sample grid shows the same face forty times, while the loss keeps
+improving — which is another way of saying the number you are optimising has stopped
+measuring the thing you care about.</p>
+
+<p>The patches are unsentimental: let the critic see a batch at once so it can notice
+samplers repeating themselves; swap in an objective that never saturates; or add a
+little noise to the critic’s inputs so that memorising one output is no longer a
+stable strategy.</p>
+
+<h3>The non-saturating loss</h3>
+
+<p>In Part V the generator minimised the log-probability that its output is fake. When
+the critic is confident, that probability is near zero and the expression flattens — so
+the gradient dies precisely when the generator is worst, which is the worst possible
+time for it to die. The fix is a sign flip: instead of minimising the log-probability
+that the sample is fake, maximise the log-probability that it is real. Same fixed
+point, entirely different gradient near the start. The original paper does this, and
+most people never notice they are training a different objective from the one the
+derivation hands them.</p>
+
+<h3>The gradient penalty</h3>
+
+<p>We enforced the 1-Lipschitz condition by rescaling the critic’s weights after
+every step. It works, and it is a hack: clipping crowds the weights onto the boundary of
+a box and can cripple the critic until it is barely a critic at all. The later
+replacement drops the projection and adds a cost — penalise the norm of the critic’s
+gradient with respect to its own input, measured at points interpolated between real and
+generated samples. Same constraint, expressed as something the optimiser can trade off
+instead of something enforced by force.</p>
 
 <h2>Appendix &middot; Every question in this essay</h2>
 

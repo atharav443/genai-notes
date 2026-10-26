@@ -629,15 +629,41 @@ inversion, and it is the trick behind a great deal of image editing.</p>
 
 <hr class="rule">
 
-<h2>What this essay does not tell you</h2>
+<h2>Beyond the notes</h2>
 
-<p>The notes present the DDPM objective in its simplest weighting — the
-\(1/2\sigma_q^2\) factor left in place — and never discuss reweighting the loss
-across noise levels, which is the change that made these models actually produce good
-images. They also assume the reverse covariance equals \(\Sigma_q\), sidestepping
-the question of learning it. And the DDIM section states that the ELBOs coincide
-"off by a constant" rather than proving it. All three omissions matter in practice,
-and none of them are in these pages.</p>
+<p>Pages 72–110 stop where they stop. Everything above this line came from them. What
+follows did not — but the first item on the list is, by most accounts, the single change
+that turned diffusion from a curiosity into the thing that works.</p>
+
+<h3>Reweighting the loss</h3>
+
+<p>The notes keep the coefficient the derivation gives them in front of every term. That
+coefficient is large at low noise and small at high noise, so the plain objective spends
+most of its attention on the easy, nearly-clean images and almost none on the hard,
+nearly-random ones — exactly backwards. Delete it. Weight every noise level equally and
+the network has to work hardest where the structure is actually decided. That deletion, of
+a coefficient the mathematics told you to keep, is most of the difference between a
+diffusion model that trains and one that produces good pictures.</p>
+
+<h3>Learning the reverse covariance</h3>
+
+<p>We sidestepped something. Setting the reverse covariance equal to the forward one is a
+choice, and it is the reason the divergence collapsed into a regression on means — matching
+covariances is what makes the other terms cancel. Learn the covariance as well and the
+bound tightens, at the cost of a second output head and a much fussier optimisation.
+In practice most systems keep the fixed covariance and buy their quality with
+reweighting instead. Fewer moving parts, better results — a recurring pattern in this
+subject.</p>
+
+<h3>Why DDIM shares the bound</h3>
+
+<p>The claim that a non-Markovian family has the same bound sounds like a trick. It is
+not, and the reason is narrow enough to state plainly: the bound depends on the forward
+process only through the distribution of a single noisy step given the clean image. DDIM
+builds its family precisely so that this conditional is unchanged. Everything else about
+the process — the joint, the Markov property, the noise injected along the way — never
+enters. That is why you may replace the sampler after training and why the trained
+network never has to be told.</p>
 
 <h2>Appendix &middot; Every question in this essay</h2>
 

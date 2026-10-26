@@ -160,6 +160,12 @@ Every essay follows the same pattern, borrowed from the RLHF one:
    forger and the detective are the two networks; the foggy hillside walked east
    then north is coordinate ascent in EM.
 4. Admit where the analogy breaks, in an aside, rather than letting it quietly lie.
+5. Close with a **Beyond the notes** section: name what the source pages leave out,
+   then actually teach those concepts instead of deferring to "the literature". It
+   opens by stating plainly that everything above the line came from the notes and
+   nothing below it did, so a reader can always tell which claims are sourced. RLHF
+   does the same inside section 29 (Scale / Evaluation / Alternatives).
+
 
 The rule of thumb: if a passage could be deleted without losing any intuition, it is
 decoration and should go. Analogies earn their place by predicting the next piece of

@@ -1599,20 +1599,57 @@ uncompressed one teaches you why the symbols are there.</p>
 
 <p>Three honest limits, so you know where the map ends.</p>
 
-<p><b>Scale.</b> Everything here was described at the level of one gradient step.
-Nothing was said about how you batch rollouts, how you manage four models in memory,
-or how you keep a distributed training run stable for weeks. That is most of the
-engineering, and none of the mathematics.</p>
+<h3>Scale</h3>
 
-<p><b>Evaluation.</b> We asserted that a reward model can be wrong and that DPO can
-displace likelihood onto unwanted responses. We did not say how to detect it. In
-practice this is the hard part: deciding whether a model that scores well has become
-better, or has merely become better at the thing you measured.</p>
+<p>Everything here was described at the level of one gradient step. Nothing was said
+about how you batch rollouts, how you manage four models in memory, or how you keep a
+distributed training run stable for weeks. That is most of the engineering, and none of
+the mathematics.</p>
 
-<p><b>Alternatives.</b> There are many objectives between PPO and DPO &mdash; IPO, KTO,
-ORPO, and others &mdash; each trading stability, data requirements and theoretical
-guarantees differently. This essay described the two that the course covers, which
-are also the two you will meet first.</p>
+<p>It is worth knowing its shape anyway, because the engineering constrains the
+research. Four networks are live at once — the policy being trained, a frozen copy of it
+as the reference, the reward model, and a value model — and three of them are only ever
+doing inference. Generation, not the backward pass, dominates wall-clock time: many
+completions sampled per prompt, scored, assembled into trajectories, then one step. The
+cost of holding policy and reference in memory simultaneously is why so many later
+methods advertise that they need no reference model at all.</p>
+
+<h3>Evaluation</h3>
+
+<p>We asserted that a reward model can be wrong and that DPO can displace likelihood onto
+unwanted responses. We did not say how to detect it. In practice this is the hard part:
+deciding whether a model that scores well has become better, or has merely become better
+at the thing you measured.</p>
+
+<p>The standard defences are unglamorous. Keep a preference set the reward model never
+saw. Watch the divergence from the reference policy, because a policy that has drifted a
+long way is being optimised by its reward model rather than by the data. Train several
+reward models and trust the responses they all agree on. Probe by hand with instructions
+whose good and bad answers you already know, since an aggregate score hides precisely the
+failures you care about. And if you have replaced human raters with a language model,
+swap the two responses and keep only the pairs whose verdict survives the swap — position
+bias is otherwise indistinguishable from preference.</p>
+
+<h3>Alternatives</h3>
+
+<p>There are many objectives between PPO and DPO. This essay described the two that the
+course covers, which are also the two you will meet first. The three you are most likely
+to run into next, one sentence each, and all of them outside pages 128&ndash;146:</p>
+
+<p><b>IPO</b> keeps the shape of DPO and drops its assumption. DPO inherits from
+Bradley&ndash;Terry the claim that preferences are a function of a scalar score
+difference; IPO replaces the likelihood with a squared loss against the observed
+preference, which stays consistent even when that claim is false.</p>
+
+<p><b>KTO</b> removes the pair. Instead of “A is better than B” it takes single responses
+labelled good or bad and weighs the two asymmetrically, on the observation that losing
+something hurts more than gaining the same thing pleases. That matters because thumbs-up
+and thumbs-down are cheap to collect and comparisons are not.</p>
+
+<p><b>ORPO</b> removes the reference model. It adds a penalty to ordinary
+instruction-tuning that raises the odds of the preferred response relative to the
+rejected one, so a single pass does both jobs and nothing extra has to be held in memory
+for comparison.</p>
 
 <p>And one thing to keep: everything in this essay came from two moves. First,
 notice that <i>only one factor of the trajectory distribution contains the
