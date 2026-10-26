@@ -287,3 +287,11 @@
 }
 .qa-due-close:hover { border-color: var(--accent); color: var(--accent); }
 @media print { .qa-side, .qa-due-overlay { display: none !important; } }
+
+/* --------------------------------------------------- one question, one place */
+/* On screen the review deck is the only place a question is asked. The inline
+   .card-qa stays in the DOM because it is both the deck's data source and the
+   only question content that survives into print (decks are print-hidden). The
+   .js gate matters: with JS off there are no decks, so the inline cards come
+   back and the article is still readable. */
+@media screen { .js .card-qa { display: none !important; } }

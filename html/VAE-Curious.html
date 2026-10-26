@@ -899,6 +899,14 @@ Source: <i>viz/vae.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
 }
 .qa-due-close:hover { border-color: var(--accent); color: var(--accent); }
 @media print { .qa-side, .qa-due-overlay { display: none !important; } }
+
+/* --------------------------------------------------- one question, one place */
+/* On screen the review deck is the only place a question is asked. The inline
+   .card-qa stays in the DOM because it is both the deck's data source and the
+   only question content that survives into print (decks are print-hidden). The
+   .js gate matters: with JS off there are no decks, so the inline cards come
+   back and the article is still readable. */
+@media screen { .js .card-qa { display: none !important; } }
 </style><script>/* Shared article chrome — injected by build/inject-nav.js.
    A. inline recall cards become postcards with click-to-reveal
    B. each Part gets a review deck built from those same cards
@@ -1005,6 +1013,10 @@ Source: <i>viz/vae.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
   }
 
   /* ------------------------------------------- A. inline cards as postcards */
+  /* The decks ask the questions now, so the inline postcards are switched off.
+     They stay in the DOM as the decks' data source and as the print content.
+     Flip this to true to bring the inline postcards back. */
+  var SHOW_INLINE = false;
   var inlineCards = [].slice.call(doc.querySelectorAll('.card-qa'));
   var items = [];
   var itemByEl = new Map();
@@ -1014,6 +1026,7 @@ Source: <i>viz/vae.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
     var a = card.querySelector('.a');
     if (!q || !a) return;
 
+    if (SHOW_INLINE) {
     a.id = 'answer-' + i;
     var btn = el('button', 'reveal-btn', 'Reveal answer');
     btn.type = 'button';
@@ -1032,6 +1045,7 @@ Source: <i>viz/vae.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
       toggle();
     });
     a.parentNode.insertBefore(btn, a);
+    }
 
     var item = { num: numOf(q), q: strippedHtml(q), a: strippedHtml(a), el: card, part: null };
     items.push(item);

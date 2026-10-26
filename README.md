@@ -103,9 +103,16 @@ The RLHF essay has 47 question/answer boxes, drawn in the spirit of
 [Quantum Country](https://quantum.country)'s mnemonic medium. Two things happen on
 screen, both built at runtime from the same markup:
 
-**1. Inline postcards.** Each `.card-qa` becomes a white card with a soft shadow;
-the answer is hidden until the reader clicks the card (or its **Reveal answer**
-button), so recall comes before checking.
+**1. Inline postcards — currently switched off.** Each `.card-qa` used to
+become a white card with a soft shadow and a **Reveal answer** button. That
+duplicated every question, because the deck at the end of the Part asks the same
+card — so `@media screen { .js .card-qa { display:none } }` hides them on screen and
+`SHOW_INLINE = false` in `chrome.js` stops building the reveal UI. They stay in
+the DOM for two reasons: the decks read their question and answer from those
+nodes, and they are the only question content that survives into print, since
+decks are print-hidden. Set `SHOW_INLINE = true` and drop that CSS rule to bring
+the postcards back. With JS off the `.js` gate never matches, so the cards
+reappear and the article stays readable.
 
 **2. A review deck per Part.** After each `<div class="part">` the essay gets a
 stacked-postcard deck holding that Part's cards — one card dealt at a time, click

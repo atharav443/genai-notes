@@ -104,6 +104,10 @@
   }
 
   /* ------------------------------------------- A. inline cards as postcards */
+  /* The decks ask the questions now, so the inline postcards are switched off.
+     They stay in the DOM as the decks' data source and as the print content.
+     Flip this to true to bring the inline postcards back. */
+  var SHOW_INLINE = false;
   var inlineCards = [].slice.call(doc.querySelectorAll('.card-qa'));
   var items = [];
   var itemByEl = new Map();
@@ -113,6 +117,7 @@
     var a = card.querySelector('.a');
     if (!q || !a) return;
 
+    if (SHOW_INLINE) {
     a.id = 'answer-' + i;
     var btn = el('button', 'reveal-btn', 'Reveal answer');
     btn.type = 'button';
@@ -131,6 +136,7 @@
       toggle();
     });
     a.parentNode.insertBefore(btn, a);
+    }
 
     var item = { num: numOf(q), q: strippedHtml(q), a: strippedHtml(a), el: card, part: null };
     items.push(item);
