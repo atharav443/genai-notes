@@ -1,0 +1,589 @@
+<!--META
+{ "title": "Generative adversarial networks, for the very curious" }
+-->
+<h1>Generative adversarial<br>networks,<br>for the very curious</h1>
+<h1 class="sub-title">How to teach a machine to draw by making it play a game
+it is supposed to lose — and why the game is so hard to keep fair</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question
+and its answer. They are not decoration. They are the essay testing you — and if
+you take them seriously, you will remember this material for years instead of
+days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong
+is useful; the effort of a failed recall is what makes the next one stick. Each
+box is numbered so you can find it again, the questions are collected at the end,
+and the same list ships as a plain-text file you can import into any
+spaced-repetition system. On screen, each Part ends with a deck that deals its
+cards to you one at a time.</p>
+
+<p>Everything here follows pages 7&ndash;42 of an IIT Madras generative-AI course:
+the handwritten notes, nothing added. Where the notes leave a gap, I say so rather
+than fill it in. What follows is one long argument, and it has a shape: we want a
+number that measures how wrong a generator is, we cannot compute that number, we
+bound it, the bound turns into a game, the game breaks, and a softer number fixes
+it.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; A number that says how wrong you are</div>
+
+<h2>1 &middot; Two distributions and one number</h2>
+
+<p>You have a pile of real images. You have a machine that makes fake ones. You
+would like to know how far the fakes are from the real thing — not image by image,
+which is hopeless, but <i>distribution to distribution</i>, as a single number you
+can drive to zero.</p>
+
+<p>There is no unique such number. There is a whole family of them, and almost
+every method in this essay is a choice from that family. The family is called
+<i>f-divergence</i>. Pick a distribution for real data, call its density
+\(P_x\), pick the generator's distribution, call its density \(P_\theta\),
+and define</p>
+
+<div class="mathblock">
+\[ D_f(P_x \| P_\theta) = \int_{\mathcal{X}} P_\theta(x)\, f\!\left(\frac{P_x(x)}{P_\theta(x)}\right) dx \]
+</div>
+
+<p>where \(f: \mathbb{R}^+ \to \mathbb{R}\) is convex, left-semicontinuous, and
+satisfies \(f(1) = 0\). That last condition is the one to remember. Inside the
+integral sits a <i>ratio</i> of densities. Where the two distributions agree, the
+ratio is 1, and \(f(1) = 0\) makes that spot contribute nothing. The divergence is
+built to read zero exactly when there is nothing to report.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  In the f-divergence, why does the definition insist that \(f(1) = 0\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the argument of \(f\) is the density ratio \(P_x/P_\theta\). When the two
+  densities are equal the ratio is 1 everywhere, and we want the divergence to be
+  zero there. Any convex \(f\) with \(f(1)\neq 0\) would report a constant offset
+  even for a perfect match.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  Why is \(D_f \ge 0\) for <i>any</i> admissible \(f\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Jensen's inequality. \(f\) is convex and the ratio integrates to 1 against
+  \(P_\theta\), so \(D_f = \mathbb{E}_{P_\theta}[f(u)] \ge f(\mathbb{E}_{P_\theta}[u]) =
+  f(1) = 0\). Non-negativity is not an extra assumption; it falls out of convexity
+  plus \(f(1)=0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  Which choice of \(f\) gives the KL divergence, and what does it reveal about the
+  family?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f(u) = u\log u\). Substituting turns \(D_f\) into
+  \(\int P_x \log(P_x/P_\theta)\), the forward KL. Because \\(f\) need not be
+  symmetric in any way, \\(D_f(P_x\|P_\theta) \ne D_f(P_\theta\|P_x)\) — the family
+  contains asymmetric members. \(f(u) = \frac{1}{2}|u-1|\) gives total variation, and a
+  slightly messy quadratic-in-log form gives Jensen&ndash;Shannon.</p>
+</div>
+
+<div class="aside"><span class="who">The one idea worth carrying forward</span>
+Every density ratio is a test. If you could evaluate the ratio \(P_x/P_\theta\) at
+a point, you would know whether that point is more real than fake. Almost the whole
+essay is about learning that ratio instead of evaluating it.</p>
+</div>
+
+<div class="part">Part II &mdash; The only thing you can actually compute</div>
+
+<h2>2 &middot; What a generative model is asked to do</h2>
+
+<p>Give the generator a knob: a vector \(z\) drawn from a standard normal. Push it
+through a neural network \(g_\theta\). Out comes a sample
+\(\hat{x} \sim P_\theta\). The dream is that \(P_\theta = P_x\), at which point
+your sampler <i>is</i> the data distribution. Formally,</p>
+
+<div class="mathblock">
+\[ \theta^* = \arg\min_{\theta} D_f(P_x \| P_\theta) \]
+</div>
+
+<p>And here is the difficulty, stated plainly: that expression contains two
+densities, and you know neither of them. You cannot write down \(P_x\) for
+photographs. You cannot even write down \(P_\theta\) — it is the distribution of
+outputs of a neural network with a random input, and nobody has a formula for that.</p>
+
+<p>What you do have is <i>samples</i>. From \(P_x\): your dataset
+\(D = \{x_1, \dots, x_n\}\). From \(P_\theta\): the outputs
+\(g_\theta(z)\) for as many \(z\) as you care to draw. So the real objective
+cannot be "minimise this integral". It has to become "minimise something I can
+estimate from samples".</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  State precisely what we have and what we lack, when trying to minimise \(D_f\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  We have samples from both distributions — the dataset for \(P_x\), generator
+  outputs for \(P_\theta\). We lack the density functions themselves. So any usable
+  objective must be expressible as an expectation over the two distributions,
+  because expectations can be approximated by averages.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  Which theorem licenses replacing an integral with an average, and what exactly does it say?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The law of large numbers. For iid \(x_i \sim P_x\),
+  \(\frac{1}{n}\sum_{i=1}^{n} h(x_i) \to \mathbb{E}_{P_x}[h(x)]\) as
+  \(n \to \infty\). It converts \(\int h(x) P_x(x) dx\) into a sum you can
+  actually compute — which is why the entire next Part is spent rewriting
+  \(D_f\) as a pair of expectations.</p>
+</div>
+
+<div class="part">Part III &mdash; Turning a divergence into an expectation</div>
+
+<h2>3 &middot; The conjugate function</h2>
+
+<p>The obstacle is that \(f\) is applied to a ratio we cannot compute. The way out
+is a piece of convex analysis that looks like a detour and turns out to be the
+whole trick. For convex \(f\) there exists a <i>conjugate</i></p>
+
+<div class="mathblock">
+\[ f^*(t) = \sup_{u} \{\, u t - f(u) \,\} \]
+</div>
+
+<p>The conjugate is itself convex, and it is an involution in the sense that
+\(\left[f^*(t)\right]^* = f(u)\), which gives the recovery formula</p>
+
+<div class="mathblock">
+\[ f(u) = \sup_{t} \{\, t u - f^*(t) \,\} \]
+</div>
+
+<p>Now substitute the ratio in as \(u = P_x/P_\theta\) and push this inside the
+integral:</p>
+
+<div class="mathblock">
+\[ D_f = \int P_\theta(x) f\!\left(\frac{P_x(x)}{P_\theta(x)}\right) dx
+       = \int P_\theta(x) \sup_{t}\left\{ t\frac{P_x(x)}{P_\theta(x)} - f^*(t) \right\} dx \]
+</div>
+
+<p>For each \(x\) the maximising \(t\) is different — it depends on where you are
+in the space. So the supremum is not over a single number, it is over a
+<i>function</i> \(T(x)\) that returns the right \(t\) at each point. Replace
+\(t\) by \(T(x)\), swap the supremum outside the integral, and
+\(P_x/P_\theta\) cancels against the \(P_\theta\) multiplying it:</p>
+
+<div class="mathblock">
+\[ D_f \;\ge\; \sup_{T} \left[\, \mathbb{E}_{P_x} T(x) - \mathbb{E}_{P_\theta} f^*(T(x)) \,\right] \]
+</div>
+
+<p>Read that line slowly, because everything after it is machinery. Both terms are
+expectations — one over real samples, one over generated samples — so both can be
+estimated by averaging. The unknown densities are gone. What survives is a lower
+bound, and the price of removing the densities is that we now have to optimise over
+a space of functions.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  Why does the bound become a supremum over <i>functions</i> rather than over a scalar?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the inner problem is solved separately at each \(x\): the optimal \(t\)
+  is a function of \(x\). If our function class is rich enough to contain that
+  optimum we get equality; in general we get a lower bound, since we may be
+  maximising over a restricted set \(T(x) \in \mathcal{T}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  In one sentence, what did the conjugate function buy us?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It moved \(f\) off the density ratio. Instead of evaluating a convex function of
+  \(P_x/P_\theta\) — impossible, no densities — we get an expectation of
+  \(T(x)\) under real data minus an expectation of \(f^*(T(x))\) under generated
+  data, both of which are sample averages.</p>
+</div>
+
+<div class="part">Part IV &mdash; From a bound to a game</div>
+
+<h2>4 &middot; Two networks, one objective, opposite directions</h2>
+
+<p>We still have a supremum over a function class, which is not something you can
+run gradient descent on directly. So parametrise: let \(T\) be a neural network
+\(T_w(x)\) with weights \(w\). We are minimising over the generator's parameters
+\(\theta\) and maximising over the critic's weights \(w\):</p>
+
+<div class="mathblock">
+\[ \theta^*, w^* = \arg\min_{\theta} \arg\max_{w}
+   \left[\, \mathbb{E}_{P_x} T_w(x) - \mathbb{E}_{P_\theta} f^*(T_w(x)) \,\right] \]
+</div>
+
+<p>This is a saddle-point problem, not a minimisation, and that single fact explains
+most of the grief later. One network pushes the quantity up, the other pushes it
+down, and you are looking for the place where neither can improve.</p>
+
+<p>One detail keeps the construction honest: \(T_w\) must land in the domain of
+\(f^*\). The notes handle this by writing
+\(T_w(x) = \sigma_f(V_w(x))\), where \(V_w\) is an ordinary network into
+\(\mathbb{R}\) and \(\sigma_f\) is an activation chosen for the particular
+\(f\) so that the output lands where \(f^*\) accepts it.</p>
+
+<h2>5 &middot; Choosing \(f\) gives you GANs</h2>
+
+<p>Now make a choice. Take</p>
+
+<div class="mathblock">
+\[ f(u) = u\log u - (u+1)\log(u+1) \]
+</div>
+
+<p>which is a close cousin of Jensen&ndash;Shannon. Its conjugate is
+\(f^*(t) = -\log(1 - e^{t})\) with domain \(\mathbb{R}^-\), so the critic must
+output negative numbers — and the matching activation is
+\(\sigma_f(v) = -\log(1 + e^{-v})\), a softplus flipped upside down. Write
+\(D_w(x) = \frac{1}{1+e^{-V_w(x)}}\) for the sigmoid. Substituting all of this
+through produces, after the dust settles,</p>
+
+<div class="mathblock">
+\[ J_{\text{GAN}}(\theta, w) = \mathbb{E}_{P_x}\left[\log D_w(x)\right]
+   + \mathbb{E}_{P_\theta}\left[\log\left(1 - D_w(x)\right)\right] \]
+</div>
+
+<p>That is the original GAN objective, and it was never invented out of thin air. It
+is a specific f-divergence, run through a conjugate, with a sigmoid sitting where
+the activation is required to sit.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  Why does the critic need a special activation \(\sigma_f\) instead of being a plain
+  network?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(f^*\) is only defined on a restricted domain. For the GAN choice that
+  domain is \(\mathbb{R}^-\), so the critic must be forced to emit negative values.
+  \(\sigma_f(v) = -\log(1+e^{-v})\) is exactly such a squashing, and composing it with
+  a sigmoid is what turns the abstract bound into \(\log D + \log(1-D)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  The familiar GAN loss is usually presented as "classifier log-loss". What is it really?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A variational lower bound on one particular f-divergence, with the f-divergence
+  chosen so that \(f^*\) has domain \(\mathbb{R}^-\). The classifier interpretation
+  is true and useful, but it is a reading of the formula, not the derivation.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  The objective is written \(\min_\theta \max_w\). Why can it not be written as a
+  single minimisation?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because we are bounding a divergence from below and then tightening: the critic
+  <i>maximises</i> the bound, the generator <i>minimises</i> it. The solution is a
+  saddle point, and gradient descent on a saddle point is not guaranteed to converge
+  the way it is for a minimum.</p>
+</div>
+
+<div class="part">Part V &mdash; Training it</div>
+
+<h2>6 &middot; Two update rules, and a term that disappears</h2>
+
+<p>In practice you never optimise the expectations. You sample. Draw a batch
+\(x_1, \dots, x_{B_1}\) from the data, draw
+\(z_1, \dots, z_{B_2}\) from the normal, and form</p>
+
+<div class="mathblock">
+\[ J_{\text{GAN}} \approx \frac{1}{B_1}\sum_{i=1}^{B_1} \log D_w(x_i)
+   + \frac{1}{B_2}\sum_{j=1}^{B_2} \log\left(1 - D_w(g_\theta(z_j))\right) \]
+</div>
+
+<p>Training the critic is a gradient <i>ascent</i> on that expression with
+\(\theta\) frozen. Training the generator is a descent with \(w\) frozen — and here
+something quietly important happens. The first sum contains no \(\theta\) at all, so
+it drops out of the gradient. The generator only ever sees the second term,</p>
+
+<div class="mathblock">
+\[ \theta^* = \arg\min_{\theta} \frac{1}{B_2}\sum_{j=1}^{B_2}
+   \log\left(1 - D_w(g_\theta(z_j))\right) \]
+</div>
+
+<p>The generator is never told "make this look like the data". It is told "make the
+critic wrong". Those are not the same instruction, and the difference matters when
+the critic is imperfect.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Why does the generator's objective contain only one of the two terms?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The term \(\mathbb{E}_{P_x}\log D_w(x)\) contains no \(\theta\), so its gradient
+  with respect to \(\theta\) is exactly zero. The generator therefore sees only
+  \(\mathbb{E}_{P_\theta}\log(1 - D_w(g_\theta(z)))\). This is also why the
+  non-saturating variant of the loss exists — but that variant is not in these notes.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  In the two update rules, which parameter is held constant in each?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Critic step: \(\theta\) is constant, \(w\) moves up the gradient of
+  \(J_{\text{GAN}}\). Generator step: \(w\) is constant, \(\theta\) moves down.
+  The generator's samples are computed with the <i>fixed</i> \(\theta\) during the
+  critic's step, which is what makes the alternation well defined.</p>
+</div>
+
+<div class="part">Part VI &mdash; Why the game breaks</div>
+
+<h2>7 &middot; A failed classifier is not a match</h2>
+
+<p>Here is the appealing story. A perfect critic separates real from fake. Train the
+generator until the critic can no longer separate them. Then the two distributions
+must be the same. The first two steps are sound. The conclusion is not.</p>
+
+<p>Put two clusters of real data in the plane and let the generator place a third
+cluster somewhere between them. A linear classifier can fail badly on that
+arrangement while the distributions remain obviously different. What follows is</p>
+
+<div class="mathblock">
+\[ P_x = P_\theta \;\Rightarrow\; \text{classifier fails}
+   \qquad\text{but}\qquad
+   \text{classifier failure} \;\nRightarrow\; P_x = P_\theta \]
+</div>
+
+<p>So the critic cannot be a fixed judge. It has to move along with the generator,
+each chasing the other — which is precisely why the min and the max are intertwined
+in one expression instead of being solved in sequence.</p>
+
+<h2>8 &middot; The manifold hypothesis and the saturation problem</h2>
+
+<p>The deeper reason GANs are unstable is geometric. Real images do not fill
+\(\mathbb{R}^d\); they lie on a much lower-dimensional surface inside it. A
+\(28\times 28\) photograph of white noise lives in 784 dimensions, but the set of
+photographs that look like anything occupies a vanishing sliver of that space. So
+the support of \(P_x\) and the support of \(P_\theta\) are two thin sheets that,
+with very high probability, do not intersect at all.</p>
+
+<p>When the supports are disjoint, an ideal critic can separate them perfectly. Once
+it does, the f-divergence stops depending on \(\theta\) — the gradient the generator
+needs vanishes, and training stalls. This is <i>saturation</i>. The number we chose
+in Part I was built to be zero exactly at a match, and it turns out to be
+uninformative everywhere else.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  Explain why a perfect discriminator halts training.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  With disjoint supports the critic can be 100% accurate, so
+  \(D_f(P_x \| P_\theta)\) no longer varies with \(\theta\). The generator's
+  gradient is zero even though the generator is terrible. Training has saturated on
+  a number that has stopped carrying information.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  What is the fix, stated as a requirement on the divergence?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Use a softer metric that does not saturate when the supports fail to align — one
+  that still reports a meaningful gradient even for disjoint distributions. That
+  requirement is what leads to the Wasserstein metric.</p>
+</div>
+
+<h2>9 &middot; Moving earth instead of measuring overlap</h2>
+
+<p>The Wasserstein idea is to stop asking "do these distributions overlap?" and start
+asking "how much work would it take to turn one into the other?" A <i>transport plan</i>
+\(\Pi(x, \hat{x})\) is a joint distribution whose marginals are the two
+distributions. You can picture it as a table: rows indexed by the real sample points,
+columns by the fake ones, and each cell saying how much probability mass is shipped
+from that row to that column. Row sums reproduce \(P_x\); column sums reproduce
+\(P_\theta\).</p>
+
+<p>Shipping mass a distance costs. Move \(\Pi(x,\hat{x})\) units across a gap of
+\(\|x - \hat{x}\|\) and the work is the product. The average work of a plan is</p>
+
+<div class="mathblock">
+\[ \mathbb{E}_{\Pi(x,\hat{x})} \|x - \hat{x}\| \]
+</div>
+
+<p>Many plans are available; take the cheapest one:</p>
+
+<div class="mathblock">
+\[ W_p(P_x \| P_\theta) = \min_{d \in \Pi} \mathbb{E}_{d(x,\hat{x})} \|x - \hat{x}\|_p \]
+</div>
+
+<p>This is the Wasserstein metric, and it has the property we needed: it does not
+saturate when supports are disjoint, because moving mass is always expensive in
+proportion to the distance.</p>
+
+<h2>10 &middot; The duality that makes it trainable</h2>
+
+<p>Minimising over all transport plans is not something a neural network can do. The
+Kantorovich&ndash;Rubinstein duality converts the problem into a maximisation over
+functions with a slope constraint:</p>
+
+<div class="mathblock">
+\[ W(P_x \| P_\theta) = \max_{\|T_w(x)\|_L \le 1}
+   \left[\, \mathbb{E}_{x\sim P_x} T_w(x) - \mathbb{E}_{\hat{x}\sim P_\theta} T_w(\hat{x}) \,\right] \]
+</div>
+
+<p>The condition \(\|T_w\|_L \le 1\) is 1-Lipschitz: the function may not change
+faster than its input, so
+\(\|T_w(x_1) - T_w(x_2)\| / \|x_1 - x_2\| \le 1\). Look at the shape of that
+objective next to the GAN objective from Part IV. It is the same \(\max_w\) of an
+expectation difference — except the critic is no longer squashed through a sigmoid
+into \([0,1]\), and the constraint is a slope bound rather than a domain
+restriction. That is the Wasserstein GAN. In practice you enforce the Lipschitz
+condition by normalising the critic's weights after each gradient step, which is
+what makes WGAN training markedly more stable than the original game.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  What is a transport plan, concretely?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A joint distribution over pairs \((x, \hat{x})\) whose marginals are \(P_x\)
+  and \(P_\theta\). As a table, entry \((i,j)\) says how much mass moves from real
+  point \(x_i\) to fake point \(\hat{x}_j\). Row sums are \(P_x\), column sums are
+  \(P_\theta\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.4</span></span>
+  Why does the critic in a WGAN have to be 1-Lipschitz, and how is that enforced?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The dual form of the Wasserstein distance is only valid over 1-Lipschitz
+  functions. In practice the weights of \(T_w\) are renormalised so that
+  \(\|w\|_2 = 1\) after every gradient step. Without the constraint the maximisation
+  is unbounded and the distance is meaningless.</p>
+</div>
+
+<div class="part">Part VII &mdash; Running the machine backwards</div>
+
+<h2>11 &middot; Inversion: given the output, find the input</h2>
+
+<p>A trained GAN is a function from latent space to data space. Nothing about it is
+invertible — it is a many-to-one map, and there is no formula for going back. But
+you often want to: find the \(z\) that produced a particular real image. That
+\(z\) is a compressed description, so it works as a feature vector; and editing
+\(z\) and re-generating gives you an edit of the image.</p>
+
+<p>The bidirectional GAN adds a second network to make this possible. Alongside the
+generator \(g_\theta : Z \to X\) and the discriminator, train an encoder
+\(E_\phi : X \to Z\). Then change what the discriminator looks at: instead of
+classifying \(x\) versus \(g_\theta(z)\), classify the <i>tuples</i>
+\((x, E_\phi(x))\) versus \((g_\theta(z), z)\). To win that game the encoder
+must supply a \(z\) that looks like it belongs with \(x\) — which is exactly the
+inverse we wanted.</p>
+
+<div class="aside"><span class="who">A cheaper alternative in the same notes</span>
+There is also a straightforward version: keep the ordinary adversarial loss and add
+a regression penalty
+\(\alpha\,\mathbb{E}_{\hat{x}\sim P_\theta}\|z - E_\phi(\hat{x})\|_2^2\)
+so the encoder is trained to recover the \(z\) that generated \(\hat{x}\). Same
+goal, less elegance, easier to get running.
+</div>
+
+<h2>12 &middot; Borrowing the adversary for something else entirely</h2>
+
+<p>The last idea in these pages is that this machinery is not really about images.
+Suppose you train a classifier on source data and then deploy it where the data
+comes from a different distribution. It will fail, and it will fail quietly,
+because the model has no way to notice that the world changed.</p>
+
+<p>The domain-adversarial fix inserts a feature extractor \(\Phi\) that feeds both a
+classifier and a discriminator. The classifier wants features that predict labels;
+the discriminator wants to tell source features from target features; and
+\(\Phi\) is asked to satisfy both — predict well, <i>and</i> make the two feature
+distributions indistinguishable. When the discriminator can no longer separate
+them, the classifier's input looks statistically the same in both domains, and the
+same classifier transfers.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  In a BiGAN, what does the discriminator actually compare?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Tuples, not samples. It sees \((x, E_\phi(x))\) from the real-plus-encoder side
+  and \((g_\theta(z), z)\) from the generator side. The optimum is reached when
+  \(P_{\hat{z}x} = P_{z\hat{x}}\) — the joint distribution of data with its code
+  matches the joint of code with its generated image.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  In domain-adversarial training, why does making the discriminator fail help the
+  classifier?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  If the discriminator cannot tell source features from target features, then
+  \(P_{f_s} = P_{f_t}\): the feature distribution is domain-invariant. A classifier
+  trained on source features therefore sees inputs drawn from the same distribution
+  at test time on the target domain.</p>
+</div>
+
+<div class="part">Part VIII &mdash; How would you know it worked?</div>
+
+<h2>13 &middot; Frechet Inception Distance</h2>
+
+<p>You have a trained generator. Is it any good? Comparing pixels is useless — a
+one-pixel shift destroys a per-pixel metric while leaving the image essentially
+identical. So compare in a space where meaning lives: run both real and generated
+images through a pretrained Inception network, take the activations at some layer
+\(l\), and summarise each set by its mean and covariance.</p>
+
+<p>Then assume each set of features is Gaussian and measure how far apart the two
+Gaussians are — with the Wasserstein distance from Part VI, which for Gaussians has
+a closed form:</p>
+
+<div class="mathblock">
+\[ \text{FID} = \|\mu_{\text{true}} - \mu_{\text{gen}}\|_2^2
+   + \text{tr}\!\left(\Sigma_{\text{true}} + \Sigma_{\text{gen}}
+   - 2(\Sigma_{\text{true}}\Sigma_{\text{gen}})^{1/2}\right) \]
+</div>
+
+<p>The first term is a scalar measuring how far the centres drifted; the second is a
+matrix term measuring how the shapes disagree. Lower is better.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  Why not compare generated and real images pixel by pixel?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Per-pixel distance is dominated by trivial misalignments and says nothing about
+  whether the images are plausible. FID instead compares statistics of deep features,
+  where semantic content is represented and small spatial shifts cost little.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  What do the two terms of the FID formula measure?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\|\mu_{\text{true}} - \mu_{\text{gen}}\|_2^2\) is the squared distance
+  between feature means — a shift in content or average appearance. The trace term
+  compares covariances, i.e. whether the spread and correlation structure of the
+  features match. Together they are the Wasserstein distance between two Gaussians.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  What assumption does FID make that you should keep in mind before quoting it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  That the layer-\(l\) features of each dataset are Gaussian, and that one
+  pretrained Inception network on ImageNet is an appropriate judge. Both are
+  convenient fictions; FID numbers are comparable within one setup, not across
+  different feature extractors or layer choices.</p>
+</div>
+
+<hr class="rule">
+
+<h2>What this essay does not tell you</h2>
+
+<p>Three honest gaps. The notes never discuss <i>mode collapse</i> — the failure where
+the generator produces a few excellent samples and ignores the rest of the
+distribution — even though it is the failure practitioners complain about most. They
+never mention the non-saturating generator loss, the standard patch for the vanishing
+gradient in Part V. And the Lipschitz enforcement is weight normalisation, not the
+gradient-penalty approach that replaced it in later work. If you want those, they are
+in the literature, not in these pages.</p>
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from pages 7&ndash;42 of the IIT Madras generative-AI notes. Typeset with KaTeX.
+Source: <i>viz/gan.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
+
+</body></html>

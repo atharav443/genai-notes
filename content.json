@@ -1,8 +1,8 @@
 {
   "site": {
     "title": "Generative AI — Cheat Sheets",
-    "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes, each turned into a self-contained interactive cheat sheet and an undergraduate-level PDF — plus an essay in the mnemonic medium.",
-    "footer": "Each HTML file is fully self-contained (KaTeX pre-rendered, fonts inlined). Arithmetic and notation follow the source notes; the interactive demos are illustrative."
+    "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes (104 pages). Each one ships twice: as a self-contained interactive cheat sheet with an undergraduate-level PDF, and as an essay in the mnemonic medium with recall cards and a review deck.",
+    "footer": "Every page is fully self-contained — no CDN, no network, works offline. Notation follows the source notes; the interactive demos are illustrative."
   },
   "topics": [
     {
@@ -22,6 +22,54 @@
         {
           "label": "flashcards.tsv",
           "href": "notes/rlhf/flashcards.tsv"
+        }
+      ]
+    },
+    {
+      "id": "gan-curious",
+      "status": "ready",
+      "tag": "GAN · essay",
+      "tagColor": "#7c3aed",
+      "title": "GANs, for the very curious",
+      "blurb": "f-divergence → the conjugate bound → an adversarial game → why it saturates → Wasserstein → inversion → FID. 8 parts, 21 recall cards.",
+      "html": "html/GAN-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/gan/flashcards.tsv"
+        }
+      ]
+    },
+    {
+      "id": "vae-curious",
+      "status": "ready",
+      "tag": "VAE · essay",
+      "tagColor": "#0d9488",
+      "title": "VAEs, for the very curious",
+      "blurb": "Why the likelihood is intractable → Jensen → the ELBO → EM and where it dies → the reparameterization trick → posterior collapse. 7 parts, 18 recall cards.",
+      "html": "html/VAE-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/vae/flashcards.tsv"
+        }
+      ]
+    },
+    {
+      "id": "diffusion-curious",
+      "status": "ready",
+      "tag": "Diffusion · essay",
+      "tagColor": "#ea580c",
+      "title": "Diffusion, for the very curious",
+      "blurb": "A VAE stretched over a thousand steps → the forward schedule → a bound in three terms → a regression on noise → guidance, latent diffusion, DDIM. 8 parts, 19 recall cards.",
+      "html": "html/Diffusion-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/diffusion/flashcards.tsv"
         }
       ]
     },
@@ -92,28 +140,6 @@
           "href": "pdf/Diffusion.pdf"
         }
       ]
-    },
-    {
-      "id": "vae-curious",
-      "status": "planned",
-      "tag": "VAE · essay",
-      "tagColor": "#0d9488",
-      "title": "VAEs, for the very curious",
-      "blurb": "The ELBO story in the mnemonic medium: why we maximise a bound, and what the reparameterization trick is really buying you.",
-      "html": null,
-      "cta": null,
-      "extras": []
-    },
-    {
-      "id": "diffusion-curious",
-      "status": "planned",
-      "tag": "Diffusion · essay",
-      "tagColor": "#ea580c",
-      "title": "Diffusion, for the very curious",
-      "blurb": "Noise as a curriculum: the forward process, the score, and why predicting epsilon is the same as denoising.",
-      "html": null,
-      "cta": null,
-      "extras": []
     },
     {
       "id": "genai-maths-misc",

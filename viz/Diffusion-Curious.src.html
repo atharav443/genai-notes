@@ -1,0 +1,604 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diffusion models, for the very curious</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/Diffusion-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/diffusion.body.html</code>.</div>
+
+<h1>Diffusion models,<br>for the very curious</h1>
+<h1 class="sub-title">How to generate an image by learning to undo a thousand
+small acts of vandalism &mdash; and why the whole thing is a VAE that has been
+stretched very, very long</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question
+and its answer. They are not decoration. They are the essay testing you — and if
+you take them seriously, you will remember this material for years instead of
+days.</p>
+
+<p>Say your answer out loud before you look. Getting it wrong is useful; the effort
+of a failed recall is what makes the next one stick. Each box is numbered, the
+questions are collected at the end, and the same list ships as a plain-text file.
+On screen, each Part ends with a deck that deals its cards to you one at a time.</p>
+
+<p>Everything here follows pages 72&ndash;110 of an IIT Madras generative-AI course.
+The plan: define the model, write its bound, discover that the bound collapses into
+a regression, then notice that the same regression has three different readings —
+which is where most of the field's vocabulary comes from.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; A VAE stretched over time</div>
+
+<h2>1 &middot; The model, and what it borrows</h2>
+
+<p>Recall the shape of a VAE: data \(x\) goes through an encoder to a latent
+\(z\), and a decoder brings it back. One hidden layer, one bottleneck. A
+<i>hierarchical</i> VAE stacks several: \(x \to z_1 \to z_2 \to \dots \to z_T\)
+going up, and back down again.</p>
+
+<p>A denoising diffusion probabilistic model is a hierarchical VAE with three
+specific commitments:</p>
+
+<p><b>(a)</b> many latent spaces, indexed by \(t = 1, \dots, T\), with
+\(T\) around a thousand; <b>(b)</b> every latent has the <i>same</i> dimension as
+the data — no bottleneck at all, \(\dim(x_t) = \dim(x_0)\); and <b>(c)</b> the
+encoder is fixed and not learned, so only the decoder carries parameters.</p>
+
+<p>That third commitment is the one that makes the method work. In a VAE you must
+learn where to put the latent space. Here the forward direction is a fixed rule for
+adding noise, so there is nothing to learn about it and nothing to get wrong. All of
+the learning is in going backwards.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  List the three ways a DDPM differs from a plain VAE.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It has many latent variables rather than one; each latent has the same
+  dimensionality as the data, so there is no compression; and the encoding
+  distribution is fixed and non-learnable, so only the decoding direction is
+  learned.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  In the diffusion literature, what do \(x_0\) and \(x_1, \dots, x_T\) denote?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(x_0\) is the clean data point. \(x_1 \dots x_T\) are the latent vectors
+  obtained from it by progressive noising — <i>not</i> dataset indices, which is the
+  notation an earlier essay in this series would have led you to expect.</p>
+</div>
+
+<div class="part">Part II &mdash; Adding noise on a schedule</div>
+
+<h2>2 &middot; The forward process</h2>
+
+<p>The forward process is one line:</p>
+
+<div class="mathblock">
+\[ x_t = \sqrt{\alpha_t}\, x_{t-1} + \sqrt{1 - \alpha_t}\, \epsilon_t, \qquad
+   \epsilon_t \sim \mathcal{N}(0, I) \]
+</div>
+
+<p>Read it as a weighted average of signal and noise, with the weights chosen so the
+overall scale stays put. With \(\alpha_1 \dots \alpha_T\) fixed in
+\([0,1]\), \(x_0\) starts as an image, \(x_1\) is a noisy image, and by
+\(x_T\) essentially every trace of the original has been replaced. This is a
+first-order Markov chain, so the conditional is Gaussian and known:</p>
+
+<div class="mathblock">
+\[ q(x_t \mid x_{t-1}) = \mathcal{N}\left(x_t;\, \sqrt{\alpha_t}\,x_{t-1},\;
+   (1-\alpha_t)I\right) \]
+</div>
+
+<h2>3 &middot; The jump-to-any-time formula</h2>
+
+<p>Unrolling that recursion one step at a time is wasteful, and it turns out you
+never have to. Substitute twice:</p>
+
+<div class="mathblock">
+\[ x_t = \sqrt{\alpha_t}\left(\sqrt{\alpha_{t-1}}x_{t-2} + \sqrt{1-\alpha_{t-1}}\epsilon'\right)
+       + \sqrt{1-\alpha_t}\,\epsilon \]
+</div>
+
+<p>The two noise terms combine, because a linear combination of independent
+Gaussians is Gaussian with the variances added. Keep going and the product of the
+\(\alpha\) values accumulates into a single symbol:</p>
+
+<div class="mathblock">
+\[ x_t = \sqrt{\bar{\alpha}_t}\, x_0 + \sqrt{1 - \bar{\alpha}_t}\, \epsilon, \qquad
+   \bar{\alpha}_t = \prod_{i=1}^{t} \alpha_i \]
+</div>
+
+<p>so that</p>
+
+<div class="mathblock">
+\[ q(x_t \mid x_0) = \mathcal{N}\left(x_t; \sqrt{\bar{\alpha}_t}\,x_0,\;
+   (1 - \bar{\alpha}_t)I\right) \]
+</div>
+
+<p>This is the single most useful line in the subject. It says you can jump from a
+clean image to its state at step \(t\) in one shot, in closed form, without
+simulating the chain. Every training step below depends on it.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  Why is \(q(x_t \mid x_{t-1})\) Gaussian, and what are its parameters?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the forward step is \(\sqrt{\alpha_t}x_{t-1}\) plus Gaussian noise, and
+  adding a constant-scaled Gaussian keeps it Gaussian. The mean is
+  \(\sqrt{\alpha_t}x_{t-1}\) and the covariance is \((1-\alpha_t)I\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  Derive, in outline, why \(q(x_t\mid x_0)\) has the closed form it does.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Unroll the recursion: each substitution multiplies the previous signal by another
+  \(\sqrt{\alpha}\) and adds independent Gaussian noise. Products of independent
+  Gaussians are Gaussian with added variances, so the accumulated signal coefficient
+  is \(\sqrt{\prod_i \alpha_i} = \sqrt{\bar{\alpha}_t}\) and the accumulated
+  noise variance is \(1 - \bar{\alpha}_t\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  What is \(q(x_T)\) in the limit, and why does that matter for generation?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  With the schedule chosen so \(\bar{\alpha}_T \to 0\), \(x_T\) is essentially
+  pure noise, distributed as \(\mathcal{N}(0,I)\). That is the stationary
+  distribution of the chain, and it is what makes generation possible: sampling can
+  start from the prior, which you already know how to sample.</p>
+</div>
+
+<div class="part">Part III &mdash; Learning to walk back</div>
+
+<h2>4 &middot; The reverse direction is the model</h2>
+
+<p>The model is defined in the reverse direction, as a Markov chain of Gaussians with
+learned parameters:</p>
+
+<div class="mathblock">
+\[ P_\theta(x_{0:T}) = P(x_T) \prod_{t=1}^{T} P_\theta(x_{t-1}\mid x_t), \qquad
+   P_\theta(x_{t-1}\mid x_t) = \mathcal{N}\left(x_{t-1}; \mu_\theta(x_t), \Sigma_\theta(x_t)\right) \]
+</div>
+
+<p>The joint over all latents factorises because we <i>assumed</i> the reverse chain
+is first-order Markov with Gaussian steps. That assumption is a modelling choice
+sitting exactly where the VAE put its decoder: a family of distributions we are
+willing to consider. The parameters \(\mu_\theta\) and \(\Sigma_\theta\) are
+what the network will produce.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  What justifies writing \(P_\theta\) as a product of Gaussians?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Nothing deeper than a modelling assumption: we choose the reverse process to be a
+  first-order Markov chain with Gaussian transitions, and put neural networks on the
+  means and covariances. The factorisation is a definition, not a theorem.</p>
+</div>
+
+<div class="part">Part IV &mdash; The bound splits into three</div>
+
+<h2>5 &middot; The ELBO, algebraically</h2>
+
+<p>Same bound as the VAE, now with a whole chain of latents inside the expectation:</p>
+
+<div class="mathblock">
+\[ J_\theta(q) = \mathbb{E}_{q(x_{1:T}\mid x_0)} \log\frac{P_\theta(x_{0:T})}{q(x_{1:T}\mid x_0)} \]
+</div>
+
+<p>Substitute both factorisations — the numerator from Part III, the denominator from
+the Markov forward process. Then peel off the \(t=1\) term to make the sums line up,
+and apply Bayes' rule to \(q(x_t\mid x_{t-1})\), which under the chain equals
+\(q(x_t\mid x_{t-1}, x_0)\):</p>
+
+<div class="mathblock">
+\[ q(x_t\mid x_{t-1}) = \frac{q(x_{t-1}\mid x_t,x_0)\,q(x_t\mid x_0)}{q(x_{t-1}\mid x_0)} \]
+</div>
+
+<p>When you multiply that over \(t\), the \(q(x_t\mid x_0)\) denominators and
+numerators <i>telescope</i> — the \(q(x_2\mid x_0)\) produced at one step cancels
+against the one consumed at the next — and everything survives except the two ends.
+What is left rearranges into three named pieces:</p>
+
+<div class="mathblock">
+\[ J_\theta(q) = \underbrace{\mathbb{E}_{q(x_1\mid x_0)}\log P_\theta(x_0\mid x_1)}_{\text{reconstruction}}
+  - \underbrace{D_{KL}\left(q(x_T\mid x_0)\,\|\,P(x_T)\right)}_{\text{prior matching}}
+  - \underbrace{\sum_{t=2}^{T}\mathbb{E}_{q(x_t\mid x_0)}\left[D_{KL}\left(q(x_{t-1}\mid x_t,x_0)\,\|\,P_\theta(x_{t-1}\mid x_t)\right)\right]}_{\text{denoising matching}} \]
+</div>
+
+<p>Three terms, three jobs. The first asks whether the last step reconstructs the
+data. The second asks whether the noised-to-death distribution matches the prior we
+sample from — and it contains no \(\theta\), so it is a constant we can ignore. The
+third is where all the learning happens: at every noise level, compare the true
+reverse step with the model's reverse step.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  Name the three terms of the DDPM objective.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Reconstruction, \(\mathbb{E}_{q(x_1\mid x_0)}\log P_\theta(x_0\mid x_1)\);
+  prior matching, \(D_{KL}(q(x_T\mid x_0)\|P(x_T))\), which has no
+  \(\theta\) and is dropped; and denoising matching over \(t = 2\dots T\),
+  the only term that trains the network.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  Where does the telescoping happen, and what does it buy?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Applying Bayes' rule to the forward conditional produces a
+  \(q(x_{t-1}\mid x_0)\) in the numerator and a \(q(x_t\mid x_0)\) in the
+  denominator. Across the product over \(t\) every intermediate term cancels,
+  leaving only \(q(x_1\mid x_0)\) and \(q(x_T\mid x_0)\). Those two ends are
+  what become the reconstruction and prior-matching terms.</p>
+</div>
+
+<div class="part">Part V &mdash; The hard term becomes a regression</div>
+
+<h2>6 &middot; Everything in the KL is now computable</h2>
+
+<p>The denoising-matching KL compares two things. The model's side,
+\(P_\theta(x_{t-1}\mid x_t)\), is ours to choose. The other side,
+\(q(x_{t-1}\mid x_t,x_0)\), looks like a monster, but with all the Gaussian
+ingredients from Parts II and III it has a closed form. Completing the square gives</p>
+
+<div class="mathblock">
+\[ q(x_{t-1}\mid x_t,x_0) = \mathcal{N}\left(x_{t-1}; \mu_q(x_t,x_0), \Sigma_q\right) \]
+</div>
+
+<p>with</p>
+
+<div class="mathblock">
+\[ \mu_q = \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})x_t
+   + \sqrt{\bar{\alpha}_{t-1}}(1-\alpha_t)x_0}{1-\bar{\alpha}_t},
+   \qquad
+   \Sigma_q = \frac{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t} I \]
+</div>
+
+<p>Now choose the model's covariance to be the same \(\Sigma_q\). A KL between two
+Gaussians with identical covariance collapses to a squared distance between their
+means — the trace and log-determinant terms cancel — leaving</p>
+
+<div class="mathblock">
+\[ D_{KL} = \frac{1}{2\sigma_q^2}\left\|\mu_\theta(x_t) - \mu_q(x_t,x_0)\right\|_2^2 \]
+</div>
+
+<p>That is the pivot of the whole essay. A divergence between distributions has become
+a mean-squared error between two vectors. The target, \(\mu_q\), is computable from
+\(x_t\) and \(x_0\). The prediction, \(\mu_\theta\), comes from a network. Put a
+U-net in that slot and you have a trainable objective.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Why does the KL between these two Gaussians reduce to a squared error on the means?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because we set \(\Sigma_\theta = \Sigma_q\). The log-determinant ratio is zero
+  and the trace of \(\Sigma_q^{-1}\Sigma_q\) is just the dimension, so both constant
+  terms drop and only
+  \((\mu_\theta-\mu_q)^T\Sigma_q^{-1}(\mu_\theta-\mu_q)\) survives — which for
+  a scalar covariance is \(\|\mu_\theta-\mu_q\|_2^2\) up to the factor
+  \(1/2\sigma_q^2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  What is the network asked to predict, in this formulation?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The mean of the reverse step, \(\mu_\theta(x_t)\). But since
+  \(\mu_q\) is affine in \(x_0\) and \(\mu_\theta\) is forced to share that
+  affine form with \(\hat{x}_\theta\) in place of \(x_0\), predicting the mean is
+  equivalent to predicting the clean image \(x_0\) — hence a <i>denoiser</i>.</p>
+</div>
+
+<div class="part">Part VI &mdash; One network, three descriptions</div>
+
+<h2>7 &middot; Predicting \(x_0\), noise, or score</h2>
+
+<p>Because \(x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon\)
+is invertible for \(x_0\), every one of these targets determines the others:</p>
+
+<table>
+  <tr><th>the network outputs</th><th>how you get there</th><th>what it means</th></tr>
+  <tr><td>\(\hat{x}_\theta(x_t)\)</td><td>direct</td><td>predict the clean image</td></tr>
+  <tr><td>\(\hat{\epsilon}_\theta(x_t)\)</td><td>solve for \(\epsilon\)</td><td>predict the noise that was added</td></tr>
+  <tr><td>\(S_\theta(x_t)\)</td><td>divide by \(-\sqrt{1-\bar{\alpha}_t}\)</td><td>predict the score, \(\nabla_{x_t}\log P(x_t)\)</td></tr>
+</table>
+
+<p>The third is the one worth understanding. Tweedie's formula relates the mean of a
+noisy observation to its score, and applying it here gives
+\(\nabla_{x_t}\log P(x_t) = -\epsilon_t/\sqrt{1-\bar{\alpha}_t}\). The true
+score <i>is</i> the added noise, negatively scaled. So a network trained to regress on
+noise is, without anyone arranging it, learning the score function of the data
+distribution. That is why the diffusion and score-based literatures are the same
+subject wearing different clothes.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  Why are "predict the noise" and "predict the score" the same task?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(\nabla_{x_t}\log P(x_t) = -\epsilon_t/\sqrt{1-\bar{\alpha}_t}\):
+  the score is a fixed negative rescaling of the noise. Regressing on
+  \(\epsilon_t\) and regressing on the score differ only by a known positive
+  factor, so they have the same minimiser.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  What does the network see besides \(x_t\), and why is that necessary?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The time step \(t\), encoded as a sinusoidal positional embedding. One network is
+  shared across all noise levels, so without knowing \(t\) it could not tell a
+  barely-noised image from one that is almost pure noise, and the optimal denoiser
+  differs enormously between those cases.</p>
+</div>
+
+<div class="part">Part VII &mdash; Training it and sampling from it</div>
+
+<h2>8 &middot; Two loops</h2>
+
+<p>Training is almost embarrassingly simple, and the reason is the closed form for
+\(q(x_t\mid x_0)\):</p>
+
+<div class="mathblock">
+\[ \text{repeat: } t \sim \text{Uniform}\{1,\dots,T\}; \quad
+   x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon; \quad
+   \theta \leftarrow \theta - \beta\nabla_\theta\left\|\hat{x}_\theta(x_t) - x_0\right\|_2^2 \]
+</div>
+
+<p>Take a data point, pick a random noise level, noise the point directly to that
+level, ask the network to undo it, and step against the squared error. No adversary,
+no ELBO estimate, no sampling of a chain.</p>
+
+<p>Sampling is the expensive half. Start from \(x_T \sim \mathcal{N}(0,I)\) and
+walk down one step at a time, each step drawing from
+\(P_\theta(x_{t-1}\mid x_t)\), which means one forward pass through the network
+per step — a thousand of them for a thousand-step model. Each step is a mean from
+the network plus fresh noise of size \(\sigma_q\):</p>
+
+<div class="mathblock">
+\[ x_{t-1} = \mu_{\theta^*}(x_t) + \sigma_q\,\epsilon, \qquad \epsilon \sim \mathcal{N}(0,I) \]
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  Why can training noise a single data point all the way to step \(t\) in one go?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(q(x_t\mid x_0)\) is Gaussian with known parameters, so
+  \(x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon\)
+  produces an exact sample from it. There is no need to simulate the intermediate
+  steps during training, which is what makes each iteration cheap.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  Why is sampling a thousand times more expensive than one training step?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Training needs one forward pass per iteration regardless of \(T\). Sampling needs
+  a full pass at every step of the reverse chain, from \(t=T\) down to
+  \(t=1\) — so \(T\) passes for a single generated sample. That asymmetry is
+  precisely what DDIM later attacks.</p>
+</div>
+
+<div class="part">Part VIII &mdash; Steering it, shrinking it, speeding it up</div>
+
+<h2>9 &middot; Conditional generation</h2>
+
+<p>Suppose you want \(P(x_0\mid y)\) rather than \(P(x_0)\) — an image given a
+label or a text embedding. Since the network is a score predictor, the honest way to
+ask is: what is the <i>conditional score</i>? Bayes' rule splits it:</p>
+
+<div class="mathblock">
+\[ \nabla\log P(x_t\mid y) = \nabla\log P(x_t) + \nabla\log P(y\mid x_t) \]
+</div>
+
+<p>the \(\log P(y)\) term vanishing because it has no \(x_t\) in it. So: take the
+unconditional score the diffusion model already gives you, and add the gradient of a
+classifier's log-probability. That is <b>classifier guidance</b> — and its weakness is
+in the recipe, since the classifier has to be trained to work on inputs at every noise
+level, which is unpleasant.</p>
+
+<p><b>Classifier-free guidance</b> removes the classifier by rewriting
+\(\nabla\log P(y\mid x_t) = \nabla\log P(x_t\mid y) - \nabla\log P(x_t)\) and
+then interpolating between the two ends with a knob \(\lambda\):</p>
+
+<div class="mathblock">
+\[ \nabla_{x_t}\log P(x_t\mid y) = \lambda \,\nabla_{x_t}\log P(x_t\mid y)
+   + (1-\lambda)\,\nabla_{x_t}\log P(x_t) \]
+</div>
+
+<p>You train one network to do both jobs by dropping the condition on some fraction of
+examples (a "null" label), and at sampling time you evaluate it twice and combine.
+Large \(\lambda\) buys fidelity to the prompt at the cost of variety.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  Where does the classifier's gradient come from in classifier guidance?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  From Bayes' rule: \(\nabla\log P(x_t\mid y) = \nabla\log P(x_t) +
+  \nabla\log P(y\mid x_t)\), with the \(\P(y)\) term dropping out. The
+  diffusion model supplies \(\nabla\log P(x_t)\) and a separately trained
+  classifier supplies \(\nabla\log P(y\mid x_t)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  What problem does classifier-free guidance solve, and at what extra cost?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It removes the need for a separate classifier that must be robust at every noise
+  level — instead one model is trained with the condition randomly dropped so it can
+  also emit the unconditional score. The cost is two forward passes per sampling step
+  instead of one.</p>
+</div>
+
+<h2>10 &middot; Latent diffusion</h2>
+
+<p>Diffusing in pixel space is wasteful, because most of an image's bits describe
+detail nobody asked for. The fix is architectural: train an autoencoder first, then
+run the entire diffusion process in its latent space. Encode \(x_0\) to
+\(z_0\), diffuse over \(z_0\), and at the end decode a sample with the
+autoencoder. The diffusion model never sees a pixel. VQ-VAE is the encoder these
+notes suggest.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  What exactly does a latent diffusion model diffuse over, and who turns it back into pixels?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It diffuses over the latent code \(z_0 = E_{\phi^*}(x_0)\) produced by a
+  pretrained autoencoder. Generation samples \(z_{novel}\) by reverse diffusion and
+  then applies the decoder, \(x_{novel} = D_{\theta^*}(z_{novel})\).</p>
+</div>
+
+<h2>11 &middot; DDIM: same training, better sampling</h2>
+
+<p>Two complaints about DDPM sit side by side: a thousand steps per sample is slow, and
+the forward process is stochastic, so a given \(x_0\) has no single latent
+\(x_T\) — which kills any hope of inverting an image to its noise.</p>
+
+<p>DDIM defines a <i>family</i> of inference distributions indexed by
+\(\sigma \in \mathbb{R}_{\ge 0}\), with a forward process that is
+deliberately non-Markovian. The crucial observation is that the ELBO depends only on
+\(q(x_t\mid x_0)\), and this family keeps that quantity identical to DDPM's. So the
+bound — and therefore the trained network — is unchanged. You are free to pick a
+different reverse process after training.</p>
+
+<p>Two settings matter. One choice of \(\sigma_t\) reproduces DDPM exactly. Setting
+\(\sigma_t = 0\) makes the reverse process deterministic:</p>
+
+<div class="mathblock">
+\[ x_{t-1} = \sqrt{\bar{\alpha}_{t-1}}\left[\frac{x_t - \sqrt{1-\alpha_t}\,\hat{\epsilon}_{\theta^*}}{\sqrt{\alpha_t}}\right]
+   + \sqrt{1-\bar{\alpha}_{t-1}}\,\hat{\epsilon}_{\theta^*} \]
+</div>
+
+<p>with the only randomness left being the initial \(x_T\). With no noise injected
+along the way, the map from noise to image is invertible — so you can also run it
+backwards and recover the noise that would generate a given image. That is DDIM
+inversion, and it is the trick behind a great deal of image editing.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  DDIM changes the forward process to be non-Markovian. Why does that not invalidate
+  the trained network?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the ELBO depends on \(q(x_t\mid x_0)\) alone, and the DDIM family keeps
+  that conditional identical to DDPM's. The bound is the same, so the regression
+  target is the same, so training a DDPM has implicitly trained every model in the
+  family. Only the sampling procedure changes.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.5</span></span>
+  What does setting \(\sigma_t = 0\) buy you?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A deterministic reverse process: the only randomness is \(x_T\). Determinism gives
+  two things — faster sampling, because the chain can be taken in large jumps rather
+  than a thousand tiny ones, and unique invertibility, since a deterministic map can
+  be run backwards to recover the noise for a given image.</p>
+</div>
+
+<hr class="rule">
+
+<h2>What this essay does not tell you</h2>
+
+<p>The notes present the DDPM objective in its simplest weighting — the
+\(1/2\sigma_q^2\) factor left in place — and never discuss reweighting the loss
+across noise levels, which is the change that made these models actually produce good
+images. They also assume the reverse covariance equals \(\Sigma_q\), sidestepping
+the question of learning it. And the DDIM section states that the ELBOs coincide
+"off by a constant" rather than proving it. All three omissions matter in practice,
+and none of them are in these pages.</p>
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from pages 72&ndash;110 of the IIT Madras generative-AI notes. Typeset with KaTeX.
+Source: <i>viz/diffusion.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
+
+</body></html>
+
+</body></html>

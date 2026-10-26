@@ -1,0 +1,74 @@
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }

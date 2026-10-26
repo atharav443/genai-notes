@@ -1,0 +1,557 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Variational autoencoders, for the very curious</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/VAE-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/vae.body.html</code>.</div>
+
+<h1>Variational<br>autoencoders,<br>for the very curious</h1>
+<h1 class="sub-title">How to squeeze a photograph through a narrow pipe and get it
+back — and why the pipe needs a little noise to be trainable at all</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question
+and its answer. They are not decoration. They are the essay testing you — and if
+you take them seriously, you will remember this material for years instead of
+days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong
+is useful; the effort of a failed recall is what makes the next one stick. Each
+box is numbered, the questions are collected at the end, and the same list ships as
+a plain-text file. On screen, each Part ends with a deck that deals its cards to you
+one at a time.</p>
+
+<p>Everything here follows pages 43&ndash;71 of an IIT Madras generative-AI course.
+The argument runs: we write down a model with a hidden variable, discover the
+likelihood is intractable, bound it, find that the bound has a gradient we cannot
+take, and fix that with one line of algebra.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; A model with something hidden in it</div>
+
+<h2>1 &middot; Latent variables</h2>
+
+<p>A latent variable model says that what you observe is a shadow of something you
+do not observe. Write \(z\) for the hidden thing and \(x\) for the observation.
+The model's density is a marginal:</p>
+
+<div class="mathblock">
+\[ P_\theta(x) = \int_z P_\theta(x, z) \, dz \]
+</div>
+
+<p>with \(z\) continuous, or a sum \(\sum_z P_\theta(x,z)\) if it is discrete.
+The integral is the whole difficulty of this essay: it is why the likelihood has no
+closed form, and every technique below is a way of living without it.</p>
+
+<p>What \(z\) <i>means</i> depends on its type. Make it discrete, taking one of
+\(M\) values, and asking for \(z_i\) given \(x_i\) is a clustering question —
+which of the \(M\) groups does this point belong to. That is where Gaussian
+mixture models and k-means live. Make it continuous in a much smaller space than
+\(x\), say \(z \in \mathbb{R}^k\) with \(k \ll d\), and asking for
+\(z_i\) given \(x_i\) is a compression question: find a short description that
+still explains the long observation.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  Write down the defining equation of a latent variable model, and say what makes it hard.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P_\theta(x) = \int_z P_\theta(x,z)\,dz\), a marginal over the joint. The
+  difficulty is that the integral over the latent space is generally intractable —
+  there is no closed form, so \(\log P_\theta(x)\) cannot be evaluated directly.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  The same model gives clustering in one case and feature extraction in another. What
+  changes?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The type and size of \(z\). Discrete \(z \in \{1,\dots,M\}\) assigns each
+  \(x_i\) to one of \(M\) groups — that is clustering. Continuous
+  \(z \in \mathbb{R}^k\) with \(k \ll d\) gives each \(x_i\) a real-valued
+  code — that is an embedding, and the machinery is an auto-encoder.</p>
+</div>
+
+<div class="part">Part II &mdash; From "match the distribution" to "maximise likelihood"</div>
+
+<h2>2 &middot; Why maximum likelihood, of all things</h2>
+
+<p>The stated goal is to make the model's distribution match the data's. Measure the
+mismatch with forward KL and minimise:</p>
+
+<div class="mathblock">
+\[ \theta^* = \arg\min_\theta \int_x P_x(x) \log\frac{P_x(x)}{P_\theta(x)} \, dx \]
+</div>
+
+<p>Split the logarithm. The first piece is \(\int_x P_x \log P_x\), which contains no
+\(\theta\) at all — it is a property of the data, a constant as far as the
+optimisation is concerned. What is left is</p>
+
+<div class="mathblock">
+\[ \theta^* = \arg\min_\theta \left[-\int_x P_x(x)\log P_\theta(x)\,dx\right]
+            = \arg\max_\theta \mathbb{E}_{P_x}\log P_\theta(x) \]
+</div>
+
+<p>which is maximum likelihood estimation. This is worth pausing on, because
+maximum likelihood is usually taught as a starting assumption. It is not. It is what
+"minimise the KL divergence to the data" reduces to once the constants fall out. The
+whole rest of the essay is a fight with one term: \(\log P_\theta(x)\), which
+contains an integral nobody can do.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  Show why minimising \(D_{KL}(P_x\|P_\theta)\) is the same as maximum likelihood.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Expand the KL: \(\int P_x \log P_x - \int P_x \log P_\theta\). The first
+  integral involves only \(P_x\), so it is constant with respect to \(\theta\) and
+  cannot affect the argmin. Dropping it leaves minimising
+  \(-\mathbb{E}_{P_x}\log P_\theta(x)\), i.e. maximising
+  \(\mathbb{E}_{P_x}\log P_\theta(x)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  Which term of the KL expansion vanishes, and what is the general lesson?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The entropy term \(\int_x P_x(x)\log P_x(x)\,dx\) — it does not depend on the
+  parameters. The lesson: when a divergence to a fixed distribution is minimised,
+  only the cross term matters, which is why MLE keeps appearing in generative
+  modelling.</p>
+</div>
+
+<div class="part">Part III &mdash; A bound you can actually compute</div>
+
+<h2>3 &middot; Jensen, and the appearance of \(q\)</h2>
+
+<p>Let \(L(\theta) = \log P_\theta(x)\). Multiply inside the integral by
+\(q(z\mid x)/q(z\mid x)\) for <i>any</i> density \(q\) over the latent space —
+free, since it equals one:</p>
+
+<div class="mathblock">
+\[ L(\theta) = \log \int_z q(z\mid x)\left[\frac{P_\theta(x,z)}{q(z\mid x)}\right] dz
+            = \log \mathbb{E}_{q(z\mid x)}\left[\frac{P_\theta(x,z)}{q(z\mid x)}\right] \]
+</div>
+
+<p>Now apply Jensen's inequality, \(\log \mathbb{E}[\cdot] \ge
+\mathbb{E}\log[\cdot]\), which holds because \(\log\) is concave. The inequality
+points the useful way:</p>
+
+<div class="mathblock">
+\[ L(\theta) \;\ge\; \mathbb{E}_{q(z\mid x)}\log\frac{P_\theta(x,z)}{q(z\mid x)}
+   \;=:\; J_\theta(q) \]
+</div>
+
+<p>\(J_\theta(q)\) is the evidence lower bound, or ELBO, and it is a function of two
+independent things: the model parameters \(\theta\), and the density \(q\) you
+chose. That second slot is the free variable, and the entire method lives in the
+choice you put there. The bound becomes exact precisely when \(q\) equals the true
+posterior \(P_\theta(z\mid x)\) — which we cannot compute, which is why it is
+still a bound.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  Why does Jensen give a <i>lower</i> bound rather than an upper one?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(\log\) is concave, so \(\log\mathbb{E}[X] \ge \mathbb{E}\log X\).
+  The quantity we can compute, \(\mathbb{E}\log\) of the ratio, sits below the
+  quantity we want, \(\log\) of the evidence. Concavity fixes the direction.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  What is \(q(z\mid x)\), and when does the bound become tight?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It is any density over the latent variable given the observation — the
+  <i>variational latent posterior</i>. It is a free choice we introduce; it is not the
+  true posterior. The ELBO is exact exactly when \(q(z\mid x) = P_\theta(z\mid x)\),
+  which is the quantity we were trying to avoid needing.</p>
+</div>
+
+<div class="part">Part IV &mdash; The classical answer, and why it stops working</div>
+
+<h2>4 &middot; Expectation maximisation</h2>
+
+<p>We now want</p>
+
+<div class="mathblock">
+\[ \theta^*, q^* = \arg\max_{\theta, q} \mathbb{E}_{q(z\mid x)}\log\frac{P_\theta(x,z)}{q(z\mid x)} \]
+</div>
+
+<p>Two blocks of unknowns, so alternate. Hold \(\theta\) fixed and find the best
+\(q\); that is the <b>E step</b>. Hold \(q\) fixed and find the best \(\theta\);
+that is the <b>M step</b>. Repeating this is the EM algorithm, and it can be shown
+that \(L(\theta_{t+1}) \ge L(\theta_t)\): every full cycle improves the actual
+likelihood, not just the bound.</p>
+
+<p>For a Gaussian mixture the E step has a closed form and a satisfying one: the best
+\(q\) is the true posterior,</p>
+
+<div class="mathblock">
+\[ q^*(z\mid x) = P_\theta(z\mid x)
+   = \frac{P_\theta(x\mid z)\,P_\theta(z)}{P_\theta(x)} \]
+</div>
+
+<p>which is just Bayes' rule with the mixture weights in the numerator. Then the M
+step differentiates with respect to \(\alpha\), \(\mu\), \(\Sigma\) and solves.
+Beautiful — and it works only because \(P_\theta(z\mid x)\) is available in closed
+form. Put a neural network where the GMM's components were, and Bayes' rule asks you
+for a normalising constant that is an integral over the latent space. EM dies at
+exactly the place the problem began.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  State the two steps of EM in terms of the ELBO.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  E step: \(q_{t+1} = \arg\max_q J_{\theta_t}(q)\) with \(\theta\) fixed.
+  M step: \(\theta_{t+1} = \arg\max_\theta J_\theta(q_{t+1})\) with \(q\)
+  fixed. Each step cannot decrease the bound, and EM guarantees
+  \(L(\theta_{t+1}) \ge L(\theta_t)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  Why does EM fail for a neural latent-variable model?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The E step requires evaluating \(P_\theta(z\mid x) = P_\theta(x,z)/P_\theta(x)\),
+  and \(P_\theta(x)\) is the intractable integral over \(z\). For a GMM that
+  normaliser is a finite sum; with neural components it is an integral nobody can
+  do, so the E step has no closed form.</p>
+</div>
+
+<div class="part">Part V &mdash; The trick that makes it trainable</div>
+
+<h2>5 &middot; A gradient you cannot take</h2>
+
+<p>So we keep the ELBO and give up on exact EM: let the encoder network output the
+<i>parameters</i> of \(q_\varphi(z\mid x)\) rather than the density itself. Now
+differentiate with respect to the encoder's weights \(\varphi\). One term is
+harmless (the KL has a closed form). The other is</p>
+
+<div class="mathblock">
+\[ \nabla_\varphi \mathbb{E}_{q_\varphi(z\mid x)}\log P_\theta(x\mid z) \]
+</div>
+
+<p>and it is a trap. Write the expectation as an integral and push the gradient
+inside:</p>
+
+<div class="mathblock">
+\[ \nabla_\psi \mathbb{E}_{P_\psi(v)} f_\psi(v)
+   = \int_v (\nabla_\psi f_\psi(v)) P_\psi(v)\,dv
+   + \int_v (\nabla_\psi P_\psi(v)) f_\psi(v)\,dv \]
+</div>
+
+<p>The first integral is an expectation and can be estimated by sampling. The second
+is not an expectation of anything — it contains the gradient of a density with
+respect to its own parameters, and there is no way to sample it. So the gradient we
+need does not exist as an estimable quantity.</p>
+
+<h2>6 &middot; Move the randomness outside</h2>
+
+<p>The repair is one of the neatest moves in the subject. Do not sample \(z\) from
+a distribution that depends on \(\varphi\). Sample from something that does not,
+and push the parameter dependence into a <i>function</i>. Let
+\(\epsilon \sim P_\epsilon\) be a fixed source of noise, independent of
+\(\varphi\), and write \(z = g(\epsilon)\). Then by the law of the unconscious
+statistician,</p>
+
+<div class="mathblock">
+\[ \mathbb{E}_{P_\varphi(z\mid x)} f(z)
+   = \mathbb{E}_{P_\epsilon} f\!\left(g(\epsilon)\right)
+   \approx \frac{1}{M}\sum_{j=1}^{M} f\!\left(g(\epsilon_j)\right) \]
+</div>
+
+<p>and the gradient now flows through \(g\), which is an ordinary differentiable
+function of \(\varphi\). Concretely, if
+\(q_\varphi(z\mid x) = \mathcal{N}(z; \mu_\varphi(x), \Sigma_\varphi(x))\),
+take \(\epsilon \sim \mathcal{N}(0,I)\) and set</p>
+
+<div class="mathblock">
+\[ z = \mu_\varphi(x) + \Sigma_\varphi(x)\,\epsilon \]
+</div>
+
+<p>which has exactly the intended distribution. The noise is drawn <i>outside</i> the
+network; the network only supplies the shift and the scale. That is the
+reparameterization trick, and without it a VAE is not trainable by ordinary
+backpropagation.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Precisely why can \(\nabla_\varphi\mathbb{E}_{q_\varphi(z\mid x)}\log P_\theta(x\mid z)\)
+  not be estimated by sampling?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Differentiating the integral produces two terms. One is
+  \(\mathbb{E}[\nabla_\varphi\log P_\theta(x\mid z)]\), which is estimable. The
+  other is \(\int (\nabla_\varphi q_\varphi(z\mid x))\log P_\theta(x\mid z)\,dz\),
+  which is not an expectation — it weights a log-likelihood by the gradient of a
+  density — so no sample average can stand in for it.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  State the reparameterization identity that fixes this.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}_{P_\varphi(v)}f_\varphi(v) = \mathbb{E}_{P_\epsilon}f_\varphi(g(\epsilon))\)
+  when \(v = g(\epsilon)\) and \(\epsilon\) is independent of \(\varphi\). The
+  parameter dependence moves out of the sampling distribution and into the
+  deterministic map \(g\), so the expectation is taken over a fixed distribution.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  For a Gaussian posterior, what does the reparameterized sample look like, and where
+  is the randomness?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(z = \mu_\varphi(x) + \Sigma_\varphi(x)\,\epsilon\) with
+  \(\epsilon \sim \mathcal{N}(0,I)\). The randomness lives entirely in
+  \(\epsilon\), drawn outside the network; the encoder only outputs \(\mu\) and
+  \(\Sigma\), which is what lets gradients reach \(\varphi\).</p>
+</div>
+
+<div class="part">Part VI &mdash; Assembling the thing people actually train</div>
+
+<h2>7 &middot; Splitting the ELBO into two losses</h2>
+
+<p>Factor the joint as \(P_\theta(x,z) = P_\theta(x\mid z)P_\theta(z)\) and the
+ELBO splits into two interpretable pieces:</p>
+
+<div class="mathblock">
+\[ J_\theta(q_\varphi) = \underbrace{\mathbb{E}_{q_\varphi(z\mid x)}\log P_\theta(x\mid z)}_{\text{reconstruction}}
+   - \underbrace{D_{KL}\!\left(q_\varphi(z\mid x)\,\|\,P_\theta(z)\right)}_{\text{regularisation}} \]
+</div>
+
+<p>To make the first term concrete, choose the decoder's likelihood. Put
+\(P_\theta(x\mid z) = \mathcal{N}(x; \hat{x}_\theta(z), I)\), so the decoder
+outputs a mean. Then</p>
+
+<div class="mathblock">
+\[ \log P_\theta(x\mid z) \propto -\|x - \hat{x}_\theta(z)\|_2^2 \]
+</div>
+
+<p>and the reconstruction term becomes squared error. Meanwhile the KL is available
+in closed form, because both sides are Gaussian and the prior is standard normal. If
+\(q_\varphi(z\mid x) = \mathcal{N}(\mu_\varphi(x), \Sigma_\varphi(x))\) and
+\(P_\theta(z) = \mathcal{N}(0, I)\), then</p>
+
+<div class="mathblock">
+\[ D_{KL} = -\tfrac{1}{2}\log|\Sigma_\varphi(x)| - k + \text{tr}\!\left[\Sigma_\varphi(x)\right]
+   + \|\mu_\varphi(x)\|_2^2 \]
+</div>
+
+<p>Two terms, two jobs. The decoder only ever sees the reconstruction error, because
+the KL contains no \(\theta\). The encoder sees both, and has to satisfy two
+demands at once: encode informatively, but keep the encoding near the prior. Almost
+everything that goes wrong with VAEs is a consequence of that tension.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  Why does the reconstruction term turn into mean squared error?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because we choose a Gaussian decoder likelihood
+  \(P_\theta(x\mid z) = \mathcal{N}(x; \hat{x}_\theta(z), I)\). The log of that
+  density contains \(-\|x - \hat{x}_\theta(z)\|_2^2\) plus constants, so
+  maximising it is minimising squared error. The choice of likelihood is what picks
+  the loss; MSE is not an independent decision.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  Why does the decoder's gradient not include the KL term?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The KL is between \(q_\varphi(z\mid x)\) and the prior \(P_\theta(z)\), and
+  in the standard setup the prior is a fixed \(\mathcal{N}(0,I)\) with no learned
+  parameters. So \(\nabla_\theta\) of the KL is zero and the decoder trains purely
+  on reconstruction.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  What does the forward pass of a VAE actually do, step by step?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Pass \(x_i\) through the encoder to get \(\mu_\varphi(x_i)\) and
+  \(\Sigma_\varphi(x_i)\); draw \(\epsilon_1,\dots,\epsilon_M\) from
+  \(\mathcal{N}(0,I)\) <i>outside</i> the networks; form
+  \(z_j = \mu_\varphi(x_i) + \Sigma_\varphi(x_i)\epsilon_j\); push each
+  \(z_j\) through the decoder to get \(\hat{x}_\theta(z_j)\); average
+  \(\|x_i - \hat{x}_\theta(z_j)\|_2^2\) over \(j\); add the KL.</p>
+</div>
+
+<div class="part">Part VII &mdash; Using it, and the way it fails</div>
+
+<h2>8 &middot; Sampling and embedding</h2>
+
+<p>A trained VAE is used in two directions. To <b>generate</b>, skip the encoder: draw
+\(z_{new} \sim \mathcal{N}(0,I)\) and push it through the decoder. This works
+precisely because the KL term has been pulling every \(q_\varphi(z\mid x)\)
+towards \(\mathcal{N}(0,I)\) — if training succeeded, the prior <i>is</i> a valid
+description of the latent space, so sampling from it samples from the model.</p>
+
+<p>To <b>embed</b>, skip the decoder: push \(x_{test}\) through the encoder and take
+\(\mu_\varphi(x_{test})\) as a \(k\)-dimensional feature vector for a
+\(d\)-dimensional input. The bottleneck is doing the compression you asked for.</p>
+
+<h2>9 &middot; Posterior collapse, and two ways out</h2>
+
+<p>Now the failure. The KL term is a regulariser, and a regulariser with no weight is
+a demand, not a preference. If it dominates, then for <i>every</i> \(x\) the encoder
+is pushed to output exactly the prior: \(q_\varphi(z\mid x) = \mathcal{N}(0,I)\)
+for all inputs. The latent code then carries no information about \(x\) at all, and
+the decoder, receiving the same distribution whatever it is shown, can only learn the
+average of the dataset. This is <b>posterior collapse</b>.</p>
+
+<p>Two standard repairs. Weight the KL by a coefficient \(\beta\) and tune the
+trade-off explicitly — the \(\beta\)-VAE. Small \(\beta\) favours reconstruction at
+the cost of generation; large \(\beta\) favours a clean prior at the cost of blurry
+reconstructions. Or sidestep the continuous prior entirely: the <b>VQ-VAE</b> replaces
+the Gaussian posterior with vector quantisation, snapping each encoder column to its
+nearest entry in a learned dictionary
+(\(z_q(x_i) = z_{j^*}\) with
+\(j^* = \arg\min_j \|z_e(x_i) - z_j\|_2^2\)), and trains encoder, decoder and the
+dictionary together. A discrete latent cannot drift towards a Gaussian prior, so the
+collapse mode does not arise in the same way — but sampling then requires a separate
+model over the discrete codes, because the prior is no longer something you can just
+draw from.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  Why is \"sample \(z\) from \(\mathcal{N}(0,I)\) and decode"@ a valid way to generate?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the KL term has driven every \(q_\varphi(z\mid x)\) towards the prior
+  \(\mathcal{N}(0,I)\). If training succeeded, the marginal latent distribution is
+  the prior, so drawing from the prior is drawing from the model's latent
+  distribution, and decoding maps it back to data space.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  What are the two ways to read an embedding out of a trained VAE?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Either take the mean \(z = \mu_\varphi(x_{test})\) — the deterministic choice —
+  or sample \(z \sim \mathcal{N}(\mu_\varphi(x_{test}), \Sigma_\varphi(x_{test}))\).
+  The first is what people usually mean by "the embedding".</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  Describe posterior collapse mechanically.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The KL term forces \(q_\varphi(z\mid x)\) to equal the prior for every \(x\),
+  so \(q_\varphi(z\mid x_i) = q_\varphi(z\mid x_j) = \mathcal{N}(0,I)\) for any
+  two inputs. The decoder receives samples from the same distribution regardless of
+  the input and becomes unable to distinguish inputs — the latent variable has been
+  switched off.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  What does a VAE look like once you stop calling the KL a bound and call it a penalty?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A regularised auto-encoder: reconstruction cost plus a weighted penalty on the
+  latent code. The ELBO's two terms <i>are</i> \"loss plus regularisation"@, with
+  the implicit weight fixed at 1. Writing that weight explicitly as \(\beta\) gives
+  the \(\beta\)-VAE and makes the trade-off tunable.</p>
+</div>
+
+<hr class="rule">
+
+<h2>What this essay does not tell you</h2>
+
+<p>The notes stop at VQ-VAE and do not follow the thread into hierarchical priors,
+normalising flows as posteriors, or the importance-weighted bound — all of which are
+attempts to tighten the same inequality. They also present the KL between two
+Gaussians as a formula to be used, without deriving it once by completing the square.
+That derivation is a few lines and worth doing yourself if you want the formula to
+stay in your head rather than on a page.</p>
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from pages 43&ndash;71 of the IIT Madras generative-AI notes. Typeset with KaTeX.
+Source: <i>viz/vae.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
+
+</body></html>
+
+</body></html>
