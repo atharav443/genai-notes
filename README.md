@@ -20,6 +20,36 @@ runtime dependencies — the published site is plain HTML.
 | `viz/` | build inputs for the articles + the original render scripts |
 | `video/`, `blockdiagrams/` | GAN/WGAN training animations and diagrams |
 
+## Design
+
+The visual language is borrowed in spirit — not copied — from
+[Quantum Country](https://quantum.country): one accent colour used sparingly, an
+oversized display title, a serif reading column with sans meta, and generous
+whitespace. Two things are ours: the palette is warm paper rather than their
+lavender, and the accent changes per topic instead of being one brand colour.
+
+| surface | stylesheet | notes |
+|---|---|---|
+| landing page, 404 | `assets/site.css` | `:root` design tokens, hero, grouped card grids |
+| article chrome | `build/chrome/chrome.css` | accent palettes, postcards, review deck |
+| article behaviour | `build/chrome/chrome.js` | reveal, decks, grading, progress ring |
+
+**Per-article accents.** `build/inject-nav.js` holds an `ACCENTS` map and sets
+`data-accent` on `<html>` as part of the `site-js` block — GAN violet, VAE teal,
+diffusion orange, RLHF rose. `chrome.css` declares those palettes as `--accent`,
+`--accent-ink` and `--accent-wash`. Unmapped files fall back to indigo, and with JS
+off the fallback applies too, so nothing breaks.
+
+**Card grids.** `.grid` fits as many columns as the width allows (used for the three cheat
+sheets); `.grid--wide` is fixed at two columns for the essays, whose blurbs are longer, and
+collapses to one below 720px.
+
+**Review progress ring.** The `deck-ring` in `chrome.js` is an SVG circle of
+circumference 2π×15 = 94.25; `updateRing()` moves `stroke-dashoffset` as cards are
+graded. It is the equivalent of Quantum Country's review orb.
+
+Numbers on the landing page (essays, cards, cheat sheets, PDFs) are derived in
+`build/build-index.js` from `content.json`, so they cannot drift out of date.
 ## Local preview
 
 ```bash

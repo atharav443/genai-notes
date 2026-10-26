@@ -1,47 +1,121 @@
 /* Shared site styles — landing page, article chrome, 404.
-   Palette: bg #fbfaf8 / ink #1a1a1d / muted #5c5c66 / line #e3e0da */
+   Editorial layout: serif display + sans meta, one accent colour, warm ground.
+   Design language borrowed (not copied) from Quantum Country's mnemonic medium:
+   a single accent used sparingly, an oversized display title, generous whitespace. */
 
-body{margin:0;background:#fbfaf8;color:#1a1a1d;
-     font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif}
-.w{max-width:900px;margin:0 auto;padding:56px 22px}
-h1{font-size:32px;letter-spacing:-.02em;margin:0 0 6px}
-p.s{color:#5c5c66;margin:0 0 18px}
-p.count{color:#8a8a94;font-size:12.5px;margin:0 0 30px}
+:root{
+  --paper:#faf9f6;      /* warm ground, never pure white */
+  --surface:#ffffff;
+  --ink:#17171a;
+  --muted:#5f5f68;
+  --faint:#93939c;
+  --line:#e7e4dc;
+  --line-soft:#f0eee8;
+  --accent:#4338ca;
+  --accent-ink:#312a9b;
+  --accent-wash:#f1efff;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  --radius:14px;
+}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.c{position:relative;display:block;background:#fff;border:1px solid #e3e0da;
-   border-radius:16px;padding:20px;transition:.15s;color:inherit;text-decoration:none}
-.c:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.07)}
+body{margin:0;background:var(--paper);color:var(--ink);font:16.5px/1.65 var(--serif);
+     -webkit-font-smoothing:antialiased}
+.w{max-width:960px;margin:0 auto;padding:0 24px}
 
-.tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.1em;
-     text-transform:uppercase;color:#fff;border-radius:6px;padding:3px 8px;margin:0}
-h2{font-size:19px;margin:0 0 6px;letter-spacing:-.01em}
-.m{color:#5c5c66;font-size:13.5px;margin:0 0 14px}
-.links{font-size:13.5px;font-weight:700;margin:0}
-.links a{color:inherit;position:relative;z-index:1}
+/* ------------------------------------------------------------------ masthead */
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;
+          padding:22px 0;border-bottom:1px solid var(--line)}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.mark-glyph{width:26px;height:26px;border-radius:50%;background:var(--accent);
+            display:grid;place-items:center;color:#fff;font:700 13px/1 var(--sans);
+            letter-spacing:-.02em;flex:none}
+.mark-name{font:600 15px/1 var(--sans);letter-spacing:-.01em}
+.masthead .meta{font:500 12.5px/1.3 var(--sans);color:var(--faint);text-align:right}
 
-/* Whole-card click target: the title anchor paints an invisible overlay.
-   .links a sits above it so the PDF / notes links stay clickable. */
-a.stretch{color:inherit;text-decoration:none}
-a.stretch::after{content:"";position:absolute;inset:0;border-radius:16px}
+/* ---------------------------------------------------------------------- hero */
+.hero{padding:64px 0 44px;
+      background:radial-gradient(900px 320px at 18% -10%, var(--accent-wash), transparent 70%)}
+.eyebrow{font:700 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;
+         color:var(--accent);margin:0 0 18px}
+h1.display{font-size:clamp(38px,5.4vw,62px);line-height:1.03;letter-spacing:-.028em;
+           font-weight:600;margin:0 0 22px;color:var(--ink)}
+h1.display em{font-style:normal;color:var(--accent)}
+.lede{font-size:19px;line-height:1.62;color:var(--muted);max-width:60ch;margin:0 0 30px}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:0 0 26px}
+.btn{display:inline-block;font:600 14px/1 var(--sans);letter-spacing:.01em;
+     padding:15px 24px;border-radius:9px;text-decoration:none;
+     background:var(--accent);color:#fff;border:1px solid var(--accent);
+     transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
+     box-shadow:0 1px 2px rgba(50,40,120,.18), 0 10px 24px -14px rgba(50,40,120,.65)}
+.btn:hover{background:var(--accent-ink);transform:translateY(-1px)}
+.btn:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--accent);border-color:var(--line);
+           box-shadow:none;font-weight:600}
+.btn.ghost:hover{background:var(--accent-wash);border-color:var(--accent);transform:none}
 
-/* Not-yet-written topics */
-.c.soon{opacity:.55;cursor:default}
-.c.soon:hover{transform:none;box-shadow:none}
-.c.soon h2{color:#5c5c66}
-.pill-soon{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.1em;
-           text-transform:uppercase;color:#8a8a94;border:1px solid #e3e0da;
-           border-radius:6px;padding:3px 8px;margin:0}
+.stats{display:flex;flex-wrap:wrap;gap:0;margin:0;padding:0;list-style:none;
+       border-top:1px solid var(--line);max-width:640px}
+.stats li{font:500 12.5px/1.4 var(--sans);color:var(--faint);padding:14px 22px 0 0;margin-right:22px}
+.stats li b{display:block;font:600 19px/1.2 var(--sans);color:var(--ink);letter-spacing:-.01em}
 
-footer{color:#8a8a94;font-size:12.5px;margin-top:40px;border-top:1px solid #e3e0da;padding-top:18px}
+/* --------------------------------------------------------------------- groups */
+.group{padding:44px 0 8px}
+.group-title{font:600 13px/1.3 var(--sans);letter-spacing:.13em;text-transform:uppercase;
+             color:var(--accent);margin:0 0 8px}
+.group-sub{font:400 14.5px/1.55 var(--sans);color:var(--muted);margin:0 0 24px;max-width:62ch}
 
-/* Article chrome injected by build/inject-nav.js (this copy also styles 404.html) */
-.site-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;height:2.6rem;
-          padding:0 1.2rem;background:rgba(251,250,248,.92);backdrop-filter:blur(8px);
-          border-bottom:1px solid #e3e0da;
-          font:600 12.5px/1 ui-sans-serif,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em}
-.site-nav a{color:#5c5c66;text-decoration:none}
-.site-nav a:hover{color:#1a1a1d}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px}
+/* essays have longer blurbs: two wider columns read better than three */
+.grid--wide{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:720px){.grid--wide{grid-template-columns:minmax(0,1fr)}}
 
-@media print { .site-nav{display:none!important} }
+.c{position:relative;display:flex;flex-direction:column;background:var(--surface);
+   border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 18px;
+   transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease}
+.c::before{content:"";position:absolute;left:22px;right:22px;top:0;height:2px;
+           background:var(--ca,var(--accent));border-radius:0 0 2px 2px;opacity:.9}
+.c:hover{transform:translateY(-2px);border-color:#dcd8ce;
+         box-shadow:0 2px 4px rgba(30,26,20,.04), 0 14px 34px -20px rgba(30,26,20,.35)}
+
+.tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.tag{display:inline-block;font:700 10px/1 var(--sans);letter-spacing:.11em;
+     text-transform:uppercase;color:#fff;border-radius:5px;padding:5px 9px;margin:0}
+.pill-soon{display:inline-block;font:700 9.5px/1 var(--sans);letter-spacing:.11em;
+           text-transform:uppercase;color:var(--faint);border:1px solid var(--line);
+           border-radius:5px;padding:5px 9px;margin:0}
+
+.c h2{font-size:21px;line-height:1.25;letter-spacing:-.015em;font-weight:600;margin:0 0 8px}
+.c h2 a{color:inherit;text-decoration:none}
+.c h2 a::after{content:"";position:absolute;inset:0;border-radius:var(--radius)}
+.c h2 a:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
+.m{color:var(--muted);font-size:15px;line-height:1.55;margin:0 0 16px}
+.links{font:600 12.5px/1 var(--sans);letter-spacing:.01em;margin:auto 0 0;
+       padding-top:13px;border-top:1px solid var(--line-soft)}
+.links a{color:var(--accent);text-decoration:none;position:relative;z-index:1}
+.links a:hover{text-decoration:underline;text-underline-offset:2px}
+
+.c.soon{background:repeating-linear-gradient(135deg,#fff,#fff 9px,#fcfbf7 9px,#fcfbf7 18px);
+        border-style:dashed}
+.c.soon::before{background:var(--line)}
+.c.soon h2,.c.soon .m{color:var(--faint)}
+.c.soon:hover{transform:none;box-shadow:none;border-color:var(--line)}
+
+/* --------------------------------------------------------------------- footer */
+footer{color:var(--faint);font:400 12.5px/1.6 var(--sans);margin-top:56px;
+       border-top:1px solid var(--line);padding:22px 0 60px}
+
+/* --------------------------------------- article chrome (also styles 404.html) */
+.site-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+          height:3rem;padding:0 20px;background:rgba(250,249,246,.88);
+          backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.site-nav .mark-glyph{width:22px;height:22px;font-size:11px}
+.site-nav .mark-name{font:600 13px/1 var(--sans);color:var(--ink)}
+.site-nav a{color:var(--muted);text-decoration:none;font:600 12.5px/1 var(--sans)}
+.site-nav a:hover{color:var(--accent)}
+.site-nav .spacer{flex:1}
+.site-nav .back{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;
+                border:1px solid var(--line);border-radius:999px;background:#fff}
+.site-nav .back:hover{border-color:var(--accent);color:var(--accent)}
+
+@media print{ .site-nav{display:none!important} }

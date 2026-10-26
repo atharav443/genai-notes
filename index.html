@@ -3,46 +3,58 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Generative AI — Cheat Sheets</title>
 <link rel="stylesheet" href="assets/site.css">
-</head><body><div class="w">
-<h1>Generative AI — Cheat Sheets</h1>
-<p class="s">Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes (104 pages). Each one ships twice: as a self-contained interactive cheat sheet with an undergraduate-level PDF, and as an essay in the mnemonic medium with recall cards and a review deck.</p>
-<p class="count">9 topics &middot; 8 published &middot; 1 planned</p>
-<div class="grid">
-  <div class="c"><div class="tags"><span class="tag" style="background:#111827">RLHF · essay</span></div>
-    <h2><a class="stretch" href="html/RLHF-Curious.html">RLHF, for the very curious</a></h2>
-    <p class="m">The same material in a mnemonic medium: story-first prose, 47 inline recall cards, an Anki-importable deck. Source pages 128–146 + the lecture.</p>
-    <p class="links"><a href="pdf/RLHF-Curious.pdf">PDF</a> &nbsp;·&nbsp; <a href="notes/rlhf/flashcards.tsv">flashcards.tsv</a></p></div>
-  <div class="c"><div class="tags"><span class="tag" style="background:#7c3aed">GAN · essay</span></div>
-    <h2><a class="stretch" href="html/GAN-Curious.html">GANs, for the very curious</a></h2>
-    <p class="m">f-divergence → the conjugate bound → an adversarial game → why it saturates → Wasserstein → inversion → FID. 8 parts, 21 recall cards.</p>
-    <p class="links"><a href="notes/gan/flashcards.tsv">flashcards.tsv</a></p></div>
-  <div class="c"><div class="tags"><span class="tag" style="background:#0d9488">VAE · essay</span></div>
-    <h2><a class="stretch" href="html/VAE-Curious.html">VAEs, for the very curious</a></h2>
-    <p class="m">Why the likelihood is intractable → Jensen → the ELBO → EM and where it dies → the reparameterization trick → posterior collapse. 7 parts, 18 recall cards.</p>
-    <p class="links"><a href="notes/vae/flashcards.tsv">flashcards.tsv</a></p></div>
-  <div class="c"><div class="tags"><span class="tag" style="background:#ea580c">Diffusion · essay</span></div>
-    <h2><a class="stretch" href="html/Diffusion-Curious.html">Diffusion, for the very curious</a></h2>
-    <p class="m">A VAE stretched over a thousand steps → the forward schedule → a bound in three terms → a regression on noise → guidance, latent diffusion, DDIM. 8 parts, 19 recall cards.</p>
-    <p class="links"><a href="notes/diffusion/flashcards.tsv">flashcards.tsv</a></p></div>
-  <div class="c"><div class="tags"><span class="tag" style="background:#be123c">RLHF</span></div>
-    <h2><a class="stretch" href="html/RLHF-Study-Notes.html">RLHF &amp; Alignment</a></h2>
-    <p class="m">MDP → policy gradient → baseline/advantage → PPO → Bradley–Terry → DPO. Source pages 128–146, merged with the lecture transcript.</p>
-    <p class="links"><a href="pdf/RLHF-Study-Notes.pdf">PDF</a> &nbsp;·&nbsp; <a href="notes/rlhf/FULL.md">FULL.md</a></p></div>
-  <div class="c"><div class="tags"><span class="tag" style="background:#7c3aed">GAN</span></div>
-    <h2><a class="stretch" href="html/GAN.html">Generative Adversarial Networks</a></h2>
-    <p class="m">f-divergence → VDM → GAN → WGAN → BiGAN → cGAN → FID. Source pages 7–42.</p>
-    <p class="links"><a href="pdf/GAN.pdf">PDF</a></p></div>
-  <div class="c"><div class="tags"><span class="tag" style="background:#0d9488">VAE</span></div>
-    <h2><a class="stretch" href="html/VAE.html">Variational Auto-Encoders</a></h2>
-    <p class="m">MLE → Jensen → ELBO → EM/GMM → reparameterization → β-VAE → VQ-VAE. Source pages 43–71.</p>
-    <p class="links"><a href="pdf/VAE.pdf">PDF</a></p></div>
-  <div class="c"><div class="tags"><span class="tag" style="background:#ea580c">Diffusion</span></div>
-    <h2><a class="stretch" href="html/Diffusion.html">Diffusion Models</a></h2>
-    <p class="m">DDPM → ELBO → denoising → U-Net → score → guidance → LDM → DDIM. Source pages 72–110.</p>
-    <p class="links"><a href="pdf/Diffusion.pdf">PDF</a></p></div>
-  <div class="c soon"><div class="tags"><span class="tag" style="background:#475569">Foundations</span><span class="pill-soon">Coming soon</span></div>
-    <h2>Generative maths — misc</h2>
-    <p class="m">Whatever else the Mathematical Foundations of Generative AI course covers: normalising flows, score matching, optimal transport.</p></div>
+</head><body>
+<div class="w">
+  <header class="masthead">
+    <a class="mark" href="index.html"><span class="mark-glyph">G</span><span class="mark-name">Generative AI — Cheat Sheets</span></a>
+    <div class="meta">IIT Madras · Mathematical Foundations of Generative AI</div>
+  </header>
+  <section class="hero">
+    <p class="eyebrow">Generative AI · study notes</p>
+    <h1 class="display">Four algorithms,<br>written twice each.</h1>
+    <p class="lede">Generative adversarial networks, variational autoencoders, diffusion and RLHF — pulled from 104 pages of handwritten lecture notes. Every topic ships twice: once as a self-contained interactive cheat sheet you can read in ten minutes, and once as a long-form essay in the mnemonic medium, where recall cards inside the prose turn reading into remembering.</p>
+    <div class="actions">
+      <a class="btn" href="html/RLHF-Curious.html">Start with RLHF</a>
+      <a class="btn ghost" href="#cheatsheets">Browse the cheat sheets</a>
+    </div>
+    <ul class="stats">
+      <li><b>4</b>essays</li>
+      <li><b>105</b>recall cards</li>
+      <li><b>3</b>cheat sheets</li>
+      <li><b>5</b>PDFs</li>
+    </ul>
+  </section>
+
+  <section class="group" id="essays">
+    <h2 class="group-title">Essays in the mnemonic medium</h2>
+    <p class="group-sub">Long-form, story-first, with numbered recall cards in the prose and a review deck at the end of every Part.</p>
+    <div class="grid grid--wide">
+      <div class="c" style="--ca:#111827"><div class="tags"><span class="tag" style="background:#111827">RLHF · essay</span></div><h2><a href="html/RLHF-Curious.html">RLHF, for the very curious</a></h2><p class="m">The same material in a mnemonic medium: story-first prose, 47 inline recall cards, an Anki-importable deck. Source pages 128–146 + the lecture.</p><p class="links"><a href="pdf/RLHF-Curious.pdf">PDF</a> &nbsp;&middot;&nbsp; <a href="notes/rlhf/flashcards.tsv">flashcards.tsv</a></p></div>
+      <div class="c" style="--ca:#7c3aed"><div class="tags"><span class="tag" style="background:#7c3aed">GAN · essay</span></div><h2><a href="html/GAN-Curious.html">GANs, for the very curious</a></h2><p class="m">f-divergence → the conjugate bound → an adversarial game → why it saturates → Wasserstein → inversion → FID. 8 parts, 21 recall cards.</p><p class="links"><a href="notes/gan/flashcards.tsv">flashcards.tsv</a></p></div>
+      <div class="c" style="--ca:#0d9488"><div class="tags"><span class="tag" style="background:#0d9488">VAE · essay</span></div><h2><a href="html/VAE-Curious.html">VAEs, for the very curious</a></h2><p class="m">Why the likelihood is intractable → Jensen → the ELBO → EM and where it dies → the reparameterization trick → posterior collapse. 7 parts, 18 recall cards.</p><p class="links"><a href="notes/vae/flashcards.tsv">flashcards.tsv</a></p></div>
+      <div class="c" style="--ca:#ea580c"><div class="tags"><span class="tag" style="background:#ea580c">Diffusion · essay</span></div><h2><a href="html/Diffusion-Curious.html">Diffusion, for the very curious</a></h2><p class="m">A VAE stretched over a thousand steps → the forward schedule → a bound in three terms → a regression on noise → guidance, latent diffusion, DDIM. 8 parts, 19 recall cards.</p><p class="links"><a href="notes/diffusion/flashcards.tsv">flashcards.tsv</a></p></div>
+    </div>
+  </section>
+
+  <section class="group" id="reference">
+    <h2 class="group-title">Reference sheet</h2>
+    <p class="group-sub">The same material compressed for revision: tables, derivations, no memorisation aids.</p>
+    <div class="grid grid--wide">
+      <div class="c" style="--ca:#be123c"><div class="tags"><span class="tag" style="background:#be123c">RLHF</span></div><h2><a href="html/RLHF-Study-Notes.html">RLHF &amp; Alignment</a></h2><p class="m">MDP → policy gradient → baseline/advantage → PPO → Bradley–Terry → DPO. Source pages 128–146, merged with the lecture transcript.</p><p class="links"><a href="pdf/RLHF-Study-Notes.pdf">PDF</a> &nbsp;&middot;&nbsp; <a href="notes/rlhf/FULL.md">FULL.md</a></p></div>
+    </div>
+  </section>
+
+  <section class="group" id="cheatsheets">
+    <h2 class="group-title">Interactive cheat sheets</h2>
+    <p class="group-sub">One page per topic with a live visualiser, plus an undergraduate-level PDF.</p>
+    <div class="grid">
+      <div class="c" style="--ca:#7c3aed"><div class="tags"><span class="tag" style="background:#7c3aed">GAN</span></div><h2><a href="html/GAN.html">Generative Adversarial Networks</a></h2><p class="m">f-divergence → VDM → GAN → WGAN → BiGAN → cGAN → FID. Source pages 7–42.</p><p class="links"><a href="pdf/GAN.pdf">PDF</a></p></div>
+      <div class="c" style="--ca:#0d9488"><div class="tags"><span class="tag" style="background:#0d9488">VAE</span></div><h2><a href="html/VAE.html">Variational Auto-Encoders</a></h2><p class="m">MLE → Jensen → ELBO → EM/GMM → reparameterization → β-VAE → VQ-VAE. Source pages 43–71.</p><p class="links"><a href="pdf/VAE.pdf">PDF</a></p></div>
+      <div class="c" style="--ca:#ea580c"><div class="tags"><span class="tag" style="background:#ea580c">Diffusion</span></div><h2><a href="html/Diffusion.html">Diffusion Models</a></h2><p class="m">DDPM → ELBO → denoising → U-Net → score → guidance → LDM → DDIM. Source pages 72–110.</p><p class="links"><a href="pdf/Diffusion.pdf">PDF</a></p></div>
+      <div class="c soon" style="--ca:#475569"><div class="tags"><span class="tag" style="background:#475569">Foundations</span><span class="pill-soon">Coming soon</span></div><h2>Generative maths — misc</h2><p class="m">Whatever else the Mathematical Foundations of Generative AI course covers: normalising flows, score matching, optimal transport.</p></div>
+    </div>
+  </section>
+
+  <footer>Every page is fully self-contained — no CDN, no network, works offline. Notation follows the source notes; the interactive demos are illustrative.</footer>
 </div>
-<footer>Every page is fully self-contained — no CDN, no network, works offline. Notation follows the source notes; the interactive demos are illustrative.</footer>
-</div></body></html>
+</body></html>

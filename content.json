@@ -2,7 +2,34 @@
   "site": {
     "title": "Generative AI — Cheat Sheets",
     "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes (104 pages). Each one ships twice: as a self-contained interactive cheat sheet with an undergraduate-level PDF, and as an essay in the mnemonic medium with recall cards and a review deck.",
-    "footer": "Every page is fully self-contained — no CDN, no network, works offline. Notation follows the source notes; the interactive demos are illustrative."
+    "footer": "Every page is fully self-contained — no CDN, no network, works offline. Notation follows the source notes; the interactive demos are illustrative.",
+    "hero": {
+      "eyebrow": "IIT Madras · Mathematical Foundations of Generative AI",
+      "title": "Four algorithms,<br>written twice each.",
+      "lede": "Generative adversarial networks, variational autoencoders, diffusion and RLHF — pulled from 104 pages of handwritten lecture notes. Every topic ships twice: once as a self-contained interactive cheat sheet you can read in ten minutes, and once as a long-form essay in the mnemonic medium, where recall cards inside the prose turn reading into remembering.",
+      "primary": {
+        "label": "Start with RLHF",
+        "href": "html/RLHF-Curious.html"
+      },
+      "secondary": {
+        "label": "Browse the cheat sheets",
+        "href": "#cheatsheets"
+      }
+    },
+    "groups": {
+      "essay": {
+        "title": "Essays in the mnemonic medium",
+        "sub": "Long-form, story-first, with numbered recall cards in the prose and a review deck at the end of every Part."
+      },
+      "reference": {
+        "title": "Reference sheet",
+        "sub": "The same material compressed for revision: tables, derivations, no memorisation aids."
+      },
+      "cheatsheet": {
+        "title": "Interactive cheat sheets",
+        "sub": "One page per topic with a live visualiser, plus an undergraduate-level PDF."
+      }
+    }
   },
   "topics": [
     {
@@ -23,7 +50,9 @@
           "label": "flashcards.tsv",
           "href": "notes/rlhf/flashcards.tsv"
         }
-      ]
+      ],
+      "kind": "essay",
+      "cards": 47
     },
     {
       "id": "gan-curious",
@@ -39,7 +68,9 @@
           "label": "flashcards.tsv",
           "href": "notes/gan/flashcards.tsv"
         }
-      ]
+      ],
+      "kind": "essay",
+      "cards": 21
     },
     {
       "id": "vae-curious",
@@ -55,7 +86,9 @@
           "label": "flashcards.tsv",
           "href": "notes/vae/flashcards.tsv"
         }
-      ]
+      ],
+      "kind": "essay",
+      "cards": 18
     },
     {
       "id": "diffusion-curious",
@@ -71,7 +104,9 @@
           "label": "flashcards.tsv",
           "href": "notes/diffusion/flashcards.tsv"
         }
-      ]
+      ],
+      "kind": "essay",
+      "cards": 19
     },
     {
       "id": "rlhf-study-notes",
@@ -91,7 +126,8 @@
           "label": "FULL.md",
           "href": "notes/rlhf/FULL.md"
         }
-      ]
+      ],
+      "kind": "reference"
     },
     {
       "id": "gan",
@@ -107,7 +143,8 @@
           "label": "PDF",
           "href": "pdf/GAN.pdf"
         }
-      ]
+      ],
+      "kind": "cheatsheet"
     },
     {
       "id": "vae",
@@ -123,7 +160,8 @@
           "label": "PDF",
           "href": "pdf/VAE.pdf"
         }
-      ]
+      ],
+      "kind": "cheatsheet"
     },
     {
       "id": "diffusion",
@@ -139,7 +177,8 @@
           "label": "PDF",
           "href": "pdf/Diffusion.pdf"
         }
-      ]
+      ],
+      "kind": "cheatsheet"
     },
     {
       "id": "genai-maths-misc",
@@ -150,7 +189,8 @@
       "blurb": "Whatever else the Mathematical Foundations of Generative AI course covers: normalising flows, score matching, optimal transport.",
       "html": null,
       "cta": null,
-      "extras": []
+      "extras": [],
+      "kind": "cheatsheet"
     }
   ]
 }

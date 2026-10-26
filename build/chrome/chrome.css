@@ -1,3 +1,11 @@
+/* Accent tokens. build/inject-nav.js sets data-accent per article, so the
+   chrome in the GAN essay is violet, VAE teal, diffusion orange, RLHF rose.
+   A single accent per page, used sparingly - the Quantum Country lesson. */
+:root{--accent:#4338ca;--accent-ink:#312a9b;--accent-wash:#f1efff;--line:#e7e4dc}
+[data-accent="violet"]{--accent:#7c3aed;--accent-ink:#5b21b6;--accent-wash:#f5f3ff}
+[data-accent="teal"]{--accent:#0d9488;--accent-ink:#0f766e;--accent-wash:#f0fdfa}
+[data-accent="orange"]{--accent:#ea580c;--accent-ink:#c2410c;--accent-wash:#fff7ed}
+[data-accent="rose"]{--accent:#be123c;--accent-ink:#9f1239;--accent-wash:#fff1f4}
 /* Shared article chrome — injected by build/inject-nav.js.
    Inline postcards (A) + per-Part review decks (B).
    Screen only; print falls back to the plain article (see the print block). */
@@ -19,6 +27,8 @@
     box-shadow: 0 1px 2px rgba(24, 24, 27, .06), 0 14px 38px -18px rgba(24, 24, 27, .5);
   }
   .js .card-qa .q { font-size: 11.6pt; line-height: 1.55; }
+  /* the question label picks up the article accent; the answer label stays grey */
+  .js .card-qa .q .lbl { color: var(--accent); }
   .js .card-qa .a {
     display: none;
     border-top: 1px dotted #e2e2de;
@@ -36,10 +46,10 @@
     font: 600 9.5px/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
     letter-spacing: .12em;
     text-transform: uppercase;
-    color: #8a8a94;
+    color: var(--accent);
     cursor: pointer;
   }
-  .reveal-btn:hover { color: #1c1c1e; border-color: #c9c9cf; }
+  .reveal-btn:hover { color: #fff; background: var(--accent); border-color: var(--accent); }
   .reveal-btn:focus-visible { outline: 2px solid #1c1c1e; outline-offset: 2px; }
 
   /* -------------------------------------------------- B. per-Part deck */
@@ -49,7 +59,7 @@
     font: 600 7.6pt/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
     letter-spacing: .17em;
     text-transform: uppercase;
-    color: #a3a3aa;
+    color: var(--accent);
     margin: 0 0 6px 0;
   }
   .deck-title {
@@ -62,7 +72,8 @@
 
   .deck-stage {
     position: relative;
-    background: #f4f3f8;
+    /* tinted by the article's accent, so each topic's deck feels like its own */
+    background: var(--accent-wash);
     border: 1px solid #e8e7ee;
     border-radius: 16px;
     padding: 34px 28px 30px 28px;
@@ -93,12 +104,12 @@
     flex-direction: column;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 12px 34px -16px rgba(40, 34, 80, .35);
+    box-shadow: 0 12px 34px -16px rgba(40, 34, 80, .30);
     transition: box-shadow .2s ease, transform .2s ease;
     outline-offset: 3px;
   }
   .deck-card:hover { box-shadow: 0 16px 40px -16px rgba(40, 34, 80, .45); }
-  .deck-card:focus-visible { outline: 2px solid #5b52a3; }
+  .deck-card:focus-visible { outline: 2px solid var(--accent); }
 
   .deck-num {
     display: block;
@@ -115,6 +126,7 @@
     color: #1c1c1e;
     text-align: center;
   }
+  .deck-score b { color: var(--accent); }
   .deck-a {
     display: none;
     border-top: 1px dotted #e2e2de;
@@ -154,10 +166,11 @@
   }
   .deck-btn:disabled { opacity: .4; cursor: not-allowed; }
   .deck-btn:not(:disabled):active { transform: translateY(1px); }
-  .deck-btn:focus-visible { outline: 2px solid #5b52a3; outline-offset: 2px; }
+  .deck-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .deck-btn.miss { background: #f6efe9; border: 1px solid #ecdfd3; color: #8a5a3b; }
-  .deck-btn.hit  { background: #eaf0ee; border: 1px solid #d8e3df; color: #3b6b58; }
+  .deck-btn.hit  { background: var(--accent-wash); border: 1px solid var(--accent); color: var(--accent-ink); }
   .deck-btn.plain { background: #fff; border: 1px solid #e0e0dc; color: #6b6b70; }
+  .deck-btn.plain:hover, .deck-btn.miss:hover { border-color: var(--accent); color: var(--accent-ink); }
 
   .deck-progress {
     margin: 14px 0 0 0;
@@ -195,3 +208,11 @@
   .card-qa .a { display: block !important; }
   .deck { display: none !important; }
 }
+
+/* Review-deck progress ring (the Quantum Country "orb", reimagined) */
+.deck-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.deck-ring{flex:none;width:38px;height:38px;margin-top:-2px}
+.deck-ring circle{fill:none;stroke-width:2.6}
+.deck-ring .track{stroke:#e4e2ee}
+.deck-ring .fill{stroke:var(--accent);stroke-linecap:round;
+  transition:stroke-dashoffset .35s ease;transform:rotate(-90deg);transform-origin:50% 50%}

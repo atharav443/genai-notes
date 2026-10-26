@@ -120,6 +120,21 @@
     eyebrow.className = 'deck-eyebrow';
     eyebrow.textContent = 'Review ' + MIDDOT + ' ' + label;
 
+    // Progress ring, in place of a bare "3 of 7": circumference is 2*pi*15.
+    var CIRC = 94.25;
+    var ring = doc.createElement('div');
+    ring.className = 'deck-ring';
+    ring.innerHTML = '<svg viewBox="0 0 36 36" width="38" height="38" aria-hidden="true">'
+      + '<circle class="track" cx="18" cy="18" r="15"></circle>'
+      + '<circle class="fill" cx="18" cy="18" r="15" stroke-dasharray="' + CIRC
+      + '" stroke-dashoffset="' + CIRC + '"></circle></svg>';
+    var ringFill = ring.querySelector('.fill');
+
+    function updateRing() {
+      var frac = done ? 1 : (queue.length ? pos / queue.length : 0);
+      ringFill.setAttribute('stroke-dashoffset', (CIRC * (1 - frac)).toFixed(2));
+    }
+
     var heading = doc.createElement('h3');
     heading.className = 'deck-title';
     heading.textContent = items.length + (items.length === 1 ? ' question' : ' questions')
@@ -176,8 +191,15 @@
     progress.className = 'deck-progress';
     progress.setAttribute('aria-live', 'polite');
 
-    sec.appendChild(eyebrow);
-    sec.appendChild(heading);
+    var head = doc.createElement('div');
+    head.className = 'deck-head';
+    var headText = doc.createElement('div');
+    headText.appendChild(eyebrow);
+    headText.appendChild(heading);
+    head.appendChild(headText);
+    head.appendChild(ring);
+
+    sec.appendChild(head);
     sec.appendChild(stage);
     sec.appendChild(controls);
     sec.appendChild(progress);
@@ -209,6 +231,7 @@
       missBtn.disabled = true;
       hitBtn.disabled = true;
       progress.textContent = 'Question ' + (pos + 1) + ' of ' + queue.length;
+      updateRing();
     }
 
     function reveal() {
