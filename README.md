@@ -163,6 +163,11 @@ six-point scale, so the ease factor only ever moves by ±0.1/0.2. And progress l
 in the browser: clearing site data resets it, and it does not follow you between
 devices. A real scheduler needs storage, which means a backend.
 
+**Namespace rule:** everything the chrome injects uses a `qa-` prefix
+(`.qa-side`, `.qa-rung`, `.qa-due-overlay`). An earlier pass used plain
+`.toc`, which silently collided with an existing `.toc` in both the essays and the
+cheat sheets — the injected rules were restyling the articles' own contents lists.
+Keep the prefix.
 **Watch out:** the ladder bars deliberately have no CSS transition. A transition
 makes the rendered width impossible to verify in a headless snapshot — the bar reads
 as 0px under `--virtual-time-budget` because the animation clock never advances.

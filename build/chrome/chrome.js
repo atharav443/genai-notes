@@ -346,28 +346,28 @@
   }
 
   function buildSidebar() {
-    sidebar = el('aside', 'toc');
+    sidebar = el('aside', 'qa-side');
     sidebar.setAttribute('aria-label', 'Contents and review progress');
 
-    sidebar.appendChild(el('p', 'toc-title', 'On this page'));
-    var listEl = el('ol', 'toc-list');
+    sidebar.appendChild(el('p', 'qa-side-title', 'On this page'));
+    var listEl = el('ol', 'qa-side-list');
 
     var pi = 0;
     [].slice.call(doc.querySelectorAll('.part, h2')).forEach(function (h) {
       if (h.classList.contains('part')) {
         pi++;
         if (!h.id) h.id = 'part-' + pi;
-        var li = el('li', 'toc-part');
+        var li = el('li', 'qa-side-part');
         var a = el('a', null, partLabel(h.textContent));
         a.href = '#' + h.id;
-        var count = el('span', 'toc-count', '');
+        var count = el('span', 'qa-side-count', '');
         li.appendChild(a);
         li.appendChild(count);
         listEl.appendChild(li);
         tocRows.push({ part: h, count: count });
       } else {
         if (!h.id) h.id = 'sec-' + h.id || ('sec-' + Math.random().toString(36).slice(2, 8));
-        var sub = el('li', 'toc-sub');
+        var sub = el('li', 'qa-side-sub');
         var sa = el('a', null, h.textContent.replace(/^[0-9]+\s*[^A-Za-z0-9]*/, ''));
         sa.href = '#' + h.id;
         sub.appendChild(sa);
@@ -376,30 +376,30 @@
     });
     sidebar.appendChild(listEl);
 
-    sidebar.appendChild(el('div', 'toc-sep'));
-    sidebar.appendChild(el('p', 'toc-title', 'Review'));
-    dueEl = el('p', 'toc-due', '');
+    sidebar.appendChild(el('div', 'qa-side-sep'));
+    sidebar.appendChild(el('p', 'qa-side-title', 'Review'));
+    dueEl = el('p', 'qa-side-due', '');
     sidebar.appendChild(dueEl);
-    dueBtn = el('button', 'toc-btn', 'Review due cards');
+    dueBtn = el('button', 'qa-side-btn', 'Review due cards');
     dueBtn.type = 'button';
     dueBtn.addEventListener('click', openDue);
     sidebar.appendChild(dueBtn);
 
-    var ladder = el('ul', 'ladder');
+    var ladder = el('ul', 'qa-ladder');
     ['In-text', '1 day', '1 week', '1 month', 'Long-term'].forEach(function (name) {
-      var li = el('li', 'ladder-row');
-      li.appendChild(el('span', 'rung', name));
-      var bar = el('span', 'bar');
+      var li = el('li', 'qa-rung');
+      li.appendChild(el('span', 'qa-rung-name', name));
+      var bar = el('span', 'qa-bar');
       var fill = el('i', null);
       bar.appendChild(fill);
       li.appendChild(bar);
-      var n = el('span', 'n', '0');
+      var n = el('span', 'qa-n', '0');
       li.appendChild(n);
       ladder.appendChild(li);
       ladderRows.push({ fill: fill, n: n });
     });
     sidebar.appendChild(ladder);
-    sidebar.appendChild(el('p', 'toc-note',
+    sidebar.appendChild(el('p', 'qa-side-note',
       'Intervals follow SM-2: 1 day, then 6, then the previous interval times an ease factor. Stored on this device only.'));
 
     doc.body.appendChild(sidebar);
@@ -425,7 +425,7 @@
       if (!p) { row.count.textContent = ''; return; }
       var seen = p.items.filter(function (it) { return sched[it.num]; }).length;
       row.count.textContent = seen + '/' + p.items.length;
-      row.count.className = 'toc-count' + (seen === p.items.length ? ' done' : '');
+      row.count.className = 'qa-side-count' + (seen === p.items.length ? ' done' : '');
     });
   }
 
@@ -438,9 +438,9 @@
     items.forEach(function (it) { byNum[it.num] = it; });
     var list = dues.map(function (n) { return byNum[n]; }).filter(Boolean);
 
-    overlay = el('div', 'due-overlay');
-    var box = el('div', 'due-box');
-    var close = el('button', 'due-close', 'Close');
+    overlay = el('div', 'qa-due-overlay');
+    var box = el('div', 'qa-due-box');
+    var close = el('button', 'qa-due-close', 'Close');
     close.type = 'button';
     close.addEventListener('click', closeDue);
     box.appendChild(close);

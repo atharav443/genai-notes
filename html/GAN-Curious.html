@@ -935,75 +935,75 @@ Source: <i>viz/gan.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
   transition:stroke-dashoffset .35s ease;transform:rotate(-90deg);transform-origin:50% 50%}
 
 /* ---------------------------------------------- sidebar: contents + review */
-@media screen and (max-width: 1319px) { .toc { display: none; } }
+@media screen and (max-width: 1319px) { .qa-side { display: none; } }
 
 @media screen and (min-width: 1320px) {
-  .toc {
+  .qa-side {
     position: fixed; top: 3.7rem; right: 28px; width: 232px;
     max-height: calc(100vh - 5rem); overflow: auto; padding-bottom: 28px;
     font: 400 12px/1.5 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
     color: #6b6b70;
   }
 }
-.toc-title {
+.qa-side-title {
   font: 700 9.5px/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: .15em; text-transform: uppercase; color: var(--accent);
   margin: 0 0 9px;
 }
-.toc-list { list-style: none; margin: 0; padding: 0; }
-.toc-part { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 7px; }
+.qa-side-list { list-style: none; margin: 0; padding: 0; }
+.qa-side-part { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 7px; }
 .toc-part a { color: var(--ink); text-decoration: none; font-weight: 600; }
 .toc-part a:hover { color: var(--accent); }
-.toc-count { color: #b0b0b8; font-variant-numeric: tabular-nums; flex: none; }
-.toc-count.done { color: var(--accent); font-weight: 700; }
-.toc-sub { margin: 0 0 5px 11px; }
-.toc-sub a { color: var(--faint); text-decoration: none; font-size: 11.5px; }
-.toc-sub a:hover { color: var(--ink); }
-.toc-sep { border-top: 1px solid var(--line); margin: 16px 0; }
-.toc-due { margin: 0 0 9px; }
-.toc-due b { font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; }
-.toc-btn {
+.qa-side-count { color: #b0b0b8; font-variant-numeric: tabular-nums; flex: none; }
+.qa-side-count.done { color: var(--accent); font-weight: 700; }
+.qa-side-sub { margin: 0 0 5px 11px; }
+.qa-side-sub a { color: var(--faint); text-decoration: none; font-size: 11.5px; }
+.qa-side-sub a:hover { color: var(--ink); }
+.qa-side-sep { border-top: 1px solid var(--line); margin: 16px 0; }
+.qa-side-due { margin: 0 0 9px; }
+.qa-side-due b { font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.qa-side-btn {
   font: 600 10px/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: .1em; text-transform: uppercase; padding: 9px 12px;
   border-radius: 999px; cursor: pointer;
   background: var(--accent-wash); border: 1px solid var(--accent); color: var(--accent-ink);
 }
-.toc-btn:hover { background: var(--accent); color: #fff; }
-.toc-btn[hidden] { display: none !important; }
-.ladder { list-style: none; margin: 16px 0 0; padding: 0; }
-.ladder-row {
+.qa-side-btn:hover { background: var(--accent); color: #fff; }
+.qa-side-btn[hidden] { display: none !important; }
+.qa-ladder { list-style: none; margin: 16px 0 0; padding: 0; }
+.qa-rung {
   display: grid; grid-template-columns: 58px 1fr 20px; align-items: center;
   gap: 7px; margin: 0 0 6px; font-size: 10.5px; color: var(--faint);
 }
 /* no transition on the fill: a 4px bar does not need an animation, and a
    transition makes the rendered width unverifiable in headless snapshots */
-.ladder-row .bar { height: 5px; background: #e6e4dc; border-radius: 3px; overflow: hidden; }
-.ladder-row .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; }
-.ladder-row .n { text-align: right; font-variant-numeric: tabular-nums; }
-.toc-note { font-size: 10px; line-height: 1.45; color: #b6b6be; margin: 14px 0 0; }
+.qa-rung .qa-bar { height: 5px; background: #e6e4dc; border-radius: 3px; overflow: hidden; }
+.qa-rung .qa-bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; }
+.qa-rung .qa-n { text-align: right; font-variant-numeric: tabular-nums; }
+.qa-side-note { font-size: 10px; line-height: 1.45; color: #b6b6be; margin: 14px 0 0; }
 
 /* anchors land below the sticky bar */
 @media screen { .part, h2, h3 { scroll-margin-top: 4rem; } }
 
 /* --------------------------------------------------- due-cards overlay deck */
-.due-overlay {
+.qa-due-overlay {
   position: fixed; inset: 0; z-index: 200; padding: 5vh 20px; overflow: auto;
   display: flex; align-items: flex-start; justify-content: center;
   background: rgba(24, 22, 30, .42); backdrop-filter: blur(3px);
 }
-.due-box {
+.qa-due-box {
   position: relative; width: 100%; max-width: 620px;
   background: var(--paper); border-radius: 18px; padding: 30px 26px 22px;
   box-shadow: 0 30px 80px -30px rgba(20, 18, 40, .55);
 }
-.due-close {
+.qa-due-close {
   position: absolute; top: 14px; right: 14px; cursor: pointer;
   font: 600 9.5px/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: .1em; text-transform: uppercase; padding: 7px 11px;
   border: 1px solid var(--line); border-radius: 999px; background: #fff; color: #6b6b70;
 }
-.due-close:hover { border-color: var(--accent); color: var(--accent); }
-@media print { .toc, .due-overlay { display: none !important; } }
+.qa-due-close:hover { border-color: var(--accent); color: var(--accent); }
+@media print { .qa-side, .qa-due-overlay { display: none !important; } }
 </style><script>/* Shared article chrome — injected by build/inject-nav.js.
    A. inline recall cards become postcards with click-to-reveal
    B. each Part gets a review deck built from those same cards
@@ -1352,28 +1352,28 @@ Source: <i>viz/gan.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
   }
 
   function buildSidebar() {
-    sidebar = el('aside', 'toc');
+    sidebar = el('aside', 'qa-side');
     sidebar.setAttribute('aria-label', 'Contents and review progress');
 
-    sidebar.appendChild(el('p', 'toc-title', 'On this page'));
-    var listEl = el('ol', 'toc-list');
+    sidebar.appendChild(el('p', 'qa-side-title', 'On this page'));
+    var listEl = el('ol', 'qa-side-list');
 
     var pi = 0;
     [].slice.call(doc.querySelectorAll('.part, h2')).forEach(function (h) {
       if (h.classList.contains('part')) {
         pi++;
         if (!h.id) h.id = 'part-' + pi;
-        var li = el('li', 'toc-part');
+        var li = el('li', 'qa-side-part');
         var a = el('a', null, partLabel(h.textContent));
         a.href = '#' + h.id;
-        var count = el('span', 'toc-count', '');
+        var count = el('span', 'qa-side-count', '');
         li.appendChild(a);
         li.appendChild(count);
         listEl.appendChild(li);
         tocRows.push({ part: h, count: count });
       } else {
         if (!h.id) h.id = 'sec-' + h.id || ('sec-' + Math.random().toString(36).slice(2, 8));
-        var sub = el('li', 'toc-sub');
+        var sub = el('li', 'qa-side-sub');
         var sa = el('a', null, h.textContent.replace(/^[0-9]+\s*[^A-Za-z0-9]*/, ''));
         sa.href = '#' + h.id;
         sub.appendChild(sa);
@@ -1382,30 +1382,30 @@ Source: <i>viz/gan.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
     });
     sidebar.appendChild(listEl);
 
-    sidebar.appendChild(el('div', 'toc-sep'));
-    sidebar.appendChild(el('p', 'toc-title', 'Review'));
-    dueEl = el('p', 'toc-due', '');
+    sidebar.appendChild(el('div', 'qa-side-sep'));
+    sidebar.appendChild(el('p', 'qa-side-title', 'Review'));
+    dueEl = el('p', 'qa-side-due', '');
     sidebar.appendChild(dueEl);
-    dueBtn = el('button', 'toc-btn', 'Review due cards');
+    dueBtn = el('button', 'qa-side-btn', 'Review due cards');
     dueBtn.type = 'button';
     dueBtn.addEventListener('click', openDue);
     sidebar.appendChild(dueBtn);
 
-    var ladder = el('ul', 'ladder');
+    var ladder = el('ul', 'qa-ladder');
     ['In-text', '1 day', '1 week', '1 month', 'Long-term'].forEach(function (name) {
-      var li = el('li', 'ladder-row');
-      li.appendChild(el('span', 'rung', name));
-      var bar = el('span', 'bar');
+      var li = el('li', 'qa-rung');
+      li.appendChild(el('span', 'qa-rung-name', name));
+      var bar = el('span', 'qa-bar');
       var fill = el('i', null);
       bar.appendChild(fill);
       li.appendChild(bar);
-      var n = el('span', 'n', '0');
+      var n = el('span', 'qa-n', '0');
       li.appendChild(n);
       ladder.appendChild(li);
       ladderRows.push({ fill: fill, n: n });
     });
     sidebar.appendChild(ladder);
-    sidebar.appendChild(el('p', 'toc-note',
+    sidebar.appendChild(el('p', 'qa-side-note',
       'Intervals follow SM-2: 1 day, then 6, then the previous interval times an ease factor. Stored on this device only.'));
 
     doc.body.appendChild(sidebar);
@@ -1431,7 +1431,7 @@ Source: <i>viz/gan.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
       if (!p) { row.count.textContent = ''; return; }
       var seen = p.items.filter(function (it) { return sched[it.num]; }).length;
       row.count.textContent = seen + '/' + p.items.length;
-      row.count.className = 'toc-count' + (seen === p.items.length ? ' done' : '');
+      row.count.className = 'qa-side-count' + (seen === p.items.length ? ' done' : '');
     });
   }
 
@@ -1444,9 +1444,9 @@ Source: <i>viz/gan.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
     items.forEach(function (it) { byNum[it.num] = it; });
     var list = dues.map(function (n) { return byNum[n]; }).filter(Boolean);
 
-    overlay = el('div', 'due-overlay');
-    var box = el('div', 'due-box');
-    var close = el('button', 'due-close', 'Close');
+    overlay = el('div', 'qa-due-overlay');
+    var box = el('div', 'qa-due-box');
+    var close = el('button', 'qa-due-close', 'Close');
     close.type = 'button';
     close.addEventListener('click', closeDue);
     box.appendChild(close);
