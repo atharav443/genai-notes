@@ -110,6 +110,13 @@ which is where most of the field's vocabulary comes from.</p>
 
 <h2>1 &middot; The model, and what it borrows</h2>
 
+<p>Imagine a machine that can answer only one question: given this damaged photograph,
+what was the damage? That is the entire training task. You take a picture, vandalise
+it in a way you choose and therefore know, and ask the network to name the vandalism.
+Do that at a thousand levels of damage, and something surprising becomes possible —
+because undoing damage in small steps, a thousand times over, turns out to be a way
+of inventing a photograph out of nothing.</p>
+
 <p>Recall the shape of a VAE: data \(x\) goes through an encoder to a latent
 \(z\), and a decoder brings it back. One hidden layer, one bottleneck. A
 <i>hierarchical</i> VAE stacks several: \(x \to z_1 \to z_2 \to \dots \to z_T\)
@@ -151,6 +158,12 @@ the learning is in going backwards.</p>
 
 <h2>2 &middot; The forward process</h2>
 
+<p>Photocopy a photograph. Copy the copy. Copy that. Long before the thousandth
+generation you stop seeing a picture and see only grain. The interesting part is
+that the grain is not noise bolted on at the end — it is the accumulated result of a
+schedule someone chose in advance. Diffusion fixes that schedule, runs it forward
+without learning anything at all, and spends every parameter on the reverse.</p>
+
 <p>The forward process is one line:</p>
 
 <div class="mathblock">
@@ -170,6 +183,13 @@ first-order Markov chain, so the conditional is Gaussian and known:</p>
 </div>
 
 <h2>3 &middot; The jump-to-any-time formula</h2>
+
+<p>You never have to make those copies. Each step is a fixed weighted average plus
+independent Gaussian noise, and a sum of independent Gaussians is itself Gaussian —
+so there is a closed form that takes you straight from the original to the thousandth
+generation. That one line is why training is cheap. One data point, one random noise
+level, one exact sample, instead of a thousand-step simulation for every training
+example.</p>
 
 <p>Unrolling that recursion one step at a time is wasteful, and it turns out you
 never have to. Substitute twice:</p>
@@ -233,6 +253,12 @@ simulating the chain. Every training step below depends on it.</p>
 
 <h2>4 &middot; The reverse direction is the model</h2>
 
+<p>It is worth being clear about what the network is not. It is not a picture-making
+machine. At each step it estimates two things: the average of the slightly-less-
+damaged image, and how much uncertainty to leave in. That is all. Pictures emerge
+because those estimates are composed a thousand times, not because anything at any
+single step understood the picture.</p>
+
 <p>The model is defined in the reverse direction, as a Markov chain of Gaussians with
 learned parameters:</p>
 
@@ -259,6 +285,12 @@ what the network will produce.</p>
 <div class="part">Part IV &mdash; The bound splits into three</div>
 
 <h2>5 &middot; The ELBO, algebraically</h2>
+
+<p>A thousand-step process sounds like a thousand-term loss. It collapses into three
+jobs. The last step must reproduce the data. The first must land on pure noise,
+which is the one distribution you already know how to sample. Every step in between
+must undo exactly one step of the vandalism. Only the middle job trains anything,
+and only the middle job is hard.</p>
 
 <p>Same bound as the VAE, now with a whole chain of latents inside the expectation:</p>
 
@@ -372,6 +404,13 @@ U-net in that slot and you have a trainable objective.</p>
 
 <div class="part">Part VI &mdash; One network, three descriptions</div>
 
+<p>You can describe a hillside by its height at each point, by its slope, or by the
+direction water would run down it. All three carry the same information and any one
+of them gives you the others. The diffusion network is trained on only one of these
+— the noise — yet it turns out to have learned all three. That is why three separate
+literatures, with three vocabularies, can each look at this object and correctly
+claim it as their own.</p>
+
 <h2>7 &middot; Predicting \(x_0\), noise, or score</h2>
 
 <p>Because \(x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon\)
@@ -463,6 +502,13 @@ the network plus fresh noise of size \(\sigma_q\):</p>
 
 <h2>9 &middot; Conditional generation</h2>
 
+<p>Think of two voices in the network’s head. One knows what pictures look like in
+general; the other knows what a picture of this particular thing looks like. Asking
+for an image of a dog is asking for the difference between them — the direction that
+turns “a picture” into “a picture of a dog”. Guidance is what happens when you stop
+merely following that difference and start amplifying it with a dial, buying fidelity
+to the prompt with variety.</p>
+
 <p>Suppose you want \(P(x_0\mid y)\) rather than \(P(x_0)\) — an image given a
 label or a text embedding. Since the network is a score predictor, the honest way to
 ask is: what is the <i>conditional score</i>? Bayes' rule splits it:</p>
@@ -529,6 +575,12 @@ notes suggest.</p>
 </div>
 
 <h2>11 &middot; DDIM: same training, better sampling</h2>
+
+<p>If the trained network always points in the direction of less noise, you do not have
+to walk a thousand tiny steps. You can take a dozen long ones along the same path.
+That is DDIM: the training is untouched, only the stride changes. And once the strides
+are deterministic rather than random, the path can be walked in reverse — which is
+how you recover the noise that would have produced a given image.</p>
 
 <p>Two complaints about DDPM sit side by side: a thousand steps per sample is slow, and
 the forward process is stochastic, so a given \(x_0\) has no single latent

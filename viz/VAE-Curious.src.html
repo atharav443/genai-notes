@@ -110,6 +110,14 @@ take, and fix that with one line of algebra.</p>
 
 <h2>1 &middot; Latent variables</h2>
 
+<p>Suppose someone hands you a photograph of a cake and asks you to write down the
+recipe. The photograph is what you observed; the recipe is what you did not. Many
+recipes would produce a cake that photographs identically, so the recipe is not
+recoverable in principle — and that ambiguity is not an inconvenience to be tidied
+away later. It is the object of study. A latent variable model is the attempt to
+have a recipe, and to be honest about the fact that the photograph does not
+determine it.</p>
+
 <p>A latent variable model says that what you observe is a shadow of something you
 do not observe. Write \(z\) for the hidden thing and \(x\) for the observation.
 The model's density is a marginal:</p>
@@ -153,6 +161,13 @@ still explains the long observation.</p>
 <div class="part">Part II &mdash; From "match the distribution" to "maximise likelihood"</div>
 
 <h2>2 &middot; Why maximum likelihood, of all things</h2>
+
+<p>Maximum likelihood is usually handed to you as a starting assumption, and then
+defended with a shrug about statistical efficiency. Watch it arrive here instead as
+a consequence. You asked to be close to the data under one particular ruler, and
+that ruler turned out to be a difference of two terms, one of which knows nothing
+about your model. Cross the term out and what is left is “make the observed data
+likely”. Nobody chose it. It fell out of the ruler.</p>
 
 <p>The stated goal is to make the model's distribution match the data's. Measure the
 mismatch with forward KL and minimise:</p>
@@ -249,6 +264,14 @@ still a bound.</p>
 
 <h2>4 &middot; Expectation maximisation</h2>
 
+<p>You are standing on a foggy hillside and you can only walk due east or due north.
+Neither direction climbs all the way to the summit, but alternating them — east
+until it stops rising, then north until it stops rising, and again — will get you to
+one. The E step walks east, the M step walks north, and the guarantee that the
+likelihood never decreases is exactly the guarantee that each leg refuses to lose
+height. You may not reach the highest summit on the range. You will always reach
+the top of the valley you started in.</p>
+
 <p>We now want</p>
 
 <div class="mathblock">
@@ -300,6 +323,12 @@ exactly the place the problem began.</p>
 
 <h2>5 &middot; A gradient you cannot take</h2>
 
+<p>Here is the trouble in one sentence: you cannot backpropagate through a dice roll.
+The randomness sits inside the computation, and an operation that samples has no
+derivative — there is no meaningful answer to “how does this output change if I
+nudge the seed”. So the gradient we need does not exist as something a computer can
+estimate, and the whole method is stuck at the first step.</p>
+
 <p>So we keep the ELBO and give up on exact EM: let the encoder network output the
 <i>parameters</i> of \(q_\varphi(z\mid x)\) rather than the density itself. Now
 differentiate with respect to the encoder's weights \(\varphi\). One term is
@@ -324,6 +353,13 @@ respect to its own parameters, and there is no way to sample it. So the gradient
 need does not exist as an estimable quantity.</p>
 
 <h2>6 &middot; Move the randomness outside</h2>
+
+<p>The fix is not to remove the randomness but to deport it. Stop asking the network
+for a random number. Ask it for the dial settings, and turn a fixed, external random
+number into the sample with arithmetic: multiply by the scale, add the shift. The
+randomness now happens at the edge of the graph where nothing needs differentiating,
+and every operation the gradient has to cross is addition and multiplication. The
+distribution of the output is unchanged. Only its parentage has moved.</p>
 
 <p>The repair is one of the neatest moves in the subject. Do not sample \(z\) from
 a distribution that depends on \(\varphi\). Sample from something that does not,
@@ -388,6 +424,14 @@ backpropagation.</p>
 <div class="part">Part VI &mdash; Assembling the thing people actually train</div>
 
 <h2>7 &middot; Splitting the ELBO into two losses</h2>
+
+<p>A lower bound sounds like a compromise, so it is worth restating what it is. The
+quantity you wanted was the evidence — how likely the data is under your model — and
+you cannot compute it. What you get instead is an invoice with a discount: something
+computable that is always at most the evidence, where the shortfall is precisely the
+distance between your guess about the hidden variable and the truth. Improve the
+guess and the discount shrinks. The bound is not an apology; it is a measurement of
+your own ignorance.</p>
 
 <p>Factor the joint as \(P_\theta(x,z) = P_\theta(x\mid z)P_\theta(z)\) and the
 ELBO splits into two interpretable pieces:</p>
@@ -457,6 +501,13 @@ everything that goes wrong with VAEs is a consequence of that tension.</p>
 
 <h2>8 &middot; Sampling and embedding</h2>
 
+<p>A trained VAE is used by walking around its middle. One road runs from the world into
+the code, the other from the code back into the world, and the network’s two
+halves are those two roads. To generate, start in the code space and walk outward.
+To embed, walk inward and keep the address instead of the destination. Everything
+downstream — retrieval, editing, interpolation between two faces — is a variation on
+keeping that address.</p>
+
 <p>A trained VAE is used in two directions. To <b>generate</b>, skip the encoder: draw
 \(z_{new} \sim \mathcal{N}(0,I)\) and push it through the decoder. This works
 precisely because the KL term has been pulling every \(q_\varphi(z\mid x)\)
@@ -468,6 +519,14 @@ description of the latent space, so sampling from it samples from the model.</p>
 \(d\)-dimensional input. The bottleneck is doing the compression you asked for.</p>
 
 <h2>9 &middot; Posterior collapse, and two ways out</h2>
+
+<p>Imagine a filing clerk given two instructions: the files must be findable, and every
+file must be entered on the standard form. If compliance is enforced hard enough,
+the clerk eventually stops reading the files and enters the same standard form for
+all of them. The archive is now immaculate and useless. That is posterior collapse.
+The encoder has obeyed the prior so thoroughly that the code says nothing about the
+input, and the decoder — handed the identical description every time — can only
+learn the average of the dataset.</p>
 
 <p>Now the failure. The KL term is a regulariser, and a regulariser with no weight is
 a demand, not a preference. If it dominates, then for <i>every</i> \(x\) the encoder

@@ -113,6 +113,15 @@ it.</p>
 
 <h2>1 &middot; Two distributions and one number</h2>
 
+<p>Here is the shape of the idea, before any notation. Stand at a single point in the
+space and ask one question: is this point more typical of the real data or of the
+fake? The honest answer is a ratio of two densities. Now walk over every point and
+collect those ratios into a field. An f-divergence is nothing more than a rule for
+boiling that field down to a single number, and the function f is the rule. Change
+f and you change which disagreements you care about — which is why two rulers can
+look at the same pair of distributions and disagree about which pair is further
+apart.</p>
+
 <p>You have a pile of real images. You have a machine that makes fake ones. You
 would like to know how far the fakes are from the real thing — not image by image,
 which is hopeless, but <i>distribution to distribution</i>, as a single number you
@@ -176,6 +185,14 @@ essay is about learning that ratio instead of evaluating it.</p>
 
 <h2>2 &middot; What a generative model is asked to do</h2>
 
+<p>Picture a machine with a dial on the front. You turn the dial to a random setting
+and a picture comes out the back. The dial is a vector of standard normal noise;
+the machine is a neural network. You want the pictures leaving the back to be
+indistinguishable from the ones on your hard drive — not one at a time, but as a
+population. Get that right and the machine stops being a copier and becomes a
+factory: it can make pictures it has never seen, because it draws from the
+distribution rather than from the dataset.</p>
+
 <p>Give the generator a knob: a vector <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span></span></span></span> drawn from a standard normal. Push it
 through a neural network <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>θ</mi></msub></mrow><annotation encoding="application/x-tex">g_\theta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>. Out comes a sample
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>x</mi><mo>^</mo></mover><mo>∼</mo><msub><mi>P</mi><mi>θ</mi></msub></mrow><annotation encoding="application/x-tex">\hat{x} \sim P_\theta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6944em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal">x</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2222em;"><span class="mord">^</span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∼</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>. The dream is that <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mi>θ</mi></msub><mo>=</mo><msub><mi>P</mi><mi>x</mi></msub></mrow><annotation encoding="application/x-tex">P_\theta = P_x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, at which point
@@ -220,6 +237,14 @@ estimate from samples".</p>
 <div class="part">Part III &mdash; Turning a divergence into an expectation</div>
 
 <h2>3 &middot; The conjugate function</h2>
+
+<p>There is a way to describe a convex curve that sounds perverse until the moment you
+need it. Instead of listing the height of the curve at every point, list the
+straight lines that touch it and never cross it. A convex curve is the upper
+envelope of its own tangents, so the tangents carry exactly the same information as
+the curve — just stored differently. The conjugate function is the bookkeeping for
+that second description. We are about to trade a formula we cannot evaluate for a
+pile of straight lines that we can.</p>
 
 <p>The obstacle is that <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi></mrow><annotation encoding="application/x-tex">f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span></span></span></span> is applied to a ratio we cannot compute. The way out
 is a piece of convex analysis that looks like a detour and turns out to be the
@@ -283,6 +308,14 @@ a space of functions.</p>
 <div class="part">Part IV &mdash; From a bound to a game</div>
 
 <h2>4 &middot; Two networks, one objective, opposite directions</h2>
+
+<p>Before the algebra, the story — because the story is what you will keep. One network
+is a forger. It never sees a real banknote; it only ever sees the detective’s
+reaction to its last attempt. The other is a detective who has seen both real notes
+and forgeries. The forger improves by making the detective wrong; the detective
+improves by being right. Neither can win outright, and the contest stops only when
+the detective is reduced to guessing — at which point the theory says the forger is
+producing the real thing.</p>
 
 <p>We still have a supremum over a function class, which is not something you can
 run gradient descent on directly. So parametrise: let <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span></span></span></span> be a neural network
@@ -363,6 +396,13 @@ the activation is required to sit.</p>
 
 <h2>6 &middot; Two update rules, and a term that disappears</h2>
 
+<p>Notice what the forger is actually told. Not “make something beautiful”, and not
+“match the data” — but “make the detective wrong”. While the detective is competent
+those two instructions coincide. While it is not, they come apart, and the forger
+will cheerfully learn the detective’s blind spots instead of the structure of
+the data. Hold that thought: it is the same failure, seen from the other side, that
+returns in Part VI.</p>
+
 <p>In practice you never optimise the expectations. You sample. Draw a batch
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mn>1</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>x</mi><msub><mi>B</mi><mn>1</mn></msub></msub></mrow><annotation encoding="application/x-tex">x_1, \dots, x_{B_1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6807em;vertical-align:-0.2501em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3173em;"><span style="top:-2.357em;margin-left:-0.0502em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2501em;"><span></span></span></span></span></span></span></span></span></span> from the data, draw
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>z</mi><mn>1</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>z</mi><msub><mi>B</mi><mn>2</mn></msub></msub></mrow><annotation encoding="application/x-tex">z_1, \dots, z_{B_2}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6807em;vertical-align:-0.2501em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3173em;"><span style="top:-2.357em;margin-left:-0.0502em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2501em;"><span></span></span></span></span></span></span></span></span></span> from the normal, and form</p>
@@ -430,6 +470,15 @@ in one expression instead of being solved in sequence.</p>
 
 <h2>8 &middot; The manifold hypothesis and the saturation problem</h2>
 
+<p>Picture two sheets of paper floating in a dark room. One is the data. The other is
+what the generator makes. Both are vanishingly thin, and two thin sheets placed at
+random in a large space almost never touch. The detective only has to say which
+sheet a point lies on, and with the sheets apart a competent detective can do that
+perfectly — without ever learning what is printed on them. That is the whole
+failure. The game is won by a classifier that has understood nothing about images,
+and the number we chose in Part I stops moving while the generator is still
+terrible.</p>
+
 <p>The deeper reason GANs are unstable is geometric. Real images do not fill
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mi>d</mi></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span></span></span></span></span></span></span></span>; they lie on a much lower-dimensional surface inside it. A
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>28</mn><mo>×</mo><mn>28</mn></mrow><annotation encoding="application/x-tex">28\times 28</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">28</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">28</span></span></span></span> photograph of white noise lives in 784 dimensions, but the set of
@@ -464,6 +513,15 @@ uninformative everywhere else.</p>
 
 <h2>9 &middot; Moving earth instead of measuring overlap</h2>
 
+<p>Wasserstein’s move is to stop asking “do these overlap?” and start asking
+“what would it cost to turn one into the other?” Imagine each distribution as a pile
+of sand. A transport plan says how much sand to shovel from each spot in the first
+pile to each spot in the second, and the work is mass times distance. Piles far
+apart cost a great deal; piles close together cost a little. Crucially the cost keeps
+changing as they approach, even while they still do not overlap — and a number that
+keeps talking while the distributions converge is exactly what a training signal
+needs.</p>
+
 <p>The Wasserstein idea is to stop asking "do these distributions overlap?" and start
 asking "how much work would it take to turn one into the other?" A <i>transport plan</i>
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Π</mi><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><mover accent="true"><mi>x</mi><mo>^</mo></mover><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\Pi(x, \hat{x})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Π</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6944em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal">x</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2222em;"><span class="mord">^</span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span> is a joint distribution whose marginals are the two
@@ -490,6 +548,14 @@ saturate when supports are disjoint, because moving mass is always expensive in
 proportion to the distance.</p>
 
 <h2>10 &middot; The duality that makes it trainable</h2>
+
+<p>Minimising over every possible shovelling plan is not something a neural network can
+do, but there is a second way to ask the same question. Instead of enumerating
+plans, ask every possible inspector for a quote, under one restriction: an
+inspector’s price may not rise faster than distance does. The best such quote
+equals the cheapest plan. That equivalence is the duality, and it is why the critic
+in a WGAN is not squashed into a probability — it is merely forbidden from being too
+steep.</p>
 
 <p>Minimising over all transport plans is not something a neural network can do. The
 Kantorovich&ndash;Rubinstein duality converts the problem into a maximisation over
@@ -595,6 +661,13 @@ same classifier transfers.</p>
 <div class="part">Part VIII &mdash; How would you know it worked?</div>
 
 <h2>13 &middot; Frechet Inception Distance</h2>
+
+<p>Comparing two choirs is hopeless if you listen to individual singers, and tractable
+if you compare the average pitch and how spread out the voices are. FID does that to
+images, except the “pitch” is the statistics of what a pretrained network says about
+them. Which also tells you where it can mislead: a generator that has learned the
+statistics without learning the pictures will score well, and the assumption that
+those statistics are Gaussian is doing quiet, unpaid work throughout.</p>
 
 <p>You have a trained generator. Is it any good? Comparing pixels is useless — a
 one-pixel shift destroys a per-pixel metric while leaving the image essentially

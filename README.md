@@ -147,6 +147,23 @@ The essay's opening prose still says “cover the answer with your hand”. That
 only true of the printed PDF; on screen the card and the deck do it. Reword if you
 want the two to agree.
 
+## Writing style
+
+Every essay follows the same pattern, borrowed from the RLHF one:
+
+1. Open the section with a concrete situation in plain words, before any notation
+   ("Picture a machine with a dial on the front"), not with a definition.
+2. Name the difficulty explicitly — *because here is the trouble* — so the reader
+   knows what the mathematics is for before it arrives.
+3. Give the analogy that maps onto the actual structure, not a decorative one. The
+   sheets of paper in a dark room are the manifold and the saturation problem; the
+   forger and the detective are the two networks; the foggy hillside walked east
+   then north is coordinate ascent in EM.
+4. Admit where the analogy breaks, in an aside, rather than letting it quietly lie.
+
+The rule of thumb: if a passage could be deleted without losing any intuition, it is
+decoration and should go. Analogies earn their place by predicting the next piece of
+mathematics.
 ## Review scheduling and the sidebar
 
 Grading writes to a small SM-2 scheduler in `localStorage` under
