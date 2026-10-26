@@ -1195,7 +1195,7 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
 <!--site-reveal:start--><style>/* Accent tokens. build/inject-nav.js sets data-accent per article, so the
    chrome in the GAN essay is violet, VAE teal, diffusion orange, RLHF rose.
    A single accent per page, used sparingly - the Quantum Country lesson. */
-:root{--accent:#4338ca;--accent-ink:#312a9b;--accent-wash:#f1efff;--line:#e7e4dc}
+:root{--accent:#4338ca;--accent-ink:#312a9b;--accent-wash:#f1efff;--line:#e7e4dc;--paper:#faf9f6;--ink:#17171a;--faint:#93939c}
 [data-accent="violet"]{--accent:#7c3aed;--accent-ink:#5b21b6;--accent-wash:#f5f3ff}
 [data-accent="teal"]{--accent:#0d9488;--accent-ink:#0f766e;--accent-wash:#f0fdfa}
 [data-accent="orange"]{--accent:#ea580c;--accent-ink:#c2410c;--accent-wash:#fff7ed}
@@ -1410,32 +1410,160 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
 .deck-ring .track{stroke:#e4e2ee}
 .deck-ring .fill{stroke:var(--accent);stroke-linecap:round;
   transition:stroke-dashoffset .35s ease;transform:rotate(-90deg);transform-origin:50% 50%}
+
+/* ---------------------------------------------- sidebar: contents + review */
+@media screen and (max-width: 1319px) { .toc { display: none; } }
+
+@media screen and (min-width: 1320px) {
+  .toc {
+    position: fixed; top: 3.7rem; right: 28px; width: 232px;
+    max-height: calc(100vh - 5rem); overflow: auto; padding-bottom: 28px;
+    font: 400 12px/1.5 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+    color: #6b6b70;
+  }
+}
+.toc-title {
+  font: 700 9.5px/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: .15em; text-transform: uppercase; color: var(--accent);
+  margin: 0 0 9px;
+}
+.toc-list { list-style: none; margin: 0; padding: 0; }
+.toc-part { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 7px; }
+.toc-part a { color: var(--ink); text-decoration: none; font-weight: 600; }
+.toc-part a:hover { color: var(--accent); }
+.toc-count { color: #b0b0b8; font-variant-numeric: tabular-nums; flex: none; }
+.toc-count.done { color: var(--accent); font-weight: 700; }
+.toc-sub { margin: 0 0 5px 11px; }
+.toc-sub a { color: var(--faint); text-decoration: none; font-size: 11.5px; }
+.toc-sub a:hover { color: var(--ink); }
+.toc-sep { border-top: 1px solid var(--line); margin: 16px 0; }
+.toc-due { margin: 0 0 9px; }
+.toc-due b { font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.toc-btn {
+  font: 600 10px/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: .1em; text-transform: uppercase; padding: 9px 12px;
+  border-radius: 999px; cursor: pointer;
+  background: var(--accent-wash); border: 1px solid var(--accent); color: var(--accent-ink);
+}
+.toc-btn:hover { background: var(--accent); color: #fff; }
+.toc-btn[hidden] { display: none !important; }
+.ladder { list-style: none; margin: 16px 0 0; padding: 0; }
+.ladder-row {
+  display: grid; grid-template-columns: 58px 1fr 20px; align-items: center;
+  gap: 7px; margin: 0 0 6px; font-size: 10.5px; color: var(--faint);
+}
+/* no transition on the fill: a 4px bar does not need an animation, and a
+   transition makes the rendered width unverifiable in headless snapshots */
+.ladder-row .bar { height: 5px; background: #e6e4dc; border-radius: 3px; overflow: hidden; }
+.ladder-row .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; }
+.ladder-row .n { text-align: right; font-variant-numeric: tabular-nums; }
+.toc-note { font-size: 10px; line-height: 1.45; color: #b6b6be; margin: 14px 0 0; }
+
+/* anchors land below the sticky bar */
+@media screen { .part, h2, h3 { scroll-margin-top: 4rem; } }
+
+/* --------------------------------------------------- due-cards overlay deck */
+.due-overlay {
+  position: fixed; inset: 0; z-index: 200; padding: 5vh 20px; overflow: auto;
+  display: flex; align-items: flex-start; justify-content: center;
+  background: rgba(24, 22, 30, .42); backdrop-filter: blur(3px);
+}
+.due-box {
+  position: relative; width: 100%; max-width: 620px;
+  background: var(--paper); border-radius: 18px; padding: 30px 26px 22px;
+  box-shadow: 0 30px 80px -30px rgba(20, 18, 40, .55);
+}
+.due-close {
+  position: absolute; top: 14px; right: 14px; cursor: pointer;
+  font: 600 9.5px/1 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: .1em; text-transform: uppercase; padding: 7px 11px;
+  border: 1px solid var(--line); border-radius: 999px; background: #fff; color: #6b6b70;
+}
+.due-close:hover { border-color: var(--accent); color: var(--accent); }
+@media print { .toc, .due-overlay { display: none !important; } }
 </style><script>/* Shared article chrome — injected by build/inject-nav.js.
    A. inline recall cards become postcards with click-to-reveal
    B. each Part gets a review deck built from those same cards
+   C. a real SM-2-style scheduler in localStorage
+   D. a sticky sidebar: contents, per-Part completion, due count, memory ladder
    No backslash escapes and no literal script-close tag, so this file can be
    inlined into any article without escaping. */
 (function () {
   'use strict';
 
   var doc = document;
-  // keyed per article so a future VAE or diffusion essay cannot collide on card ids
   var PAGE = location.pathname.split('/').pop() || 'index';
   if (PAGE.slice(-5) === '.html') PAGE = PAGE.slice(0, -5);
   var STORE_KEY = 'genai-review:' + PAGE;
+  var DAY = 86400000;
   var NBSP = String.fromCharCode(160);
   var EMDASH = String.fromCharCode(8212);
   var MIDDOT = String.fromCharCode(183);
   var APOS = String.fromCharCode(8217);
 
-  function readStore() {
-    try { return JSON.parse(window.localStorage.getItem(STORE_KEY)) || {}; }
+  /* ------------------------------------------------------------ scheduler */
+  /* A deliberately small SM-2: one button either promotes the card along the
+     intervals 1d -> 6d -> ivl*ef, or demotes it back to "due now". ef drifts
+     between 1.3 and 2.8. Every number the sidebar shows is read from this. */
+  var sched = loadSched();
+
+  function loadSched() {
+    var raw;
+    try { raw = JSON.parse(window.localStorage.getItem(STORE_KEY)) || {}; }
     catch (e) { return {}; }
-  }
-  function writeStore(obj) {
-    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch (e) { /* private mode */ }
+    var out = {};
+    Object.keys(raw).forEach(function (k) {
+      if (k.charAt(0) === '_') return;
+      var v = raw[k];
+      if (typeof v === 'string') {
+        // migrate v1 grades, which were just 'hit' / 'miss'
+        var hit = v === 'hit';
+        out[k] = { n: hit ? 1 : 0, ef: 2.5, ivl: hit ? 1 : 0,
+                   due: Date.now() + (hit ? DAY : 0), lapses: hit ? 0 : 1 };
+      } else if (v && typeof v === 'object' && typeof v.ivl === 'number') {
+        out[k] = v;
+      }
+    });
+    return out;
   }
 
+  function saveSched() {
+    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(sched)); } catch (e) {}
+  }
+
+  function gradeCard(num, hit) {
+    var c = sched[num] || { n: 0, ef: 2.5, ivl: 0, due: 0, lapses: 0 };
+    if (hit) {
+      c.n += 1;
+      c.ivl = c.n === 1 ? 1 : (c.n === 2 ? 6 : Math.round(c.ivl * c.ef));
+      c.ef = Math.min(2.8, c.ef + 0.1);
+      c.due = Date.now() + c.ivl * DAY;
+    } else {
+      c.n = 0;
+      c.lapses += 1;
+      c.ivl = 0;
+      c.ef = Math.max(1.3, c.ef - 0.2);
+      c.due = Date.now();
+    }
+    sched[num] = c;
+    saveSched();
+    return c;
+  }
+
+  function bucketed(nums) {
+    var b = [0, 0, 0, 0, 0];   // in-text, 1 day, 1 week, 1 month, long-term
+    nums.forEach(function (num) {
+      var c = sched[num];
+      if (!c || c.ivl <= 0) b[0]++;
+      else if (c.ivl < 6) b[1]++;
+      else if (c.ivl < 30) b[2]++;
+      else if (c.ivl < 120) b[3]++;
+      else b[4]++;
+    });
+    return b;
+  }
+
+  /* --------------------------------------------------------------- helpers */
   function strippedHtml(el) {
     var clone = el.cloneNode(true);
     var lbl = clone.querySelector('.lbl');
@@ -1451,20 +1579,26 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
     var i = title.indexOf(EMDASH);
     return (i === -1 ? title : title.slice(0, i)).trim();
   }
-
-  var inlineCards = [].slice.call(doc.querySelectorAll('.card-qa'));
+  function el(tag, cls, text) {
+    var n = doc.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
 
   /* ------------------------------------------- A. inline cards as postcards */
+  var inlineCards = [].slice.call(doc.querySelectorAll('.card-qa'));
+  var items = [];
+  var itemByEl = new Map();
+
   inlineCards.forEach(function (card, i) {
     var q = card.querySelector('.q');
     var a = card.querySelector('.a');
     if (!q || !a) return;
 
     a.id = 'answer-' + i;
-    var btn = doc.createElement('button');
+    var btn = el('button', 'reveal-btn', 'Reveal answer');
     btn.type = 'button';
-    btn.className = 'reveal-btn';
-    btn.textContent = 'Reveal answer';
     btn.setAttribute('aria-expanded', 'false');
     btn.setAttribute('aria-controls', a.id);
 
@@ -1473,168 +1607,111 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
       btn.textContent = open ? 'Hide answer' : 'Reveal answer';
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
-
     btn.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
     card.addEventListener('click', function (e) {
       var t = e.target;
       if (t && t.closest && t.closest('a, button')) return;
       toggle();
     });
-
     a.parentNode.insertBefore(btn, a);
+
+    var item = { num: numOf(q), q: strippedHtml(q), a: strippedHtml(a), el: card, part: null };
+    items.push(item);
+    itemByEl.set(card, item);
   });
 
-  /* --------------------------------------------- B. per-Part review decks */
-  var groups = [];
-  var current = null;
+  if (!items.length) return;
+
+  /* --------------------------------------------- group the cards by Part */
+  var parts = [];
+  var cur = null;
   [].slice.call(doc.querySelectorAll('.part, .card-qa')).forEach(function (n) {
     if (n.classList.contains('part')) {
-      current = { partEl: n, title: n.textContent.trim(), cards: [] };
-      groups.push(current);
-    } else if (current) {
-      current.cards.push(n);
+      cur = { el: n, title: n.textContent.trim(), items: [] };
+      parts.push(cur);
+    } else if (cur) {
+      var it = itemByEl.get(n);
+      if (it) { it.part = cur; cur.items.push(it); }
     }
   });
-  if (!groups.length) return;
+  if (!parts.length) return;
 
-  var store = readStore();
-  var footer = doc.querySelector('p.small');
+  /* ------------------------------------------------------------ deck build */
+  var deckRefs = [];   // { part, ringFill, CIRC }
 
-  groups.forEach(function (g, gi) {
-    if (!g.cards.length) return;
-    var deck = makeDeck(g);
-    if (!deck) return;
+  function buildDeck(list, label, opts) {
+    opts = opts || {};
+    if (!list.length) return null;
 
-    if (gi < groups.length - 1) {
-      var nextPart = groups[gi + 1].partEl;
-      nextPart.parentNode.insertBefore(deck, nextPart);
-    } else if (footer && footer.parentNode) {
-      footer.parentNode.insertBefore(deck, footer);
-    } else {
-      doc.body.appendChild(deck);
-    }
-  });
+    var CIRC = 94.25;   // 2 * pi * 15
+    var sec = el('section', 'deck');
 
-  function makeDeck(group) {
-    var items = group.cards.map(function (card) {
-      var q = card.querySelector('.q');
-      var a = card.querySelector('.a');
-      if (!q || !a) return null;
-      return { num: numOf(q), q: strippedHtml(q), a: strippedHtml(a) };
-    }).filter(Boolean);
-    if (!items.length) return null;
-
-    var label = partLabel(group.title);
-    var sec = doc.createElement('section');
-    sec.className = 'deck';
-
-    var eyebrow = doc.createElement('p');
-    eyebrow.className = 'deck-eyebrow';
-    eyebrow.textContent = 'Review ' + MIDDOT + ' ' + label;
-
-    // Progress ring, in place of a bare "3 of 7": circumference is 2*pi*15.
-    var CIRC = 94.25;
-    var ring = doc.createElement('div');
-    ring.className = 'deck-ring';
+    var ring = el('div', 'deck-ring');
     ring.innerHTML = '<svg viewBox="0 0 36 36" width="38" height="38" aria-hidden="true">'
       + '<circle class="track" cx="18" cy="18" r="15"></circle>'
       + '<circle class="fill" cx="18" cy="18" r="15" stroke-dasharray="' + CIRC
       + '" stroke-dashoffset="' + CIRC + '"></circle></svg>';
     var ringFill = ring.querySelector('.fill');
 
-    function updateRing() {
-      var frac = done ? 1 : (queue.length ? pos / queue.length : 0);
-      ringFill.setAttribute('stroke-dashoffset', (CIRC * (1 - frac)).toFixed(2));
-    }
+    var head = el('div', 'deck-head');
+    var headText = doc.createElement('div');
+    headText.appendChild(el('p', 'deck-eyebrow', 'Review ' + MIDDOT + ' ' + label));
+    headText.appendChild(el('h3', 'deck-title',
+      list.length + (list.length === 1 ? ' question' : ' questions') + ' on what you just read'));
+    head.appendChild(headText);
+    head.appendChild(ring);
 
-    var heading = doc.createElement('h3');
-    heading.className = 'deck-title';
-    heading.textContent = items.length + (items.length === 1 ? ' question' : ' questions')
-      + ' on what you just read';
-
-    var stage = doc.createElement('div');
-    stage.className = 'deck-stage';
-
-    var stack = doc.createElement('div');
-    stack.className = 'deck-stack';
-
-    var cardEl = doc.createElement('div');
-    cardEl.className = 'deck-card';
+    var stage = el('div', 'deck-stage');
+    var stack = el('div', 'deck-stack');
+    var cardEl = el('div', 'deck-card');
     cardEl.setAttribute('role', 'button');
     cardEl.setAttribute('tabindex', '0');
     cardEl.setAttribute('aria-label', 'Show answer');
-
-    var numEl = doc.createElement('span');
-    numEl.className = 'deck-num';
-    var qEl = doc.createElement('div');
-    qEl.className = 'deck-q';
-    var aEl = doc.createElement('div');
-    aEl.className = 'deck-a';
-    var hint = doc.createElement('p');
-    hint.className = 'deck-hint';
-    hint.textContent = 'Click the card to reveal';
-
+    var numEl = el('span', 'deck-num');
+    var qEl = el('div', 'deck-q');
+    var aEl = el('div', 'deck-a');
+    var hint = el('p', 'deck-hint', 'Click the card to reveal');
     cardEl.appendChild(numEl);
     cardEl.appendChild(qEl);
     cardEl.appendChild(aEl);
     cardEl.appendChild(hint);
     stack.appendChild(cardEl);
     stage.appendChild(stack);
-
-    var summary = doc.createElement('div');
-    summary.className = 'deck-summary';
+    var summary = el('div', 'deck-summary');
     summary.hidden = true;
     stage.appendChild(summary);
 
-    var controls = doc.createElement('div');
-    controls.className = 'deck-controls';
-    var missBtn = doc.createElement('button');
+    var controls = el('div', 'deck-controls');
+    var missBtn = el('button', 'deck-btn miss', 'Didn' + APOS + 't remember');
     missBtn.type = 'button';
-    missBtn.className = 'deck-btn miss';
-    missBtn.textContent = 'Didn' + APOS + 't remember';
-    var hitBtn = doc.createElement('button');
+    var hitBtn = el('button', 'deck-btn hit', 'Remembered');
     hitBtn.type = 'button';
-    hitBtn.className = 'deck-btn hit';
-    hitBtn.textContent = 'Remembered';
     controls.appendChild(missBtn);
     controls.appendChild(hitBtn);
 
-    var progress = doc.createElement('p');
-    progress.className = 'deck-progress';
+    var progress = el('p', 'deck-progress');
     progress.setAttribute('aria-live', 'polite');
-
-    var head = doc.createElement('div');
-    head.className = 'deck-head';
-    var headText = doc.createElement('div');
-    headText.appendChild(eyebrow);
-    headText.appendChild(heading);
-    head.appendChild(headText);
-    head.appendChild(ring);
 
     sec.appendChild(head);
     sec.appendChild(stage);
     sec.appendChild(controls);
     sec.appendChild(progress);
 
-    var priorGraded = items.filter(function (it) { return store[it.num]; }).length;
-    var priorHits = items.filter(function (it) { return store[it.num] === 'hit'; }).length;
-    if (priorGraded) {
-      var note = doc.createElement('p');
-      note.className = 'deck-note';
-      note.textContent = 'Previously graded: ' + priorGraded + ' of ' + items.length
-        + ' (' + priorHits + ' remembered)';
-      sec.appendChild(note);
-    }
-
-    /* ---- state ---- */
-    var all = items.map(function (_, i) { return i; });
+    var all = list.map(function (_, i) { return i; });
     var queue = all.slice();
     var pos = 0;
     var missed = [];
     var done = false;
 
+    function ringFor() {
+      // fraction of THIS deck's cards that the scheduler has seen, not session position
+      var seen = list.filter(function (it) { return sched[it.num]; }).length;
+      var frac = done ? 1 : (list.length ? seen / list.length : 0);
+      ringFill.setAttribute('stroke-dashoffset', (CIRC * (1 - frac)).toFixed(2));
+    }
+
     function paint() {
-      var it = items[queue[pos]];
+      var it = list[queue[pos]];
       numEl.textContent = it.num;
       qEl.innerHTML = it.q;
       aEl.innerHTML = it.a;
@@ -1643,7 +1720,7 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
       missBtn.disabled = true;
       hitBtn.disabled = true;
       progress.textContent = 'Question ' + (pos + 1) + ' of ' + queue.length;
-      updateRing();
+      ringFor();
     }
 
     function reveal() {
@@ -1656,11 +1733,12 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
 
     function grade(hit) {
       if (done || !cardEl.classList.contains('open')) return;
-      var it = items[queue[pos]];
-      store[it.num] = hit ? 'hit' : 'miss';
-      writeStore(store);
+      var it = list[queue[pos]];
+      gradeCard(it.num, hit);
       if (!hit) missed.push(queue[pos]);
       pos++;
+      ringFor();
+      refresh();
       if (pos < queue.length) paint();
       else finish();
     }
@@ -1673,37 +1751,28 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
       controls.hidden = true;
       summary.hidden = false;
       summary.innerHTML = '';
-
-      var score = doc.createElement('p');
-      score.className = 'deck-score';
+      var score = el('p', 'deck-score');
       score.innerHTML = '<b>' + hits + '</b> of ' + total + ' remembered';
       summary.appendChild(score);
-
-      var again = doc.createElement('div');
-      again.className = 'deck-controls';
-
+      var again = el('div', 'deck-controls');
       if (missed.length) {
-        var missedBtn = doc.createElement('button');
-        missedBtn.type = 'button';
-        missedBtn.className = 'deck-btn miss';
-        missedBtn.textContent = 'Review the ' + missed.length + ' you missed';
-        missedBtn.addEventListener('click', function () { restart(missed.slice()); });
-        again.appendChild(missedBtn);
+        var mb = el('button', 'deck-btn miss', 'Review the ' + missed.length + ' you missed');
+        mb.type = 'button';
+        mb.addEventListener('click', function () { restart(missed.slice()); });
+        again.appendChild(mb);
       }
-
-      var allBtn = doc.createElement('button');
-      allBtn.type = 'button';
-      allBtn.className = 'deck-btn plain';
-      allBtn.textContent = 'Start over';
-      allBtn.addEventListener('click', function () { restart(all.slice()); });
-      again.appendChild(allBtn);
-
+      var ab = el('button', 'deck-btn plain', 'Start over');
+      ab.type = 'button';
+      ab.addEventListener('click', function () { restart(all.slice()); });
+      again.appendChild(ab);
       summary.appendChild(again);
       progress.textContent = 'Deck complete.';
+      ringFor();
+      if (opts.onDone) opts.onDone();
     }
 
-    function restart(list) {
-      queue = list;
+    function restart(l) {
+      queue = l;
       pos = 0;
       missed = [];
       done = false;
@@ -1726,6 +1795,158 @@ Editable source: <code>viz/RLHF-Study-Notes.src.html</code>; build with
 
     paint();
     return sec;
+  }
+
+  /* --------------------------------------------- B. one deck after each Part */
+  var footer = doc.querySelector('p.small');
+  parts.forEach(function (p, i) {
+    if (!p.items.length) return;
+    var deck = buildDeck(p.items, partLabel(p.title));
+    if (!deck) return;
+    if (i < parts.length - 1) {
+      var next = parts[i + 1].el;
+      next.parentNode.insertBefore(deck, next);
+    } else if (footer && footer.parentNode) {
+      footer.parentNode.insertBefore(deck, footer);
+    } else {
+      doc.body.appendChild(deck);
+    }
+    p.deck = deck;
+  });
+
+  /* ------------------------------------------------- C. the sticky sidebar */
+  var tocRows = [];
+  var dueEl, dueBtn, ladderRows = [], sidebar;
+
+  function cardNums() { return items.map(function (it) { return it.num; }); }
+
+  function dueNums() {
+    var t = Date.now();
+    return cardNums().filter(function (num) {
+      var c = sched[num];
+      return c && c.due <= t;
+    });
+  }
+
+  function buildSidebar() {
+    sidebar = el('aside', 'toc');
+    sidebar.setAttribute('aria-label', 'Contents and review progress');
+
+    sidebar.appendChild(el('p', 'toc-title', 'On this page'));
+    var listEl = el('ol', 'toc-list');
+
+    var pi = 0;
+    [].slice.call(doc.querySelectorAll('.part, h2')).forEach(function (h) {
+      if (h.classList.contains('part')) {
+        pi++;
+        if (!h.id) h.id = 'part-' + pi;
+        var li = el('li', 'toc-part');
+        var a = el('a', null, partLabel(h.textContent));
+        a.href = '#' + h.id;
+        var count = el('span', 'toc-count', '');
+        li.appendChild(a);
+        li.appendChild(count);
+        listEl.appendChild(li);
+        tocRows.push({ part: h, count: count });
+      } else {
+        if (!h.id) h.id = 'sec-' + h.id || ('sec-' + Math.random().toString(36).slice(2, 8));
+        var sub = el('li', 'toc-sub');
+        var sa = el('a', null, h.textContent.replace(/^[0-9]+\s*[^A-Za-z0-9]*/, ''));
+        sa.href = '#' + h.id;
+        sub.appendChild(sa);
+        listEl.appendChild(sub);
+      }
+    });
+    sidebar.appendChild(listEl);
+
+    sidebar.appendChild(el('div', 'toc-sep'));
+    sidebar.appendChild(el('p', 'toc-title', 'Review'));
+    dueEl = el('p', 'toc-due', '');
+    sidebar.appendChild(dueEl);
+    dueBtn = el('button', 'toc-btn', 'Review due cards');
+    dueBtn.type = 'button';
+    dueBtn.addEventListener('click', openDue);
+    sidebar.appendChild(dueBtn);
+
+    var ladder = el('ul', 'ladder');
+    ['In-text', '1 day', '1 week', '1 month', 'Long-term'].forEach(function (name) {
+      var li = el('li', 'ladder-row');
+      li.appendChild(el('span', 'rung', name));
+      var bar = el('span', 'bar');
+      var fill = el('i', null);
+      bar.appendChild(fill);
+      li.appendChild(bar);
+      var n = el('span', 'n', '0');
+      li.appendChild(n);
+      ladder.appendChild(li);
+      ladderRows.push({ fill: fill, n: n });
+    });
+    sidebar.appendChild(ladder);
+    sidebar.appendChild(el('p', 'toc-note',
+      'Intervals follow SM-2: 1 day, then 6, then the previous interval times an ease factor. Stored on this device only.'));
+
+    doc.body.appendChild(sidebar);
+  }
+
+  function refresh() {
+    if (!sidebar) return;
+
+    var nums = cardNums();
+    var dues = dueNums();
+    dueEl.innerHTML = '<b>' + dues.length + '</b> ' + (dues.length === 1 ? 'card due' : 'cards due');
+    dueBtn.hidden = dues.length === 0;
+
+    var b = bucketed(nums);
+    var max = Math.max.apply(null, b) || 1;
+    for (var i = 0; i < ladderRows.length; i++) {
+      ladderRows[i].n.textContent = String(b[i]);
+      ladderRows[i].fill.style.width = Math.round((b[i] / max) * 100) + '%';
+    }
+
+    tocRows.forEach(function (row) {
+      var p = parts.filter(function (x) { return x.el === row.part; })[0];
+      if (!p) { row.count.textContent = ''; return; }
+      var seen = p.items.filter(function (it) { return sched[it.num]; }).length;
+      row.count.textContent = seen + '/' + p.items.length;
+      row.count.className = 'toc-count' + (seen === p.items.length ? ' done' : '');
+    });
+  }
+
+  /* --------------------------------------------------- D. the due-card deck */
+  var overlay = null;
+  function openDue() {
+    var dues = dueNums();
+    if (!dues.length) return;
+    var byNum = {};
+    items.forEach(function (it) { byNum[it.num] = it; });
+    var list = dues.map(function (n) { return byNum[n]; }).filter(Boolean);
+
+    overlay = el('div', 'due-overlay');
+    var box = el('div', 'due-box');
+    var close = el('button', 'due-close', 'Close');
+    close.type = 'button';
+    close.addEventListener('click', closeDue);
+    box.appendChild(close);
+    var deck = buildDeck(list, 'due now', { onDone: function () { refresh(); } });
+    if (deck) box.appendChild(deck);
+    overlay.appendChild(box);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeDue(); });
+    doc.addEventListener('keydown', escClose);
+    doc.body.appendChild(overlay);
+    close.focus();
+  }
+  function escClose(e) { if (e.key === 'Escape') closeDue(); }
+  function closeDue() {
+    if (!overlay) return;
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    overlay = null;
+    doc.removeEventListener('keydown', escClose);
+    refresh();
+  }
+
+  if (doc.querySelector('.part')) {
+    buildSidebar();
+    refresh();
   }
 })();
 </script><!--site-reveal:end--></body></html>

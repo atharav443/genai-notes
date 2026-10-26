@@ -140,6 +140,32 @@ The essay's opening prose still says “cover the answer with your hand”. That
 only true of the printed PDF; on screen the card and the deck do it. Reword if you
 want the two to agree.
 
+## Review scheduling and the sidebar
+
+Grading writes to a small SM-2 scheduler in `localStorage` under
+`genai-review:<page>` (keyed by the URL, so essays cannot collide):
+
+- **Remembered** — `n += 1`; the interval becomes 1 day, then 6 days, then
+  previous × ease; ease drifts up to a ceiling of 2.8.
+- **Didn't remember** — `n = 0`, interval 0 (due immediately), ease drifts down
+  to a floor of 1.3, `lapses` increments.
+- Each card stores `{ n, ef, ivl, due, lapses }`. The v1 format (a bare
+  `"hit"` / `"miss"` string) is migrated on load, so existing progress survives.
+
+Above 1320px a sidebar appears with the contents (Parts and their sections),
+per-Part `graded/total`, the number of cards due, a button that opens a deck of
+just those due cards, and a five-rung **memory ladder**. Every number there is read
+from the scheduler — nothing is decorative. The deck's progress ring counts cards
+the scheduler has seen, not session position.
+
+Two honest limitations. A single grading button is a coarser signal than SM-2's
+six-point scale, so the ease factor only ever moves by ±0.1/0.2. And progress lives
+in the browser: clearing site data resets it, and it does not follow you between
+devices. A real scheduler needs storage, which means a backend.
+
+**Watch out:** the ladder bars deliberately have no CSS transition. A transition
+makes the rendered width impossible to verify in a headless snapshot — the bar reads
+as 0px under `--virtual-time-budget` because the animation clock never advances.
 ## Rebuilding an RLHF article
 
 Both RLHF articles are rendered from the `.src.html` files in `viz/`. See
