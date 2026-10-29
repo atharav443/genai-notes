@@ -1,0 +1,915 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The mathematics under generative AI, for the very curious</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/Foundations-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/foundations.body.html</code>.</div>
+
+<h1>The mathematics<br>under generative AI,<br>for the very curious</h1>
+<h1 class="sub-title">Eight tools &mdash; averages, surprise, curvature, bell curves,
+Bayes, and two ways to differentiate a dice roll &mdash; that every other essay in
+this series assumes you already own</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question
+and its answer. They are not decoration. They are the essay testing you &mdash; and if
+you take them seriously, you will remember this material for years instead of
+days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong
+is useful; the effort of a failed recall is what makes the next one stick. The cards
+here are deliberately small: one fact, one step, one number each. A question that
+feels too easy today is doing its job if you still answer it in six months.</p>
+
+<p>Read this one first if the GAN, VAE, diffusion or RLHF essays ever made you stop
+at a line and think "where did <i>that</i> come from?". Nothing here is specific to
+any one model. Everything here is used by all of them, and the last section maps each
+tool to the places it reappears. It goes beyond the lecture notes throughout; it is the
+background the notes take for granted.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; Averages you can actually compute</div>
+
+<h2>1 &middot; An expectation is a weighted average</h2>
+
+<p>A fairground game pays &#8377;10 with probability 0.2 and nothing otherwise. What is
+it worth to play? Not &#8377;10, and not zero: on average, &#8377;2 a go. That is all an
+expectation is &mdash; every outcome, weighted by how often it happens, added up.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}_{P}[h(x)] = \sum_x P(x)\,h(x) \qquad\text{or}\qquad \int P(x)\,h(x)\,dx \]
+</div>
+
+<p>Two things sit inside: a distribution \(P\) that says how often, and a function
+\(h\) that says how much. The subscript on \(\mathbb{E}\) names the distribution, and
+it is the single most important piece of notation in this subject, because nearly every
+derivation in the series is a fight over <i>which</i> distribution an expectation is
+taken under. When you see \(\mathbb{E}_{q(z\mid x)}\) in the VAE or
+\(\mathbb{E}_{\pi_\theta}\) in RLHF, read it aloud: "averaged over samples from \(q\)",
+"averaged over what the policy does".</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  A game pays 10 with probability 0.2 and 0 otherwise. What is its expected payout?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(0.2 \times 10 + 0.8 \times 0 = 2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  In \(\mathbb{E}_{P}[h(x)]\), what do \(P\) and \(h\) each contribute?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P\) supplies the weights (how often each \(x\) occurs); \(h\) supplies the values being averaged.</p>
+</div>
+
+
+<h2>2 &middot; Replacing an integral with a sample average</h2>
+
+<p>The integral is usually impossible. The samples are usually free. The law of large
+numbers is the licence to swap one for the other: draw \(x_1,\dots,x_n\) independently
+from \(P\), and</p>
+
+<div class="mathblock">
+\[ \frac{1}{n}\sum_{i=1}^{n} h(x_i) \;\longrightarrow\; \mathbb{E}_P[h(x)] \quad\text{as } n \to \infty \]
+</div>
+
+<p>This is Monte Carlo estimation, and every training loss you will ever compute is one.
+A minibatch loss is a sample average standing in for an expectation over the data.</p>
+
+<p>How good is the stand-in? The average of \(n\) independent draws has standard
+deviation \(\sigma/\sqrt{n}\), where \(\sigma\) is the spread of a single \(h(x)\).
+Read the square root as a tax: to halve the error you need <i>four</i> times as many
+samples, and to cut it by ten, a hundred times as many. That is why, later, so much
+effort goes into estimators with a smaller \(\sigma\) rather than into more samples.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  What does the law of large numbers let you replace \(\mathbb{E}_P[h(x)]\) with?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The sample average \(\frac1n\sum_i h(x_i)\) over independent draws \(x_i \sim P\), which converges to it as \(n\) grows.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.4</span></span>
+  How does the standard error of a Monte Carlo average scale with the number of samples \(n\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  As \(\sigma/\sqrt{n}\), where \(\sigma\) is the standard deviation of a single term.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.5</span></span>
+  To halve the error of a Monte Carlo estimate, by how much must you increase the sample count?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Fourfold, because the error scales as \(1/\sqrt{n}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.6</span></span>
+  Why is a minibatch loss a Monte Carlo estimate?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It averages the per-example loss over a random sample of the data, standing in for the expectation of the loss over the whole data distribution.</p>
+</div>
+
+
+<div class="part">Part II &mdash; Changing what you average over</div>
+
+<h2>3 &middot; The law of the unconscious statistician</h2>
+
+<p>Suppose \(z = g(\epsilon)\) for some random \(\epsilon\). You want the average of
+\(f(z)\). One way is to work out the distribution of \(z\) and average over it. The
+other way is to not bother: average \(f(g(\epsilon))\) over \(\epsilon\) directly.
+Both give the same number:</p>
+
+<div class="mathblock">
+\[ \mathbb{E}_{P_z}[f(z)] = \mathbb{E}_{P_\epsilon}\big[f(g(\epsilon))\big] \]
+</div>
+
+<p>The rule earned its name because people use it without noticing. It is the whole
+legal basis of the reparameterization trick in the VAE essay: you never need the
+density of the code \(z\), only a recipe that turns standard noise into it.</p>
+
+<p>When you <i>do</i> want that density, there is a price, and it is a slope. For an
+invertible map \(y = g(x)\) in one dimension,</p>
+
+<div class="mathblock">
+\[ p_y(y) = p_x(x)\left|\frac{dx}{dy}\right| \]
+</div>
+
+<p>Stretching space thins the probability out. If \(x\) is uniform on \([0,1]\) and
+\(y = 2x\), then \(y\) is uniform on \([0,2]\) with density \(\tfrac12\): the same total
+mass spread twice as wide. In many dimensions the slope becomes the absolute determinant
+of the Jacobian, and models that keep that determinant cheap (normalising flows) get
+exact likelihoods in exchange.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  State the law of the unconscious statistician for \(z = g(\epsilon)\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}_{P_z}[f(z)] = \mathbb{E}_{P_\epsilon}[f(g(\epsilon))]\): you can average over the noise without knowing the distribution of \(z\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  For invertible \(y = g(x)\) in 1-D, how is the density of \(y\) related to the density of \(x\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(p_y(y) = p_x(x)\,|dx/dy|\). In \(d\) dimensions, multiply by \(|\det \partial x/\partial y|\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  \(x\) is uniform on \([0,1]\) and \(y = 2x\). What is the density of \(y\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\tfrac12\) on \([0,2]\): the mass is spread over twice the length.</p>
+</div>
+
+
+<h2>4 &middot; Multiplying by one: importance sampling</h2>
+
+<p>Sometimes you can only sample from the wrong distribution. You want
+\(\mathbb{E}_P[f]\) but your samples come from \(Q\). Multiply inside by \(Q/Q\), which
+is one, and regroup:</p>
+
+<div class="mathblock">
+\[ \mathbb{E}_P[f(x)] = \int Q(x)\,\frac{P(x)}{Q(x)}\,f(x)\,dx = \mathbb{E}_Q\!\left[\frac{P(x)}{Q(x)}f(x)\right] \]
+</div>
+
+<p>Each sample from \(Q\) is reweighted by how much more (or less) likely it was under
+\(P\). This one move appears in three disguises in the series. In the VAE it introduces
+the free distribution \(q(z\mid x)\) that becomes the encoder. In PPO it is the ratio
+\(\pi_\theta/\pi_{\text{old}}\) that lets you reuse stale samples. In f-divergences it is
+the density ratio \(P_x/P_\theta\) at the heart of the definition. The catch is always
+the same: when \(Q\) puts little mass where \(P\) puts a lot, a few samples get enormous
+weights and the variance explodes &mdash; which is exactly what PPO's clip is for.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.4</span></span>
+  Write \(\mathbb{E}_P[f(x)]\) as an expectation under a different distribution \(Q\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}_Q[(P(x)/Q(x))\,f(x)]\), by multiplying inside the integral by \(Q/Q\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.5</span></span>
+  When does importance sampling become unreliable?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  When \(Q\) puts little mass where \(P\) puts a lot: the ratio \(P/Q\) gets huge on a few samples and the variance explodes.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.6</span></span>
+  Where does the importance ratio appear in RLHF?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  As the PPO ratio \(\pi_\theta(a\mid s)/\pi_{\text{old}}(a\mid s)\), which reweights samples drawn from the old policy.</p>
+</div>
+
+
+<div class="part">Part III &mdash; How surprised should you be?</div>
+
+<h2>5 &middot; Surprise and entropy</h2>
+
+<p>"The sun rose" is not news. "It snowed in Chennai" is. Information theory turns that
+intuition into a number: an outcome of probability \(p\) carries a <i>surprise</i> of
+\(-\log p\). Certain events carry none; rare ones carry a lot; and two independent events
+together surprise you by the sum of their separate surprises, which is why the logarithm
+is the right function.</p>
+
+<p>The <i>entropy</i> of a distribution is its average surprise:</p>
+
+<div class="mathblock">
+\[ H(P) = \mathbb{E}_P[-\log P(x)] \]
+</div>
+
+<p>A fair coin has \(H = \log 2 \approx 0.693\) nats (one bit, if you use \(\log_2\)). A
+coin that lands heads 90% of the time has
+\(-(0.9\log 0.9 + 0.1\log 0.1) \approx 0.325\) nats: it is more predictable, so it surprises
+you less on average. Throughout this series, \(\log\) is the natural log and the unit is
+the nat.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  What is the surprise (information content) of an outcome with probability \(p\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(-\log p\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  Why is \(-\log p\), rather than say \(1/p\), the right measure of surprise?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Probabilities of independent events multiply; logarithms turn that product into a sum, so independent surprises add.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
+  Define the entropy \(H(P)\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The expected surprise: \(H(P) = \mathbb{E}_P[-\log P(x)]\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.4</span></span>
+  What is the entropy of a fair coin, in nats and in bits?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\log 2 \approx 0.693\) nats, which is exactly 1 bit.</p>
+</div>
+
+
+<h2>6 &middot; Cross-entropy and the KL divergence</h2>
+
+<p>Now suppose the world runs on \(P\) but you <i>believe</i> \(Q\). You will be
+surprised by \(-\log Q(x)\) each time, on outcomes that actually arrive from \(P\). Your
+average surprise is the <i>cross-entropy</i>:</p>
+
+<div class="mathblock">
+\[ H(P, Q) = \mathbb{E}_P[-\log Q(x)] \]
+</div>
+
+<p>You can never do better than knowing the truth, so \(H(P,Q) \ge H(P)\). The excess
+&mdash; the extra surprise you pay for believing the wrong thing &mdash; is the
+Kullback&ndash;Leibler divergence:</p>
+
+<div class="mathblock">
+\[ D_{KL}(P\|Q) = H(P,Q) - H(P) = \mathbb{E}_P\!\left[\log\frac{P(x)}{Q(x)}\right] \]
+</div>
+
+<p>Check it with coins. World: fair, \(P = (0.5, 0.5)\). Belief:
+\(Q = (0.9, 0.1)\). Cross-entropy
+\(= -0.5\log 0.9 - 0.5\log 0.1 \approx 1.204\); entropy \(\approx 0.693\); so
+\(D_{KL}(P\|Q) \approx 0.511\) nats &mdash; the same number the GAN essay computes from the
+definition directly.</p>
+
+<p>Two facts about KL matter more than any formula. It is never negative, and it is zero
+only when \(P = Q\). And it is not symmetric: \(D_{KL}(Q\|P)\) for the same coins is about
+0.368. KL is a divergence, not a distance, and which way round you write it changes what
+an optimiser does.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.5</span></span>
+  Define the cross-entropy \(H(P,Q)\) in words and symbols.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The average surprise of someone who believes \(Q\) while outcomes come from \(P\): \(\mathbb{E}_P[-\log Q(x)]\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.6</span></span>
+  Write \(D_{KL}(P\|Q)\) in terms of cross-entropy and entropy.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(D_{KL}(P\|Q) = H(P,Q) - H(P)\): the extra surprise caused by believing \(Q\) instead of \(P\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.7</span></span>
+  Is \(D_{KL}(P\|Q) = D_{KL}(Q\|P)\) in general?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  No. For \(P = (0.5, 0.5)\), \(Q = (0.9, 0.1)\): 0.511 one way, 0.368 the other.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.8</span></span>
+  When is \(D_{KL}(P\|Q) = 0\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Exactly when \(P = Q\) (almost everywhere). Otherwise it is strictly positive.</p>
+</div>
+
+
+<h2>7 &middot; Why training on data is minimising KL</h2>
+
+<p>Put the data distribution in the first slot and your model in the second. Then
+\(D_{KL}(P_{\text{data}}\|P_\theta) = H(P_{\text{data}}, P_\theta) - H(P_{\text{data}})\),
+and the second term does not contain \(\theta\). So</p>
+
+<div class="mathblock">
+\[ \arg\min_\theta D_{KL}(P_{\text{data}}\|P_\theta) = \arg\min_\theta \mathbb{E}_{P_{\text{data}}}[-\log P_\theta(x)]
+   = \arg\max_\theta \mathbb{E}_{P_{\text{data}}}[\log P_\theta(x)] \]
+</div>
+
+<p>Minimising the cross-entropy loss, maximising likelihood, and minimising forward KL to
+the data are one and the same act. The language model at the start of the RLHF essay,
+the VAE's ELBO, and the diffusion bound are all attempts to climb this one hill.</p>
+
+<p>Which direction of KL you minimise shapes the result. <b>Forward</b> KL,
+\(D_{KL}(P_{\text{data}}\|P_\theta)\), averages over the data, so it heavily punishes a
+model that assigns near-zero probability anywhere the data lives: it is
+<i>mode-covering</i>, preferring to smear mass over every mode, even at the cost of
+putting some where no data is. <b>Reverse</b> KL, \(D_{KL}(P_\theta\|P_{\text{data}})\),
+averages over the model, so it punishes the model for putting mass where the data is
+absent but does not mind missing whole modes: it is <i>mode-seeking</i>. Variational
+inference in the VAE uses the reverse direction for its approximate posterior, and
+inherits that tendency to under-cover.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.9</span></span>
+  Why does minimising \(D_{KL}(P_{\text{data}}\|P_\theta)\) equal maximum likelihood?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It equals \(H(P_{\text{data}}, P_\theta) - H(P_{\text{data}})\); the entropy term has no \(\theta\), so minimising KL is minimising \(\mathbb{E}_{\text{data}}[-\log P_\theta]\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.10</span></span>
+  Forward KL \(D_{KL}(P\|Q_\theta)\) is called mode-covering. Why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It averages \(\log(P/Q_\theta)\) under \(P\), so any region where \(P\) has mass but \(Q_\theta\) does not costs enormously; \(Q_\theta\) spreads to cover every mode.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.11</span></span>
+  Reverse KL \(D_{KL}(Q_\theta\|P)\) is called mode-seeking. Why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It averages under \(Q_\theta\), so it only penalises mass that \(Q_\theta\) places where \(P\) is small; ignoring a whole mode of \(P\) costs little.</p>
+</div>
+
+
+<div class="part">Part IV &mdash; Bending lines</div>
+
+<h2>8 &middot; Convexity and Jensen&rsquo;s inequality</h2>
+
+<p>Draw a bowl. Pick any two points on its rim and join them with a straight string. The
+string lies above the bowl everywhere between them. That is convexity, and the most
+useful thing it gives you is an inequality about averages. For convex \(f\),</p>
+
+<div class="mathblock">
+\[ f\big(\mathbb{E}[X]\big) \;\le\; \mathbb{E}\big[f(X)\big] \]
+</div>
+
+<p>"The function of the average is below the average of the function." For a concave
+function such as \(\log\), a cap rather than a bowl, the inequality flips:
+\(\log\mathbb{E}[X] \ge \mathbb{E}[\log X]\). Take \(X = 1\) or \(4\) with equal
+probability: \(\log 2.5 \approx 0.916\) against \(\tfrac12\log 4 \approx 0.693\). The
+gap closes to zero only when \(X\) does not vary.</p>
+
+<p>Jensen is the hidden engine of half this series. It makes the ELBO a lower bound in the
+VAE and diffusion essays, it makes every f-divergence non-negative in the GAN essay, and it
+proves the fact the last Part asserted. Watch:</p>
+
+<div class="mathblock">
+\[ -D_{KL}(P\|Q) = \mathbb{E}_P\!\left[\log\frac{Q}{P}\right] \le \log\mathbb{E}_P\!\left[\frac{Q}{P}\right]
+   = \log\int Q(x)\,dx = \log 1 = 0 \]
+</div>
+
+<p>So \(D_{KL} \ge 0\), with equality exactly when \(Q/P\) is constant &mdash; that is,
+when \(Q = P\). That is Gibbs' inequality, in one line.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  State Jensen&rsquo;s inequality for a convex function \(f\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f(\mathbb{E}[X]) \le \mathbb{E}[f(X)]\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  Which way does Jensen&rsquo;s inequality point for \(\log\), and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\log\mathbb{E}[X] \ge \mathbb{E}[\log X]\), because \(\log\) is concave, which flips the convex inequality.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  When does Jensen&rsquo;s inequality hold with equality?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  When \(X\) is constant (or \(f\) is linear over the range \(X\) takes).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.4</span></span>
+  Use Jensen to show \(D_{KL}(P\|Q) \ge 0\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(-D_{KL} = \mathbb{E}_P\log(Q/P) \le \log\mathbb{E}_P(Q/P) = \log\int Q = \log 1 = 0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.5</span></span>
+  Name the place in each of the VAE and GAN essays where Jensen does the work.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  VAE: it turns \(\log\mathbb{E}_q[P_\theta(x,z)/q]\) into the ELBO lower bound. GAN: it proves every f-divergence is \(\ge f(1) = 0\).</p>
+</div>
+
+
+<div class="part">Part V &mdash; The algebra of bell curves</div>
+
+<h2>9 &middot; The Gaussian, and what linear maps do to it</h2>
+
+<p>The Gaussian is everywhere in this series for a reason that is almost embarrassingly
+practical: it is the one distribution whose algebra closes. In one dimension,</p>
+
+<div class="mathblock">
+\[ \mathcal{N}(x;\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right),
+   \qquad \log\mathcal{N} = -\frac{(x-\mu)^2}{2\sigma^2} - \tfrac12\log(2\pi\sigma^2) \]
+</div>
+
+<p>The log is a quadratic. That single fact is why "Gaussian likelihood" and "squared
+error loss" are the same sentence in every essay here.</p>
+
+<p>Push a Gaussian through a linear map and it stays Gaussian. If
+\(x \sim \mathcal{N}(\mu, \Sigma)\) then</p>
+
+<div class="mathblock">
+\[ Ax + b \;\sim\; \mathcal{N}\!\left(A\mu + b,\; A\Sigma A^\top\right) \]
+</div>
+
+<p>Read it backwards and you have the reparameterization trick: start from standard
+noise \(\epsilon \sim \mathcal{N}(0, I)\) and build any Gaussian as
+\(\mu + L\epsilon\), where \(LL^\top = \Sigma\). And add two <i>independent</i>
+Gaussians and you get a Gaussian whose means add and whose variances add. That is the
+entire reason diffusion can jump from a clean image to step 700 in one line instead of
+seven hundred.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  What is \(\log\mathcal{N}(x;\mu,\sigma^2)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(-(x-\mu)^2/(2\sigma^2) - \tfrac12\log(2\pi\sigma^2)\): a quadratic in \(x\) plus a constant.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  Why does a Gaussian likelihood with fixed variance give a squared-error loss?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Its negative log is \((x-\mu)^2/(2\sigma^2)\) plus a constant, so maximising likelihood minimises squared error.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  If \(x \sim \mathcal{N}(\mu, \Sigma)\), what is the distribution of \(Ax + b\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathcal{N}(A\mu + b,\ A\Sigma A^\top)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.4</span></span>
+  \(x_1 \sim \mathcal{N}(\mu_1, \sigma_1^2)\) and \(x_2 \sim \mathcal{N}(\mu_2, \sigma_2^2)\) are independent. What is the distribution of \(x_1 + x_2\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathcal{N}(\mu_1 + \mu_2,\ \sigma_1^2 + \sigma_2^2)\): means add and variances add (standard deviations do not).</p>
+</div>
+
+
+<h2>10 &middot; Multiplying two Gaussians: completing the square</h2>
+
+<p>Multiply two Gaussian densities in the same variable and the exponents add. A sum of
+two quadratics is a quadratic, so the product is another Gaussian shape. Completing the
+square tells you which one, and the answer is beautifully simple when you think in
+<i>precisions</i> (inverse variances):</p>
+
+<div class="mathblock">
+\[ \mathcal{N}(x;\mu_1,\sigma_1^2)\,\mathcal{N}(x;\mu_2,\sigma_2^2) \;\propto\; \mathcal{N}(x;\mu,\sigma^2),
+   \qquad \frac{1}{\sigma^2} = \frac{1}{\sigma_1^2} + \frac{1}{\sigma_2^2},
+   \qquad \mu = \sigma^2\left(\frac{\mu_1}{\sigma_1^2} + \frac{\mu_2}{\sigma_2^2}\right) \]
+</div>
+
+<p>Precisions add, and the mean is a precision-weighted average. Combine a belief
+"\(x\) is about 0, give or take 1" with a measurement "\(x\) looks like 2, give or take 1"
+and you get "\(x\) is about 1, give or take \(1/\sqrt{2}\)": halfway, and more confident
+than either. This is exactly the computation that produces the true reverse step
+\(q(x_{t-1}\mid x_t, x_0)\) in the diffusion essay &mdash; one Gaussian from the forward
+step, one from the jump-to-any-time formula, multiplied and completed.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.5</span></span>
+  When you multiply two Gaussian densities in \(x\), how do their precisions combine?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  They add: \(1/\sigma^2 = 1/\sigma_1^2 + 1/\sigma_2^2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.6</span></span>
+  What is the mean of the product of two Gaussian densities?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The precision-weighted average \(\mu = \sigma^2(\mu_1/\sigma_1^2 + \mu_2/\sigma_2^2)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.7</span></span>
+  Combine \(\mathcal{N}(0, 1)\) with \(\mathcal{N}(2, 1)\) by multiplication. What Gaussian results?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathcal{N}(1, \tfrac12)\): mean halfway, variance halved.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.8</span></span>
+  In which essay does completing the square produce a key closed form, and which?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Diffusion: the true reverse step \(q(x_{t-1}\mid x_t, x_0)\), whose mean \(\mu_q\) and variance \(\Sigma_q\) come from multiplying Gaussians.</p>
+</div>
+
+
+<h2>11 &middot; The KL between two Gaussians</h2>
+
+<p>Because the log of a Gaussian is a quadratic, the expected log-ratio of two Gaussians
+is an expectation of quadratics, and expectations of quadratics only need means and
+variances. So KL between Gaussians has a closed form. In one dimension,</p>
+
+<div class="mathblock">
+\[ D_{KL}\!\left(\mathcal{N}(\mu_1,\sigma_1^2)\,\|\,\mathcal{N}(\mu_2,\sigma_2^2)\right)
+   = \log\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1-\mu_2)^2}{2\sigma_2^2} - \frac12 \]
+</div>
+
+<p>Two special cases do most of the work in the series. Against a standard normal it
+becomes \(\tfrac12(\sigma^2 + \mu^2 - 1 - \log\sigma^2)\), the VAE's regulariser. And with
+<i>equal</i> variances everything but the means cancels, leaving
+\((\mu_1 - \mu_2)^2/(2\sigma^2)\): a squared error between means, which is how a
+thousand-step diffusion bound turns into a regression.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.9</span></span>
+  Why does the KL between two Gaussians have a closed form?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The log-ratio is a quadratic in \(x\), and the expectation of a quadratic depends only on the mean and variance.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.10</span></span>
+  What is \(D_{KL}(\mathcal{N}(\mu,\sigma^2)\,\|\,\mathcal{N}(0,1))\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\tfrac12(\sigma^2 + \mu^2 - 1 - \log\sigma^2)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.11</span></span>
+  What does the KL between two Gaussians reduce to when their variances are equal?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((\mu_1-\mu_2)^2/(2\sigma^2)\) &mdash; a scaled squared error between the means.</p>
+</div>
+
+
+<div class="part">Part VI &mdash; Turning evidence around</div>
+
+<h2>12 &middot; Bayes&rsquo; rule, and the integral that ruins it</h2>
+
+<p>A model usually tells you how causes produce effects: given a hidden code \(z\), here
+is the distribution of the image \(x\). What you want is the reverse: given this image,
+which codes could have made it? Bayes' rule turns one into the other:</p>
+
+<div class="mathblock">
+\[ P(z\mid x) = \frac{P(x\mid z)\,P(z)}{P(x)}, \qquad P(x) = \int P(x\mid z)\,P(z)\,dz \]
+</div>
+
+<p>The names are worth owning: \(P(z)\) is the <i>prior</i>, \(P(x\mid z)\) the
+<i>likelihood</i>, \(P(z\mid x)\) the <i>posterior</i>, and \(P(x)\) the
+<i>evidence</i> or marginal likelihood. The numerator is usually easy: a prior you chose and
+a network you can run. The denominator is the problem. It sums the numerator over
+<i>every</i> possible cause, and when \(z\) is a continuous vector feeding a neural
+network, that integral has no closed form and too many dimensions to grid.</p>
+
+<p>Almost every model in this series is a different answer to that one denominator. The
+VAE bounds it from below with an encoder. Diffusion fixes the encoder so that the
+posterior steps are Gaussian and tractable. GANs refuse to evaluate any density at all.
+And DPO, at the end of the RLHF essay, wins by making a similar normaliser cancel.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  Write Bayes&rsquo; rule for a posterior over a latent \(z\) given data \(x\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(z\mid x) = P(x\mid z)P(z)/P(x)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  Name the four pieces of Bayes&rsquo; rule \(P(z\mid x) = P(x\mid z)P(z)/P(x)\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Posterior \(P(z\mid x)\), likelihood \(P(x\mid z)\), prior \(P(z)\), evidence (marginal likelihood) \(P(x)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  Which part of Bayes&rsquo; rule is usually intractable for a neural latent-variable model, and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The evidence \(P(x) = \int P(x\mid z)P(z)\,dz\): an integral over a high-dimensional \(z\) through a neural network, with no closed form.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.4</span></span>
+  In the RLHF essay, how does DPO deal with an intractable normaliser?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It never computes it: the partition function \(Z(x)\) appears in both responses of a preference pair and cancels in their difference.</p>
+</div>
+
+
+<div class="part">Part VII &mdash; Differentiating a dice roll</div>
+
+<h2>13 &middot; Two ways to take the gradient of an expectation</h2>
+
+<p>Training means differentiating. But many losses here are expectations under a
+distribution that itself depends on the parameters: \(\nabla_\theta\,\mathbb{E}_{p_\theta(z)}[f(z)]\).
+You cannot simply sample and differentiate, because the sampling step has no derivative.
+There are exactly two standard escapes, and the series uses both.</p>
+
+<p><b>The score-function trick</b> (also called the log-derivative trick, or
+REINFORCE) works for any distribution whose log-density you can differentiate. Use
+\(\nabla_\theta p_\theta = p_\theta\nabla_\theta\log p_\theta\):</p>
+
+<div class="mathblock">
+\[ \nabla_\theta\,\mathbb{E}_{p_\theta}[f(z)] = \mathbb{E}_{p_\theta}\!\left[f(z)\,\nabla_\theta\log p_\theta(z)\right] \]
+</div>
+
+<p>It never differentiates \(f\), so \(f\) can be a reward model, a human, or a
+black box. That is why policy gradients in RLHF use it: a token is discrete and there is
+nothing to differentiate through.</p>
+
+<p><b>The reparameterization trick</b> works when you can write the sample as a smooth
+function of parameter-free noise, \(z = g_\theta(\epsilon)\). Then, by the law of the
+unconscious statistician,</p>
+
+<div class="mathblock">
+\[ \nabla_\theta\,\mathbb{E}_{p_\theta}[f(z)] = \mathbb{E}_{\epsilon}\!\left[\nabla_\theta f(g_\theta(\epsilon))\right] \]
+</div>
+
+<p>It does differentiate \(f\), so \(f\) must be smooth in \(z\) &mdash; a decoder, say
+&mdash; and it is what makes the VAE trainable.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  State the log-derivative identity.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\nabla_\theta p_\theta(z) = p_\theta(z)\,\nabla_\theta\log p_\theta(z)\), because \(\nabla\log p = \nabla p / p\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  Write the score-function (REINFORCE) estimator of \(\nabla_\theta\mathbb{E}_{p_\theta}[f(z)]\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}_{p_\theta}[f(z)\,\nabla_\theta\log p_\theta(z)]\), estimated by averaging over samples of \(z\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  Write the reparameterization estimator of \(\nabla_\theta\mathbb{E}_{p_\theta}[f(z)]\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}_\epsilon[\nabla_\theta f(g_\theta(\epsilon))]\), where \(z = g_\theta(\epsilon)\) and \(\epsilon\) has a fixed distribution.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  Why does RLHF use the score-function estimator rather than reparameterization?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Tokens are discrete and the reward is a black box: there is no smooth \(z = g_\theta(\epsilon)\) to differentiate through, but \(\log\pi_\theta\) is differentiable.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.5</span></span>
+  What does the reparameterization estimator require of \(f\) that the score-function estimator does not?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  That \(f\) be differentiable in \(z\). The score-function estimator only needs to evaluate \(f\).</p>
+</div>
+
+
+<h2>14 &middot; Why the difference matters, in numbers</h2>
+
+<p>Both estimators are unbiased. They are not equally noisy. Take the simplest possible
+case: \(z \sim \mathcal{N}(\mu, 1)\), \(f(z) = z^2\), at \(\mu = 1\). The true gradient
+is \(\frac{d}{d\mu}\mathbb{E}[z^2] = \frac{d}{d\mu}(\mu^2 + 1) = 2\mu = 2\).</p>
+
+<p>The reparameterized estimator writes \(z = \mu + \epsilon\) and differentiates:
+each sample contributes \(2z\). Its variance is \(\mathrm{Var}(2z) = 4\).</p>
+
+<p>The score-function estimator uses \(\nabla_\mu\log\mathcal{N}(z;\mu,1) = z - \mu\):
+each sample contributes \(z^2(z - \mu)\). Its mean is also 2, but working out the
+fourth and sixth moments of a Gaussian gives a variance of 30.</p>
+
+<p>Same answer on average, seven and a half times the variance &mdash; and by the
+square-root law from Part I, roughly seven times as many samples to reach the same
+accuracy. In high dimensions the gap is usually far worse. That is the whole case for the
+reparameterization trick, and it is why RLHF spends so many sections on baselines and
+advantages: subtracting a baseline \(b\), giving \((f(z) - b)\nabla\log p\), leaves the
+mean untouched because \(\mathbb{E}[\nabla\log p] = 0\), and can cut the variance
+dramatically.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.6</span></span>
+  \(z \sim \mathcal{N}(\mu, 1)\), \(f(z) = z^2\). What single-sample term does each estimator of \(d\mathbb{E}[f]/d\mu\) use?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Reparameterization: \(2z\). Score function: \(z^2(z - \mu)\). Both have mean \(2\mu\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.7</span></span>
+  In that example at \(\mu = 1\), what are the two estimators&rsquo; variances?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  4 for reparameterization, 30 for the score function &mdash; about 7.5 times larger.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.8</span></span>
+  What is \(\mathbb{E}_{p_\theta}[\nabla_\theta\log p_\theta(z)]\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Zero: it equals \(\int\nabla_\theta p_\theta = \nabla_\theta\int p_\theta = \nabla_\theta 1 = 0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.9</span></span>
+  Why can you subtract a constant baseline \(b\) from \(f\) in the score-function estimator without biasing it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(\mathbb{E}[b\,\nabla\log p_\theta] = b\,\mathbb{E}[\nabla\log p_\theta] = 0\). The mean is unchanged; the variance can fall a lot.</p>
+</div>
+
+
+<div class="part">Part VIII &mdash; Two things called the score, and a map</div>
+
+<h2>15 &middot; The word &ldquo;score&rdquo; means two different gradients</h2>
+
+<p>This trips up almost everyone who reads both the RLHF and diffusion literatures, so it
+gets its own section. Both fields talk about "the score", and both mean a gradient of a
+log-density &mdash; but with respect to different things.</p>
+
+<table>
+<tr><th>name</th><th>gradient with respect to</th><th>used in</th></tr>
+<tr><td>score function (statistics)</td><td>parameters: \(\nabla_\theta\log p_\theta(x)\)</td><td>REINFORCE, policy gradients, RLHF</td></tr>
+<tr><td>score (score matching)</td><td>data: \(\nabla_x\log p(x)\)</td><td>diffusion, score-based models</td></tr>
+</table>
+
+<p>The second kind is a vector field over the data space that points uphill, toward
+regions of higher probability. For a Gaussian it is simply
+\(\nabla_x\log\mathcal{N}(x;\mu,\sigma^2) = -(x-\mu)/\sigma^2\): an arrow from wherever you
+stand back toward the mean, longer the further out you are and the narrower the bell.
+Follow such arrows from noise, adding a little jitter as you go, and you climb into the
+places where data lives. That is diffusion sampling, described in one sentence.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  What is the "score" in diffusion / score matching?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The gradient of the log-density with respect to the <i>data</i>: \(\nabla_x\log p(x)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  What is the "score function" in REINFORCE / policy gradients?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The gradient of the log-density with respect to the <i>parameters</i>: \(\nabla_\theta\log p_\theta(x)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  What is \(\nabla_x\log\mathcal{N}(x;\mu,\sigma^2)\), and which way does it point?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(-(x-\mu)/\sigma^2\): toward the mean, with length growing with distance from it.</p>
+</div>
+
+
+<h2>16 &middot; Where each tool reappears</h2>
+
+<p>Every tool above is used somewhere specific. When a step in another essay looks like it
+came from nowhere, this table says where to look back.</p>
+
+<table>
+<tr><th>tool</th><th>GAN</th><th>VAE</th><th>diffusion</th><th>RLHF</th></tr>
+<tr><td>Monte Carlo average</td><td>minibatch objective</td><td>\(M\)-sample reconstruction</td><td>random \(t\) per step</td><td>rollouts</td></tr>
+<tr><td>importance ratio</td><td>density ratio \(P_x/P_\theta\)</td><td>\(q/q\) inside the evidence</td><td>&mdash;</td><td>PPO ratio</td></tr>
+<tr><td>KL / cross-entropy</td><td>f-divergence family</td><td>regulariser; MLE</td><td>per-step KL terms</td><td>KL penalty to the reference</td></tr>
+<tr><td>Jensen</td><td>\(D_f \ge 0\)</td><td>ELBO</td><td>ELBO</td><td>&mdash;</td></tr>
+<tr><td>Gaussian algebra</td><td>FID</td><td>closed-form KL; MSE</td><td>\(q(x_t\mid x_0)\); \(\mu_q\)</td><td>&mdash;</td></tr>
+<tr><td>Bayes</td><td>optimal discriminator</td><td>EM; posterior</td><td>reverse step; guidance</td><td>Bradley&ndash;Terry; DPO</td></tr>
+<tr><td>score-function trick</td><td>&mdash;</td><td>the "can't compute" term</td><td>&mdash;</td><td>policy gradient</td></tr>
+<tr><td>reparameterization</td><td>\(\hat{x} = g_\theta(z)\)</td><td>\(z = \mu + \sigma\odot\epsilon\)</td><td>\(x_t = \sqrt{\bar{\alpha}}x_0 + \dots\)</td><td>&mdash;</td></tr>
+<tr><td>score \(\nabla_x\log p\)</td><td>&mdash;</td><td>&mdash;</td><td>noise prediction; guidance</td><td>&mdash;</td></tr>
+</table>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  Which single tool from this essay turns the diffusion bound into a regression, and how?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The KL between two Gaussians with equal variance, which reduces to a squared error between their means.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.5</span></span>
+  Which tool appears in GANs as the density ratio, in VAEs as \(q/q\), and in PPO as \(\pi_\theta/\pi_{\text{old}}\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Importance sampling: multiplying and dividing by a second distribution to change what an expectation is taken under.</p>
+</div>
+
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Background for the IIT Madras generative-AI notes; not drawn from any page of them.
+Typeset with KaTeX. Source: <i>viz/foundations.body.html</i>, assembled by
+<i>build/build-essay.js</i>.</p>
+
+</body></html>

@@ -16,7 +16,7 @@ runtime dependencies — the published site is plain HTML.
 | `build/chrome/` | `chrome.css` + `chrome.js` — the single source for everything injected into the articles (postcards, decks, nav) |
 | `html/` | rendered articles (KaTeX pre-rendered, fonts base64-inlined) |
 | `pdf/` | print exports of each topic |
-| `notes/rlhf/` | `FULL.md` reference and the Anki-importable `flashcards.tsv` |
+| `notes/<topic>/` | source-page transcriptions (`FULL.md`) and the Anki-importable `flashcards.tsv` for each essay (foundations has only the deck) |
 | `viz/` | build inputs for the articles + the original render scripts |
 | `video/`, `blockdiagrams/` | GAN/WGAN training animations and diagrams |
 
@@ -36,7 +36,7 @@ lavender, and the accent changes per topic instead of being one brand colour.
 
 **Per-article accents.** `build/inject-nav.js` holds an `ACCENTS` map and sets
 `data-accent` on `<html>` as part of the `site-js` block — GAN violet, VAE teal,
-diffusion orange, RLHF rose. `chrome.css` declares those palettes as `--accent`,
+diffusion orange, RLHF rose, foundations slate. `chrome.css` declares those palettes as `--accent`,
 `--accent-ink` and `--accent-wash`. Unmapped files fall back to indigo, and with JS
 off the fallback applies too, so nothing breaks.
 
@@ -171,6 +171,44 @@ Every essay follows the same pattern, borrowed from the RLHF one:
 The rule of thumb: if a passage could be deleted without losing any intuition, it is
 decoration and should go. Analogies earn their place by predicting the next piece of
 mathematics.
+
+6. Put one worked example **in numbers** next to every key formula (two coins for KL,
+   two point masses for saturation, the linear schedule table for diffusion). A reader
+   who can reproduce a number has understood the formula; one who can only restate it
+   has not.
+7. End each essay with a **Footnotes to the notes** Part that collects every place the
+   handwritten pages are wrong or compress something that would break an
+   implementation (the missing ½ in the Gaussian KL, `Σε` for `Σ^{1/2}ε`, DDIM's change
+   of α convention). Correct it where it bites, too — the footnote Part is the index.
+
+## Writing recall cards
+
+Cards follow the prompt-writing rules behind Quantum Country's mnemonic medium:
+
+- **Atomic.** One fact, one step or one number per card. "List the three ways…" becomes
+  three cards. A compound card is graded "remembered" when only half of it was.
+- **Short answers.** One or two sentences, or a single formula. If the answer needs a
+  paragraph, the question is too big.
+- **Mixed kinds.** Definitions, *why* questions, and at least one *compute this* card
+  per worked example (e.g. "μ = 2, σ = 0.5, ε = −1.2: what is z?").
+- **No give-aways.** The question must not contain its own answer's key symbol.
+
+Write cards with `card(q, a)` from the patch helpers and number them with `renumber()`,
+which assigns `Part.k` from the DOM order — never number by hand.
+
+Card counts: Foundations 57, GAN 57, VAE 44, Diffusion 42, RLHF 47.
+
+## Rebuilding the GAN / VAE / diffusion / foundations essays
+
+```bash
+node build/build-essay.js viz/gan.body.html viz/GAN-Curious.src.html
+node viz/build/build-curious.js viz/GAN-Curious.src.html html/GAN-Curious.html notes/gan/flashcards.tsv
+node build/inject-nav.js
+```
+
+(same for `vae`, `diffusion` and `foundations` → `Foundations-Curious`). The build
+scripts find KaTeX at `../.genai-work/node_modules/katex` relative to the repo; set
+`KATEX_DIR` to override.
 ## Review scheduling and the sidebar
 
 Grading writes to a small SM-2 scheduler in `localStorage` under

@@ -1,0 +1,57 @@
+1.1	A game pays 10 with probability 0.2 and 0 otherwise. What is its expected payout?	\(0.2 \times 10 + 0.8 \times 0 = 2\).
+1.2	In \(\mathbb{E}_{P}[h(x)]\), what do \(P\) and \(h\) each contribute?	\(P\) supplies the weights (how often each \(x\) occurs); \(h\) supplies the values being averaged.
+1.3	What does the law of large numbers let you replace \(\mathbb{E}_P[h(x)]\) with?	The sample average \(\frac1n\sum_i h(x_i)\) over independent draws \(x_i \sim P\), which converges to it as \(n\) grows.
+1.4	How does the standard error of a Monte Carlo average scale with the number of samples \(n\)?	As \(\sigma/\sqrt{n}\), where \(\sigma\) is the standard deviation of a single term.
+1.5	To halve the error of a Monte Carlo estimate, by how much must you increase the sample count?	Fourfold, because the error scales as \(1/\sqrt{n}\).
+1.6	Why is a minibatch loss a Monte Carlo estimate?	It averages the per-example loss over a random sample of the data, standing in for the expectation of the loss over the whole data distribution.
+2.1	State the law of the unconscious statistician for \(z = g(\epsilon)\).	\(\mathbb{E}_{P_z}[f(z)] = \mathbb{E}_{P_\epsilon}[f(g(\epsilon))]\): you can average over the noise without knowing the distribution of \(z\).
+2.2	For invertible \(y = g(x)\) in 1-D, how is the density of \(y\) related to the density of \(x\)?	\(p_y(y) = p_x(x)\,|dx/dy|\). In \(d\) dimensions, multiply by \(|\det \partial x/\partial y|\).
+2.3	\(x\) is uniform on \([0,1]\) and \(y = 2x\). What is the density of \(y\)?	\(\tfrac12\) on \([0,2]\): the mass is spread over twice the length.
+2.4	Write \(\mathbb{E}_P[f(x)]\) as an expectation under a different distribution \(Q\).	\(\mathbb{E}_Q[(P(x)/Q(x))\,f(x)]\), by multiplying inside the integral by \(Q/Q\).
+2.5	When does importance sampling become unreliable?	When \(Q\) puts little mass where \(P\) puts a lot: the ratio \(P/Q\) gets huge on a few samples and the variance explodes.
+2.6	Where does the importance ratio appear in RLHF?	As the PPO ratio \(\pi_\theta(a\mid s)/\pi_{\text{old}}(a\mid s)\), which reweights samples drawn from the old policy.
+3.1	What is the surprise (information content) of an outcome with probability \(p\)?	\(-\log p\).
+3.2	Why is \(-\log p\), rather than say \(1/p\), the right measure of surprise?	Probabilities of independent events multiply; logarithms turn that product into a sum, so independent surprises add.
+3.3	Define the entropy \(H(P)\).	The expected surprise: \(H(P) = \mathbb{E}_P[-\log P(x)]\).
+3.4	What is the entropy of a fair coin, in nats and in bits?	\(\log 2 \approx 0.693\) nats, which is exactly 1 bit.
+3.5	Define the cross-entropy \(H(P,Q)\) in words and symbols.	The average surprise of someone who believes \(Q\) while outcomes come from \(P\): \(\mathbb{E}_P[-\log Q(x)]\).
+3.6	Write \(D_{KL}(P\|Q)\) in terms of cross-entropy and entropy.	\(D_{KL}(P\|Q) = H(P,Q) - H(P)\): the extra surprise caused by believing \(Q\) instead of \(P\).
+3.7	Is \(D_{KL}(P\|Q) = D_{KL}(Q\|P)\) in general?	No. For \(P = (0.5, 0.5)\), \(Q = (0.9, 0.1)\): 0.511 one way, 0.368 the other.
+3.8	When is \(D_{KL}(P\|Q) = 0\)?	Exactly when \(P = Q\) (almost everywhere). Otherwise it is strictly positive.
+3.9	Why does minimising \(D_{KL}(P_{\text{data}}\|P_\theta)\) equal maximum likelihood?	It equals \(H(P_{\text{data}}, P_\theta) - H(P_{\text{data}})\); the entropy term has no \(\theta\), so minimising KL is minimising \(\mathbb{E}_{\text{data}}[-\log P_\theta]\).
+3.10	Forward KL \(D_{KL}(P\|Q_\theta)\) is called mode-covering. Why?	It averages \(\log(P/Q_\theta)\) under \(P\), so any region where \(P\) has mass but \(Q_\theta\) does not costs enormously; \(Q_\theta\) spreads to cover every mode.
+3.11	Reverse KL \(D_{KL}(Q_\theta\|P)\) is called mode-seeking. Why?	It averages under \(Q_\theta\), so it only penalises mass that \(Q_\theta\) places where \(P\) is small; ignoring a whole mode of \(P\) costs little.
+4.1	State Jensen’s inequality for a convex function \(f\).	\(f(\mathbb{E}[X]) \le \mathbb{E}[f(X)]\).
+4.2	Which way does Jensen’s inequality point for \(\log\), and why?	\(\log\mathbb{E}[X] \ge \mathbb{E}[\log X]\), because \(\log\) is concave, which flips the convex inequality.
+4.3	When does Jensen’s inequality hold with equality?	When \(X\) is constant (or \(f\) is linear over the range \(X\) takes).
+4.4	Use Jensen to show \(D_{KL}(P\|Q) \ge 0\).	\(-D_{KL} = \mathbb{E}_P\log(Q/P) \le \log\mathbb{E}_P(Q/P) = \log\int Q = \log 1 = 0\).
+4.5	Name the place in each of the VAE and GAN essays where Jensen does the work.	VAE: it turns \(\log\mathbb{E}_q[P_\theta(x,z)/q]\) into the ELBO lower bound. GAN: it proves every f-divergence is \(\ge f(1) = 0\).
+5.1	What is \(\log\mathcal{N}(x;\mu,\sigma^2)\)?	\(-(x-\mu)^2/(2\sigma^2) - \tfrac12\log(2\pi\sigma^2)\): a quadratic in \(x\) plus a constant.
+5.2	Why does a Gaussian likelihood with fixed variance give a squared-error loss?	Its negative log is \((x-\mu)^2/(2\sigma^2)\) plus a constant, so maximising likelihood minimises squared error.
+5.3	If \(x \sim \mathcal{N}(\mu, \Sigma)\), what is the distribution of \(Ax + b\)?	\(\mathcal{N}(A\mu + b,\ A\Sigma A^\top)\).
+5.4	\(x_1 \sim \mathcal{N}(\mu_1, \sigma_1^2)\) and \(x_2 \sim \mathcal{N}(\mu_2, \sigma_2^2)\) are independent. What is the distribution of \(x_1 + x_2\)?	\(\mathcal{N}(\mu_1 + \mu_2,\ \sigma_1^2 + \sigma_2^2)\): means add and variances add (standard deviations do not).
+5.5	When you multiply two Gaussian densities in \(x\), how do their precisions combine?	They add: \(1/\sigma^2 = 1/\sigma_1^2 + 1/\sigma_2^2\).
+5.6	What is the mean of the product of two Gaussian densities?	The precision-weighted average \(\mu = \sigma^2(\mu_1/\sigma_1^2 + \mu_2/\sigma_2^2)\).
+5.7	Combine \(\mathcal{N}(0, 1)\) with \(\mathcal{N}(2, 1)\) by multiplication. What Gaussian results?	\(\mathcal{N}(1, \tfrac12)\): mean halfway, variance halved.
+5.8	In which essay does completing the square produce a key closed form, and which?	Diffusion: the true reverse step \(q(x_{t-1}\mid x_t, x_0)\), whose mean \(\mu_q\) and variance \(\Sigma_q\) come from multiplying Gaussians.
+5.9	Why does the KL between two Gaussians have a closed form?	The log-ratio is a quadratic in \(x\), and the expectation of a quadratic depends only on the mean and variance.
+5.10	What is \(D_{KL}(\mathcal{N}(\mu,\sigma^2)\,\|\,\mathcal{N}(0,1))\)?	\(\tfrac12(\sigma^2 + \mu^2 - 1 - \log\sigma^2)\).
+5.11	What does the KL between two Gaussians reduce to when their variances are equal?	\((\mu_1-\mu_2)^2/(2\sigma^2)\) — a scaled squared error between the means.
+6.1	Write Bayes’ rule for a posterior over a latent \(z\) given data \(x\).	\(P(z\mid x) = P(x\mid z)P(z)/P(x)\).
+6.2	Name the four pieces of Bayes’ rule \(P(z\mid x) = P(x\mid z)P(z)/P(x)\).	Posterior \(P(z\mid x)\), likelihood \(P(x\mid z)\), prior \(P(z)\), evidence (marginal likelihood) \(P(x)\).
+6.3	Which part of Bayes’ rule is usually intractable for a neural latent-variable model, and why?	The evidence \(P(x) = \int P(x\mid z)P(z)\,dz\): an integral over a high-dimensional \(z\) through a neural network, with no closed form.
+6.4	In the RLHF essay, how does DPO deal with an intractable normaliser?	It never computes it: the partition function \(Z(x)\) appears in both responses of a preference pair and cancels in their difference.
+7.1	State the log-derivative identity.	\(\nabla_\theta p_\theta(z) = p_\theta(z)\,\nabla_\theta\log p_\theta(z)\), because \(\nabla\log p = \nabla p / p\).
+7.2	Write the score-function (REINFORCE) estimator of \(\nabla_\theta\mathbb{E}_{p_\theta}[f(z)]\).	\(\mathbb{E}_{p_\theta}[f(z)\,\nabla_\theta\log p_\theta(z)]\), estimated by averaging over samples of \(z\).
+7.3	Write the reparameterization estimator of \(\nabla_\theta\mathbb{E}_{p_\theta}[f(z)]\).	\(\mathbb{E}_\epsilon[\nabla_\theta f(g_\theta(\epsilon))]\), where \(z = g_\theta(\epsilon)\) and \(\epsilon\) has a fixed distribution.
+7.4	Why does RLHF use the score-function estimator rather than reparameterization?	Tokens are discrete and the reward is a black box: there is no smooth \(z = g_\theta(\epsilon)\) to differentiate through, but \(\log\pi_\theta\) is differentiable.
+7.5	What does the reparameterization estimator require of \(f\) that the score-function estimator does not?	That \(f\) be differentiable in \(z\). The score-function estimator only needs to evaluate \(f\).
+7.6	\(z \sim \mathcal{N}(\mu, 1)\), \(f(z) = z^2\). What single-sample term does each estimator of \(d\mathbb{E}[f]/d\mu\) use?	Reparameterization: \(2z\). Score function: \(z^2(z - \mu)\). Both have mean \(2\mu\).
+7.7	In that example at \(\mu = 1\), what are the two estimators’ variances?	4 for reparameterization, 30 for the score function — about 7.5 times larger.
+7.8	What is \(\mathbb{E}_{p_\theta}[\nabla_\theta\log p_\theta(z)]\)?	Zero: it equals \(\int\nabla_\theta p_\theta = \nabla_\theta\int p_\theta = \nabla_\theta 1 = 0\).
+7.9	Why can you subtract a constant baseline \(b\) from \(f\) in the score-function estimator without biasing it?	Because \(\mathbb{E}[b\,\nabla\log p_\theta] = b\,\mathbb{E}[\nabla\log p_\theta] = 0\). The mean is unchanged; the variance can fall a lot.
+8.1	What is the "score" in diffusion / score matching?	The gradient of the log-density with respect to the data: \(\nabla_x\log p(x)\).
+8.2	What is the "score function" in REINFORCE / policy gradients?	The gradient of the log-density with respect to the parameters: \(\nabla_\theta\log p_\theta(x)\).
+8.3	What is \(\nabla_x\log\mathcal{N}(x;\mu,\sigma^2)\), and which way does it point?	\(-(x-\mu)/\sigma^2\): toward the mean, with length growing with distance from it.
+8.4	Which single tool from this essay turns the diffusion bound into a regression, and how?	The KL between two Gaussians with equal variance, which reduces to a squared error between their means.
+8.5	Which tool appears in GANs as the density ratio, in VAEs as \(q/q\), and in PPO as \(\pi_\theta/\pi_{\text{old}}\)?	Importance sampling: multiplying and dividing by a second distribution to change what an expectation is taken under.

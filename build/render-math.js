@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const KATEX = '/Users/anaik/Documents/papers/.genai-work/node_modules/katex';
+const KATEX = process.env.KATEX_DIR || path.resolve(__dirname, '../../.genai-work/node_modules/katex');
 const katex = require(path.join(KATEX, 'dist/katex.min.js'));
 
 const files = process.argv.slice(2);

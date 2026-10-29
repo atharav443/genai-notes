@@ -136,16 +136,27 @@ the learning is in going backwards.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
-  List the three ways a DDPM differs from a plain VAE.</p>
+  How many latent variables does a DDPM have, compared with a plain VAE?</p>
   <p class="a"><span class="lbl">Answer</span>
-  It has many latent variables rather than one; each latent has the same
-  dimensionality as the data, so there is no compression; and the encoding
-  distribution is fixed and non-learnable, so only the decoding direction is
-  learned.</p>
+  Many, \(x_1, \dots, x_T\) with \(T \approx 1000\), stacked in a chain, instead of one.</p>
 </div>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  What is the dimension of each DDPM latent \(x_t\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The same as the data: \(\dim(x_t) = \dim(x_0)\). There is no bottleneck.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  Which half of a DDPM has learnable parameters?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Only the reverse (decoding) direction. The forward (encoding) process is a fixed noising rule.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.4</span></span>
   In the diffusion literature, what do \(x_0\) and \(x_1, \dots, x_T\) denote?</p>
   <p class="a"><span class="lbl">Answer</span>
   \(x_0\) is the clean data point. \(x_1 \dots x_T\) are the latent vectors
@@ -171,7 +182,9 @@ without learning anything at all, and spends every parameter on the reverse.</p>
 </div>
 
 <p>Read it as a weighted average of signal and noise, with the weights chosen so the
-overall scale stays put. With \(\alpha_1 \dots \alpha_T\) fixed in
+overall scale stays put. "Stays put" is exact: if \(x_{t-1}\) has unit variance, then
+\(\mathrm{Var}(x_t) = \alpha_t \cdot 1 + (1 - \alpha_t)\cdot 1 = 1\). The square roots
+are there so that the <i>variances</i>, not the coefficients, add to one. With \(\alpha_1 \dots \alpha_T\) fixed in
 \([0,1]\), \(x_0\) starts as an image, \(x_1\) is a noisy image, and by
 \(x_T\) essentially every trace of the original has been replaced. This is a
 first-order Markov chain, so the conditional is Gaussian and known:</p>
@@ -218,8 +231,48 @@ Gaussians is Gaussian with the variances added. Keep going and the product of th
 clean image to its state at step \(t\) in one shot, in closed form, without
 simulating the chain. Every training step below depends on it.</p>
 
+<h3>The schedule, in numbers</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 72&ndash;110.</p>
+<p>It helps to see what "a thousand steps of noise" actually does. The original DDPM
+paper sets \(1 - \alpha_t\) rising linearly from \(10^{-4}\) to \(0.02\) over
+\(T = 1000\) steps. Computing \(\bar{\alpha}_t\) for that schedule gives:</p>
+<table>
+<tr><th>step \(t\)</th><th>signal \(\sqrt{\bar{\alpha}_t}\)</th><th>noise \(\sqrt{1-\bar{\alpha}_t}\)</th><th>SNR \(\bar{\alpha}_t/(1-\bar{\alpha}_t)\)</th></tr>
+<tr><td>1</td><td>0.9999</td><td>0.010</td><td>~10,000</td></tr>
+<tr><td>100</td><td>0.947</td><td>0.321</td><td>8.7</td></tr>
+<tr><td>250</td><td>0.724</td><td>0.690</td><td>1.1</td></tr>
+<tr><td>500</td><td>0.280</td><td>0.960</td><td>0.085</td></tr>
+<tr><td>1000</td><td>0.006</td><td>1.000</td><td>0.00004</td></tr>
+</table>
+<p>Signal and noise are evenly matched around step 250. By step 500 the image is a
+faint watermark, and at step 1000 less than one percent of its amplitude survives
+&mdash; close enough to \(\mathcal{N}(0, I)\) that starting generation from pure
+noise is an honest approximation. The ratio in the last column, the
+<i>signal-to-noise ratio</i>, is the cleanest single description of how damaged
+\(x_t\) is, and the reweighting discussed in Part VII is most naturally stated in it.</p>
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  Why does the forward step use \(\sqrt{\alpha_t}\) and \(\sqrt{1-\alpha_t}\) rather than \(\alpha_t\) and \(1-\alpha_t\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  So that variances add to one: if \(\mathrm{Var}(x_{t-1}) = 1\), then \(\mathrm{Var}(x_t) = \alpha_t + (1-\alpha_t) = 1\). The process is variance-preserving.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  Define the signal-to-noise ratio of \(x_t\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathrm{SNR}(t) = \bar{\alpha}_t/(1-\bar{\alpha}_t)\): signal variance over noise variance in \(x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  Under the standard linear schedule (\(T = 1000\)), roughly how much of \(x_0\)&rsquo;s amplitude survives at \(t = T\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  About 0.6%: \(\sqrt{\bar{\alpha}_T} \approx 0.006\). Close enough to pure noise to start sampling from \(\mathcal{N}(0,I)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.4</span></span>
   Why is \(q(x_t \mid x_{t-1})\) Gaussian, and what are its parameters?</p>
   <p class="a"><span class="lbl">Answer</span>
   Because the forward step is \(\sqrt{\alpha_t}x_{t-1}\) plus Gaussian noise, and
@@ -228,18 +281,18 @@ simulating the chain. Every training step below depends on it.</p>
 </div>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.5</span></span>
   Derive, in outline, why \(q(x_t\mid x_0)\) has the closed form it does.</p>
   <p class="a"><span class="lbl">Answer</span>
   Unroll the recursion: each substitution multiplies the previous signal by another
-  \(\sqrt{\alpha}\) and adds independent Gaussian noise. Products of independent
-  Gaussians are Gaussian with added variances, so the accumulated signal coefficient
+  \(\sqrt{\alpha}\) and adds independent Gaussian noise. A sum of independent
+  Gaussians is Gaussian with added variances, so the accumulated signal coefficient
   is \(\sqrt{\prod_i \alpha_i} = \sqrt{\bar{\alpha}_t}\) and the accumulated
   noise variance is \(1 - \bar{\alpha}_t\).</p>
 </div>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.6</span></span>
   What is \(q(x_T)\) in the limit, and why does that matter for generation?</p>
   <p class="a"><span class="lbl">Answer</span>
   With the schedule chosen so \(\bar{\alpha}_T \to 0\), \(x_T\) is essentially
@@ -279,6 +332,13 @@ what the network will produce.</p>
   Nothing deeper than a modelling assumption: we choose the reverse process to be a
   first-order Markov chain with Gaussian transitions, and put neural networks on the
   means and covariances. The factorisation is a definition, not a theorem.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  In the DDPM reverse chain, what is \(P(x_T)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The fixed prior \(\mathcal{N}(0, I)\), which is where sampling starts.</p>
 </div>
 
 <div class="part">Part IV &mdash; The bound splits into three</div>
@@ -344,6 +404,13 @@ reverse step with the model's reverse step.</p>
   what become the reconstruction and prior-matching terms.</p>
 </div>
 
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  Why can the prior-matching term \(D_{KL}(q(x_T\mid x_0)\|P(x_T))\) be dropped during training?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Neither side contains \(\theta\): \(q\) is the fixed forward process and \(P(x_T)\) is the fixed prior. It is a constant.</p>
+</div>
+
 <div class="part">Part V &mdash; The hard term becomes a regression</div>
 
 <h2>6 &middot; Everything in the KL is now computable</h2>
@@ -393,6 +460,13 @@ U-net in that slot and you have a trainable objective.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  Does the true reverse covariance \(\Sigma_q\) depend on the data?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  No. \(\Sigma_q = \frac{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}I\) depends only on the schedule, which is why it is reasonable to fix \(\Sigma_\theta = \Sigma_q\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
   What is the network asked to predict, in this formulation?</p>
   <p class="a"><span class="lbl">Answer</span>
   The mean of the reverse step, \(\mu_\theta(x_t)\). But since
@@ -432,26 +506,66 @@ is invertible for \(x_0\), every one of these targets determines the others:</p>
   <tr><td>\(S_\theta(x_t)\)</td><td>divide by \(-\sqrt{1-\bar{\alpha}_t}\)</td><td>predict the score, \(\nabla_{x_t}\log P(x_t)\)</td></tr>
 </table>
 
-<p>The third is the one worth understanding. Tweedie's formula relates the mean of a
-noisy observation to its score, and applying it here gives
-\(\nabla_{x_t}\log P(x_t) = -\epsilon_t/\sqrt{1-\bar{\alpha}_t}\). The true
-score <i>is</i> the added noise, negatively scaled. So a network trained to regress on
-noise is, without anyone arranging it, learning the score function of the data
-distribution. That is why the diffusion and score-based literatures are the same
-subject wearing different clothes.</p>
+<p>The third is the one worth understanding, and it is worth stating carefully. For a
+single known \(x_0\) the noisy point is Gaussian, so its score is easy:
+\(\nabla_{x_t}\log q(x_t\mid x_0) = -\epsilon/\sqrt{1-\bar{\alpha}_t}\). The score
+of the <i>data</i> distribution at \(x_t\) is that quantity averaged over every clean
+image that could have produced \(x_t\) (this is Tweedie's formula):</p>
+<div class="mathblock">
+\[ \nabla_{x_t}\log P(x_t) = -\frac{\mathbb{E}[\epsilon \mid x_t]}{\sqrt{1-\bar{\alpha}_t}} \]
+</div>
+<p>And a network trained by squared error to predict \(\epsilon\) from \(x_t\)
+learns, at its optimum, exactly \(\mathbb{E}[\epsilon\mid x_t]\), because the
+minimiser of a mean-squared error is a conditional mean. So the noise predictor,
+divided by \(-\sqrt{1-\bar{\alpha}_t}\), <i>is</i> the score of the noised data
+distribution, without anyone arranging it. That is why the diffusion and score-based
+literatures are the same subject wearing different clothes.</p>
+<p>The noise view also gives the form of the mean that every implementation uses.
+Substitute \(x_0 = (x_t - \sqrt{1-\bar{\alpha}_t}\,\epsilon)/\sqrt{\bar{\alpha}_t}\)
+into \(\mu_q\) and simplify:</p>
+<div class="mathblock">
+\[ \mu_\theta(x_t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\,\hat{\epsilon}_\theta(x_t, t)\right) \]
+</div>
+<p>Each reverse step subtracts a scaled guess of the noise and rescales. That is the
+whole of it.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
-  Why are "predict the noise" and "predict the score" the same task?</p>
+  What is the score of \(q(x_t\mid x_0)\) in terms of the added noise?</p>
   <p class="a"><span class="lbl">Answer</span>
-  Because \(\nabla_{x_t}\log P(x_t) = -\epsilon_t/\sqrt{1-\bar{\alpha}_t}\):
-  the score is a fixed negative rescaling of the noise. Regressing on
-  \(\epsilon_t\) and regressing on the score differ only by a known positive
-  factor, so they have the same minimiser.</p>
+  \(\nabla_{x_t}\log q(x_t\mid x_0) = -\epsilon/\sqrt{1-\bar{\alpha}_t}\).</p>
 </div>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  A network trained by MSE to predict \(\epsilon\) from \(x_t\) learns what, at its optimum?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The conditional mean \(\mathbb{E}[\epsilon\mid x_t]\), because the MSE minimiser is always a conditional expectation.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  How do you turn a trained noise predictor \(\hat{\epsilon}_\theta\) into a score estimate?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\nabla_{x_t}\log P(x_t) \approx -\hat{\epsilon}_\theta(x_t,t)/\sqrt{1-\bar{\alpha}_t}\) (Tweedie).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.4</span></span>
+  Write the reverse-step mean \(\mu_\theta\) in terms of the predicted noise.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mu_\theta = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\hat{\epsilon}_\theta\right)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.5</span></span>
+  Given \(x_t\) and a noise estimate \(\hat{\epsilon}\), what is the implied estimate of the clean image?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\hat{x}_0 = (x_t - \sqrt{1-\bar{\alpha}_t}\,\hat{\epsilon})/\sqrt{\bar{\alpha}_t}\), by inverting the jump-to-any-time formula.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.6</span></span>
   What does the network see besides \(x_t\), and why is that necessary?</p>
   <p class="a"><span class="lbl">Answer</span>
   The time step \(t\), encoded as a sinusoidal positional embedding. One network is
@@ -476,6 +590,16 @@ subject wearing different clothes.</p>
 <p>Take a data point, pick a random noise level, noise the point directly to that
 level, ask the network to undo it, and step against the squared error. No adversary,
 no ELBO estimate, no sampling of a chain.</p>
+<p>That loop follows the notes and regresses on the clean image. Most code you will
+read regresses on the noise instead, which Part VI showed is the same information
+in another coordinate:</p>
+<div class="mathblock">
+\[ \mathcal{L}_{\text{simple}} = \mathbb{E}_{t,\,x_0,\,\epsilon}\left\|\epsilon - \hat{\epsilon}_\theta\!\left(\sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon,\ t\right)\right\|_2^2 \]
+</div>
+<p>The two losses share a minimiser but weight the noise levels differently, since an
+error of size \(\delta\) in \(\hat{\epsilon}\) is an error of size
+\(\delta/\sqrt{\mathrm{SNR}(t)}\) in \(\hat{x}_0\). Which weighting trains better
+is the subject of the reweighting note below.</p>
 
 <p>Sampling is the expensive half. Start from \(x_T \sim \mathcal{N}(0,I)\) and
 walk down one step at a time, each step drawing from
@@ -486,6 +610,8 @@ the network plus fresh noise of size \(\sigma_q\):</p>
 <div class="mathblock">
 \[ x_{t-1} = \mu_{\theta^*}(x_t) + \sigma_q\,\epsilon, \qquad \epsilon \sim \mathcal{N}(0,I) \]
 </div>
+<p>except at the very last step, \(t = 1\), where you output the mean and add no
+noise: the answer is supposed to be a clean image.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
@@ -505,6 +631,20 @@ the network plus fresh noise of size \(\sigma_q\):</p>
   a full pass at every step of the reverse chain, from \(t=T\) down to
   \(t=1\) — so \(T\) passes for a single generated sample. That asymmetry is
   precisely what DDIM later attacks.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  Write the "simple" noise-prediction loss that most DDPM implementations train on.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}_{t,x_0,\epsilon}\|\epsilon - \hat{\epsilon}_\theta(\sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon,\ t)\|^2\), with \(t\) uniform on \(\{1,\dots,T\}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  In DDPM sampling, what is different about the final step \(t = 1\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  No fresh noise is added: output \(\mu_\theta(x_1)\) directly as the clean sample.</p>
 </div>
 
 <h3>Reweighting the loss</h3>
@@ -543,24 +683,32 @@ in the recipe, since the classifier has to be trained to work on inputs at every
 level, which is unpleasant.</p>
 
 <p><b>Classifier-free guidance</b> removes the classifier by rewriting
-\(\nabla\log P(y\mid x_t) = \nabla\log P(x_t\mid y) - \nabla\log P(x_t)\) and
-then interpolating between the two ends with a knob \(\lambda\):</p>
-
+\(\nabla\log P(y\mid x_t) = \nabla\log P(x_t\mid y) - \nabla\log P(x_t)\): the
+classifier's gradient is just the <i>difference</i> between a conditional and an
+unconditional score. Now scale that difference by a knob \(\lambda\) and add it to
+the unconditional score. Writing \(\tilde{s}\) for the score you actually follow:</p>
 <div class="mathblock">
-\[ \nabla_{x_t}\log P(x_t\mid y) = \lambda \,\nabla_{x_t}\log P(x_t\mid y)
-   + (1-\lambda)\,\nabla_{x_t}\log P(x_t) \]
+\[ \tilde{s}(x_t, y) = \nabla\log P(x_t) + \lambda\left(\nabla\log P(x_t\mid y) - \nabla\log P(x_t)\right)
+   = \lambda\,\nabla\log P(x_t\mid y) + (1-\lambda)\,\nabla\log P(x_t) \]
 </div>
-
+<p>Read the knob. At \(\lambda = 0\) you ignore the prompt; at \(\lambda = 1\) you
+sample the honest conditional \(P(x_t\mid y)\); the useful regime is
+\(\lambda > 1\), which <i>extrapolates</i> past the conditional score and corresponds
+to sampling from \(P(x_t)\,P(y\mid x_t)^{\lambda}\), a distribution in which images
+that are unmistakably \(y\) are boosted. Typical values sit between 3 and 8. In noise
+coordinates the same line reads
+\(\tilde{\epsilon} = \hat{\epsilon}(x_t, \varnothing) + \lambda(\hat{\epsilon}(x_t, y) - \hat{\epsilon}(x_t, \varnothing))\).</p>
 <p>You train one network to do both jobs by dropping the condition on some fraction of
-examples (a "null" label), and at sampling time you evaluate it twice and combine.
-Large \(\lambda\) buys fidelity to the prompt at the cost of variety.</p>
+examples, around one in ten, replacing it with a "null" label \(\varnothing\); at
+sampling time you evaluate it twice and combine. Large \(\lambda\) buys fidelity to
+the prompt at the cost of variety.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
   Where does the classifier's gradient come from in classifier guidance?</p>
   <p class="a"><span class="lbl">Answer</span>
   From Bayes' rule: \(\nabla\log P(x_t\mid y) = \nabla\log P(x_t) +
-  \nabla\log P(y\mid x_t)\), with the \(\P(y)\) term dropping out. The
+  \nabla\log P(y\mid x_t)\), with the \(\log P(y)\) term dropping out. The
   diffusion model supplies \(\nabla\log P(x_t)\) and a separately trained
   classifier supplies \(\nabla\log P(y\mid x_t)\).</p>
 </div>
@@ -575,6 +723,27 @@ Large \(\lambda\) buys fidelity to the prompt at the cost of variety.</p>
   instead of one.</p>
 </div>
 
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  Write the classifier-free guided score in terms of conditional and unconditional scores and \(\lambda\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\tilde{s} = \nabla\log P(x_t) + \lambda(\nabla\log P(x_t\mid y) - \nabla\log P(x_t))\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  In classifier-free guidance, what do \(\lambda = 0\), \(\lambda = 1\) and \(\lambda > 1\) give?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(0\): unconditional sampling. \(1\): the plain conditional. \(> 1\): extrapolation toward \(P(x_t)P(y\mid x_t)^\lambda\), sharper prompt-fidelity, less variety.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.5</span></span>
+  How is one network trained to produce both conditional and unconditional scores?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Randomly replace the condition with a null label \(\varnothing\) on a fraction of training examples (around 10%).</p>
+</div>
+
 <h2>10 &middot; Latent diffusion</h2>
 
 <p>Diffusing in pixel space is wasteful, because most of an image's bits describe
@@ -585,12 +754,19 @@ autoencoder. The diffusion model never sees a pixel. VQ-VAE is the encoder these
 notes suggest.</p>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.6</span></span>
   What exactly does a latent diffusion model diffuse over, and who turns it back into pixels?</p>
   <p class="a"><span class="lbl">Answer</span>
   It diffuses over the latent code \(z_0 = E_{\phi^*}(x_0)\) produced by a
   pretrained autoencoder. Generation samples \(z_{novel}\) by reverse diffusion and
   then applies the decoder, \(x_{novel} = D_{\theta^*}(z_{novel})\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.7</span></span>
+  Why is diffusing in an autoencoder&rsquo;s latent space cheaper than in pixel space?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The latent is much smaller and has discarded imperceptible detail, so each of the many network passes in sampling works on far fewer numbers.</p>
 </div>
 
 <h2>11 &middot; DDIM: same training, better sampling</h2>
@@ -612,21 +788,28 @@ deliberately non-Markovian. The crucial observation is that the ELBO depends onl
 bound — and therefore the trained network — is unchanged. You are free to pick a
 different reverse process after training.</p>
 
-<p>Two settings matter. One choice of \(\sigma_t\) reproduces DDPM exactly. Setting
-\(\sigma_t = 0\) makes the reverse process deterministic:</p>
-
+<p>Every DDIM step does the same three things. Estimate the clean image from the
+current noise guess; re-noise it to the next, lower noise level; and optionally add
+fresh randomness of size \(\sigma_t\):</p>
 <div class="mathblock">
-\[ x_{t-1} = \sqrt{\bar{\alpha}_{t-1}}\left[\frac{x_t - \sqrt{1-\alpha_t}\,\hat{\epsilon}_{\theta^*}}{\sqrt{\alpha_t}}\right]
-   + \sqrt{1-\bar{\alpha}_{t-1}}\,\hat{\epsilon}_{\theta^*} \]
+\[ \hat{x}_0 = \frac{x_t - \sqrt{1-\bar{\alpha}_t}\,\hat{\epsilon}_{\theta^*}(x_t)}{\sqrt{\bar{\alpha}_t}}, \qquad
+   x_{t-1} = \sqrt{\bar{\alpha}_{t-1}}\,\hat{x}_0 + \sqrt{1-\bar{\alpha}_{t-1}-\sigma_t^2}\;\hat{\epsilon}_{\theta^*}(x_t) + \sigma_t z \]
 </div>
-
-<p>with the only randomness left being the initial \(x_T\). With no noise injected
-along the way, the map from noise to image is invertible — so you can also run it
-backwards and recover the noise that would generate a given image. That is DDIM
-inversion, and it is the trick behind a great deal of image editing.</p>
+<p>with \(z \sim \mathcal{N}(0, I)\). One particular choice of \(\sigma_t\)
+reproduces DDPM exactly. Setting \(\sigma_t = 0\) makes the reverse process
+deterministic,</p>
+<div class="mathblock">
+\[ x_{t-1} = \sqrt{\bar{\alpha}_{t-1}}\,\hat{x}_0 + \sqrt{1-\bar{\alpha}_{t-1}}\;\hat{\epsilon}_{\theta^*}(x_t) \]
+</div>
+<p>with the only randomness left being the initial \(x_T\). Nothing in that update
+requires the next level to be \(t-1\): you may jump from \(t\) straight to
+\(t - 50\), which is where the speed comes from. And with no noise injected along the
+way, the map from noise to image can be run backwards to recover the noise that would
+generate a given image. That is DDIM inversion, and it is the trick behind a great
+deal of image editing.</p>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.8</span></span>
   DDIM changes the forward process to be non-Markovian. Why does that not invalidate
   the trained network?</p>
   <p class="a"><span class="lbl">Answer</span>
@@ -637,7 +820,7 @@ inversion, and it is the trick behind a great deal of image editing.</p>
 </div>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.5</span></span>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.9</span></span>
   What does setting \(\sigma_t = 0\) buy you?</p>
   <p class="a"><span class="lbl">Answer</span>
   A deterministic reverse process: the only randomness is \(x_T\). Determinism gives
@@ -646,7 +829,26 @@ inversion, and it is the trick behind a great deal of image editing.</p>
   be run backwards to recover the noise for a given image.</p>
 </div>
 
-<hr class="rule">
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.10</span></span>
+  What are the three moves of one DDIM step?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Estimate \(\hat{x}_0\) from \(x_t\) and \(\hat{\epsilon}\); re-noise it to the next level using \(\hat{\epsilon}\) as the noise direction; add fresh noise \(\sigma_t z\) (none when \(\sigma_t = 0\)).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.11</span></span>
+  Write the deterministic (\(\sigma_t = 0\)) DDIM update.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(x_{t-1} = \sqrt{\bar{\alpha}_{t-1}}\,\hat{x}_0 + \sqrt{1-\bar{\alpha}_{t-1}}\,\hat{\epsilon}_\theta(x_t)\), with \(\hat{x}_0 = (x_t - \sqrt{1-\bar{\alpha}_t}\hat{\epsilon}_\theta)/\sqrt{\bar{\alpha}_t}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.12</span></span>
+  Why can DDIM skip steps (e.g. go from \(t\) to \(t - 50\))?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Its update only needs \(\bar{\alpha}\) at the current and target level; nothing ties it to adjacent steps, and the training objective never assumed a step size.</p>
+</div>
 
 <h3>Why DDIM shares the bound</h3>
 <p class="beyond-note">Beyond the notes &mdash; not in pages 72&ndash;110.</p>
@@ -657,6 +859,52 @@ builds its family precisely so that this conditional is unchanged. Everything el
 the process — the joint, the Markov property, the noise injected along the way — never
 enters. That is why you may replace the sampler after training and why the trained
 network never has to be told.</p>
+
+<div class="part">Part IX &mdash; Footnotes to the notes</div>
+
+<h2>12 &middot; Five places the notes need a footnote</h2>
+
+<p><b>1. DDIM changes what \(\alpha\) means (pages 108&ndash;110).</b> The DDIM paper
+writes \(\alpha_t\) for what this essay, and the earlier pages, call
+\(\bar{\alpha}_t\). The notes adopt the new convention mid-derivation, so their boxed
+update mixes \(\alpha\) and \(\bar{\alpha}\) and comes out wrong in either
+convention. The update in Part VIII is written consistently in \(\bar{\alpha}\).
+The fresh-noise term is \(\sigma_t z\), not \(\sigma_t^2 z\): a standard deviation
+multiplies a standard normal.</p>
+
+<p><b>2. The guidance box reuses its own left-hand side (page 103).</b>
+"\(\nabla\log P(x_t\mid y) = \lambda\nabla\log P(x_t\mid y) + \dots\)" is only true
+at \(\lambda = 1\). The left side is a <i>new</i> guided score, and the knob is
+used with \(\lambda > 1\).</p>
+
+<p><b>3. "The true score is the noise" (page 100)</b> holds for the score of
+\(q(x_t\mid x_0)\). The data score is its conditional average, which is precisely what
+the regression learns.</p>
+
+<p><b>4. \(t \sim \text{uniform}[0, T]\) (page 93).</b> The time step is discrete and
+starts at 1; \(t = 0\) is the clean image and has nothing to denoise.</p>
+
+<p><b>5. Predicting \(x_0\) versus predicting \(\epsilon\).</b> The notes train on
+\(\|\hat{x}_\theta - x_0\|^2\); the paper everyone copies trains on
+\(\|\hat{\epsilon}_\theta - \epsilon\|^2\). Same minimiser, different weighting
+across noise levels. Neither is wrong, but they are not interchangeable once you start
+tuning.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  In the DDIM paper&rsquo;s notation, what does \(\alpha_t\) denote?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The cumulative product \(\prod_{i\le t}\alpha_i\) &mdash; what DDPM writes as \(\bar{\alpha}_t\). Mixing the two conventions is the commonest DDIM bug.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  An error \(\delta\) in a noise prediction becomes what error in the implied \(\hat{x}_0\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\delta\sqrt{1-\bar{\alpha}_t}/\sqrt{\bar{\alpha}_t} = \delta/\sqrt{\mathrm{SNR}(t)}\): huge at high noise, tiny at low noise. That is why \(x_0\)- and \(\epsilon\)-losses weight time steps differently.</p>
+</div>
+
+<hr class="rule">
 
 <h2>Appendix &middot; Every question in this essay</h2>
 

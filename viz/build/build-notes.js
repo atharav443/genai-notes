@@ -4,7 +4,7 @@
 //   /*KATEX_CSS*/  -> katex.min.css with every woff2 font base64-inlined (offline / print-safe)
 const fs = require('fs');
 const path = require('path');
-const KATEX = '/Users/anaik/Documents/papers/.genai-work/node_modules/katex';
+const KATEX = process.env.KATEX_DIR || path.resolve(__dirname, '../../../.genai-work/node_modules/katex');
 const katex = require(path.join(KATEX, 'dist/katex.min.js'));
 
 const SRC = process.argv[2];

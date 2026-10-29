@@ -26,7 +26,8 @@ const ACCENTS = {
   'VAE-Curious.html': 'teal',
   'VAE.html': 'teal',
   'Diffusion-Curious.html': 'orange',
-  'Diffusion.html': 'orange'
+  'Diffusion.html': 'orange',
+  'Foundations-Curious.html': 'slate'
 };
 
 function accentFor(name) {

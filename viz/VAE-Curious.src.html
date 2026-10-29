@@ -157,6 +157,13 @@ still explains the long observation.</p>
   code — that is an embedding, and the machinery is an auto-encoder.</p>
 </div>
 
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  In a latent variable model, which of \(x\) and \(z\) is observed?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(x\) is observed; \(z\) is hidden. The model explains each observation as the shadow of an unobserved cause.</p>
+</div>
+
 <h3>Hierarchical priors</h3>
 <p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
 <p>One latent layer forces the encoder to commit to a single description at a single
@@ -249,8 +256,57 @@ choice you put there. The bound becomes exact precisely when \(q\) equals the tr
 posterior \(P_\theta(z\mid x)\) — which we cannot compute, which is why it is
 still a bound.</p>
 
+<h3>Jensen, in numbers, and exactly how loose it is</h3>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>Let \(X\) be 1 or 4 with equal probability. Then
+\(\log\mathbb{E}X = \log 2.5 = 0.916\), while
+\(\mathbb{E}\log X = \tfrac12(0 + 1.386) = 0.693\). The bound holds with a gap of
+0.223. Now let \(X\) be 2.5 with certainty: both sides are \(\log 2.5\) and the gap
+is zero. Jensen is tight exactly when the thing inside the expectation does not
+vary.</p>
+<p>Apply that to the ELBO. The thing inside is the ratio
+\(P_\theta(x,z)/q(z\mid x)\). It is constant in \(z\) precisely when
+\(q(z\mid x) \propto P_\theta(x,z)\), that is, when \(q\) is the true posterior.
+And you can measure the gap exactly rather than wave at it. Write
+\(P_\theta(x,z) = P_\theta(z\mid x)P_\theta(x)\) inside the ELBO:</p>
+<div class="mathblock">
+\[ J_\theta(q) = \mathbb{E}_q\log\frac{P_\theta(z\mid x)\,P_\theta(x)}{q(z\mid x)}
+   = \log P_\theta(x) - D_{KL}\!\left(q(z\mid x)\,\|\,P_\theta(z\mid x)\right) \]
+</div>
+<p>The shortfall of the bound <i>is</i> the KL divergence from your guess to the
+truth. Raising the ELBO over \(q\) is the same act as dragging \(q\) toward the
+posterior, and it is why the encoder of a VAE ends up being an approximate posterior
+without anyone telling it to be one.</p>
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  \(X\) is 1 or 4 with equal probability. Compute \(\log\mathbb{E}X\) and \(\mathbb{E}\log X\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\log 2.5 \approx 0.916\) and \(\tfrac12\log 4 \approx 0.693\). The second is smaller, as Jensen promises for the concave \(\log\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  When is Jensen&rsquo;s inequality \(\log\mathbb{E}X \ge \mathbb{E}\log X\) an equality?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  When \(X\) is constant (almost surely). For the ELBO, that means the ratio \(P_\theta(x,z)/q(z\mid x)\) does not depend on \(z\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
+  Write \(\log P_\theta(x)\) exactly in terms of the ELBO.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\log P_\theta(x) = J_\theta(q) + D_{KL}(q(z\mid x)\,\|\,P_\theta(z\mid x))\). The gap is the KL from \(q\) to the true posterior.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.4</span></span>
+  For fixed \(\theta\), maximising the ELBO over \(q\) is equivalent to what?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Minimising \(D_{KL}(q(z\mid x)\,\|\,P_\theta(z\mid x))\): making \(q\) the best approximation to the posterior, because \(\log P_\theta(x)\) does not depend on \(q\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.5</span></span>
   Why does Jensen give a <i>lower</i> bound rather than an upper one?</p>
   <p class="a"><span class="lbl">Answer</span>
   Because \(\log\) is concave, so \(\log\mathbb{E}[X] \ge \mathbb{E}\log X\).
@@ -259,7 +315,7 @@ still a bound.</p>
 </div>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.6</span></span>
   What is \(q(z\mid x)\), and when does the bound become tight?</p>
   <p class="a"><span class="lbl">Answer</span>
   It is any density over the latent variable given the observation — the
@@ -328,8 +384,35 @@ form. Put a neural network where the GMM's components were, and Bayes' rule asks
 for a normalising constant that is an integral over the latent space. EM dies at
 exactly the place the problem began.</p>
 
+<p>One E step by hand shows what "closed form" buys. Two equally weighted
+one-dimensional Gaussians, unit variance, means 0 and 2; one data point,
+\(x = 1.5\). Bayes' rule says the posterior over the component is proportional to
+weight times likelihood:</p>
+<div class="mathblock">
+\[ q^*(z{=}2\mid x) = \frac{e^{-(1.5-2)^2/2}}{e^{-(1.5-0)^2/2} + e^{-(1.5-2)^2/2}}
+   = \frac{e^{-0.125}}{e^{-1.125} + e^{-0.125}} = \frac{1}{1 + e^{-1}} \approx 0.73 \]
+</div>
+<p>The point belongs 73% to the right-hand component and 27% to the left. That
+"responsibility" is the soft assignment the M step then uses as a weight when it
+re-estimates each mean. The calculation needed a sum over two components in the
+denominator. Replace the two components by a neural network and the denominator
+becomes an integral over every possible \(z\).</p>
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  GMM with weights \(\tfrac12, \tfrac12\), unit variances, means 0 and 2. What is the responsibility of the mean-2 component for \(x = 1.5\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(e^{-0.125}/(e^{-1.125} + e^{-0.125}) = 1/(1 + e^{-1}) \approx 0.73\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  In EM for a GMM, what does the M step do with the responsibilities?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Uses them as soft weights: each component&rsquo;s weight, mean and covariance are re-estimated as responsibility-weighted averages over the data.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
   State the two steps of EM in terms of the ELBO.</p>
   <p class="a"><span class="lbl">Answer</span>
   E step: \(q_{t+1} = \arg\max_q J_{\theta_t}(q)\) with \(\theta\) fixed.
@@ -339,7 +422,7 @@ exactly the place the problem began.</p>
 </div>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.4</span></span>
   Why does EM fail for a neural latent-variable model?</p>
   <p class="a"><span class="lbl">Answer</span>
   The E step requires evaluating \(P_\theta(z\mid x) = P_\theta(x,z)/P_\theta(x)\),
@@ -355,8 +438,8 @@ exactly the place the problem began.</p>
 <p>Here is the trouble in one sentence: you cannot backpropagate through a dice roll.
 The randomness sits inside the computation, and an operation that samples has no
 derivative — there is no meaningful answer to “how does this output change if I
-nudge the seed”. So the gradient we need does not exist as something a computer can
-estimate, and the whole method is stuck at the first step.</p>
+nudge the seed”. So the obvious way of estimating the gradient breaks, and the whole
+method is stuck at the first step.</p>
 
 <p>So we keep the ELBO and give up on exact EM: let the encoder network output the
 <i>parameters</i> of \(q_\varphi(z\mid x)\) rather than the density itself. Now
@@ -378,8 +461,23 @@ inside:</p>
 
 <p>The first integral is an expectation and can be estimated by sampling. The second
 is not an expectation of anything — it contains the gradient of a density with
-respect to its own parameters, and there is no way to sample it. So the gradient we
-need does not exist as an estimable quantity.</p>
+respect to its own parameters, so a plain sample average cannot stand in for it.
+The notes conclude that the gradient "can't be computed".</p>
+
+<p class="beyond-note">Beyond the notes &mdash; a correction to page 55.</p>
+<p>That conclusion is too strong, and the reason is worth owning, because the same
+move is the engine of the RLHF essay. Every density satisfies
+\(\nabla_\psi P_\psi = P_\psi\,\nabla_\psi\log P_\psi\). Substitute it into the
+second integral and it <i>becomes</i> an expectation:</p>
+<div class="mathblock">
+\[ \int_v (\nabla_\psi P_\psi(v))\,f_\psi(v)\,dv
+   = \mathbb{E}_{P_\psi(v)}\left[f_\psi(v)\,\nabla_\psi\log P_\psi(v)\right] \]
+</div>
+<p>That is the score-function (REINFORCE) estimator: unbiased, and computable from
+samples. Its problem is not existence but <i>variance</i>. It multiplies a whole
+log-likelihood by a noisy direction and learns which way is better only by
+comparing many rolls of the dice. The trick below is preferred because it is far
+less noisy, not because it is the only option.</p>
 
 <h2>6 &middot; Move the randomness outside</h2>
 
@@ -407,30 +505,53 @@ statistician,</p>
 function of \(\varphi\). Concretely, if
 \(q_\varphi(z\mid x) = \mathcal{N}(z; \mu_\varphi(x), \Sigma_\varphi(x))\),
 take \(\epsilon \sim \mathcal{N}(0,I)\) and set</p>
+<p class="small">(The notes write \(\Sigma\epsilon\). That sample would have covariance
+\(\Sigma^2\), not \(\Sigma\); the scale that multiplies \(\epsilon\) is a square root
+of the covariance, such as its Cholesky factor.)</p>
 
 <div class="mathblock">
-\[ z = \mu_\varphi(x) + \Sigma_\varphi(x)\,\epsilon \]
+\[ z = \mu_\varphi(x) + \Sigma_\varphi(x)^{1/2}\,\epsilon
+   \;\overset{\text{diagonal}}{=}\; \mu_\varphi(x) + \sigma_\varphi(x)\odot\epsilon \]
 </div>
 
 <p>which has exactly the intended distribution. The noise is drawn <i>outside</i> the
 network; the network only supplies the shift and the scale. That is the
 reparameterization trick, and without it a VAE is not trainable by ordinary
 backpropagation.</p>
+<p>Turn the handle once. The encoder says \(\mu = 2\), \(\sigma = 0.5\); the noise
+source rolls \(\epsilon = -1.2\). Then \(z = 2 + 0.5 \times (-1.2) = 1.4\), and the
+two derivatives the backward pass needs are just
+\(\partial z/\partial\mu = 1\) and \(\partial z/\partial\sigma = \epsilon = -1.2\).
+No density was differentiated; a multiplication and an addition were.</p>
+<p>The Gaussian is not special. For any scalar variable with an invertible CDF
+\(F\), feed uniform noise through the inverse: \(z = F^{-1}(\epsilon)\) with
+\(\epsilon \sim U[0,1]\). An exponential with rate \(\lambda\), for instance, is
+\(z = -\log(1-\epsilon)/\lambda\). The pattern is always the same: fixed noise in,
+differentiable map out.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
-  Precisely why can \(\nabla_\varphi\mathbb{E}_{q_\varphi(z\mid x)}\log P_\theta(x\mid z)\)
-  not be estimated by sampling?</p>
+  Differentiating \(\mathbb{E}_{P_\psi(v)}f_\psi(v)\) under the integral gives two terms. Which one is <i>not</i> directly a sample average?</p>
   <p class="a"><span class="lbl">Answer</span>
-  Differentiating the integral produces two terms. One is
-  \(\mathbb{E}[\nabla_\varphi\log P_\theta(x\mid z)]\), which is estimable. The
-  other is \(\int (\nabla_\varphi q_\varphi(z\mid x))\log P_\theta(x\mid z)\,dz\),
-  which is not an expectation — it weights a log-likelihood by the gradient of a
-  density — so no sample average can stand in for it.</p>
+  \(\int_v (\nabla_\psi P_\psi(v))\,f_\psi(v)\,dv\): it weights \(f\) by the gradient of the density, not by the density itself.</p>
 </div>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  What identity turns \(\int (\nabla_\psi P_\psi) f\,dv\) into an expectation?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The log-derivative trick, \(\nabla_\psi P_\psi = P_\psi\nabla_\psi\log P_\psi\), giving \(\mathbb{E}_{P_\psi}[f\,\nabla_\psi\log P_\psi]\) &mdash; the score-function (REINFORCE) estimator.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  If the score-function estimator exists, why do VAEs use reparameterization instead?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Variance. The score-function estimator is unbiased but very noisy; the reparameterized gradient passes through the decoder&rsquo;s own slope and is far less noisy.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.4</span></span>
   State the reparameterization identity that fixes this.</p>
   <p class="a"><span class="lbl">Answer</span>
   \(\mathbb{E}_{P_\varphi(v)}f_\varphi(v) = \mathbb{E}_{P_\epsilon}f_\varphi(g(\epsilon))\)
@@ -440,14 +561,31 @@ backpropagation.</p>
 </div>
 
 <div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
-  For a Gaussian posterior, what does the reparameterized sample look like, and where
-  is the randomness?</p>
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.5</span></span>
+  Write the reparameterized sample for a diagonal Gaussian posterior.</p>
   <p class="a"><span class="lbl">Answer</span>
-  \(z = \mu_\varphi(x) + \Sigma_\varphi(x)\,\epsilon\) with
-  \(\epsilon \sim \mathcal{N}(0,I)\). The randomness lives entirely in
-  \(\epsilon\), drawn outside the network; the encoder only outputs \(\mu\) and
-  \(\Sigma\), which is what lets gradients reach \(\varphi\).</p>
+  \(z = \mu_\varphi(x) + \sigma_\varphi(x)\odot\epsilon\) with \(\epsilon \sim \mathcal{N}(0, I)\) drawn outside the network.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.6</span></span>
+  For a full-covariance Gaussian, why is the reparameterization \(z = \mu + \Sigma^{1/2}\epsilon\) and not \(z = \mu + \Sigma\epsilon\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathrm{Cov}(A\epsilon) = AA^\top\). With \(A = \Sigma\) the covariance would be \(\Sigma^2\); you need \(AA^\top = \Sigma\), e.g. the Cholesky factor.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.7</span></span>
+  \(\mu = 2\), \(\sigma = 0.5\), \(\epsilon = -1.2\). What are \(z\), \(\partial z/\partial\mu\) and \(\partial z/\partial\sigma\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(z = 1.4\), \(\partial z/\partial\mu = 1\), \(\partial z/\partial\sigma = \epsilon = -1.2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.8</span></span>
+  How do you reparameterize a scalar variable with invertible CDF \(F\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(z = F^{-1}(\epsilon)\) with \(\epsilon \sim U[0,1]\) &mdash; the inverse-CDF method. E.g. an exponential: \(z = -\log(1-\epsilon)/\lambda\).</p>
 </div>
 
 <div class="part">Part VI &mdash; Assembling the thing people actually train</div>
@@ -475,7 +613,7 @@ ELBO splits into two interpretable pieces:</p>
 outputs a mean. Then</p>
 
 <div class="mathblock">
-\[ \log P_\theta(x\mid z) \propto -\|x - \hat{x}_\theta(z)\|_2^2 \]
+\[ \log P_\theta(x\mid z) = -\tfrac{1}{2}\|x - \hat{x}_\theta(z)\|_2^2 - \tfrac{d}{2}\log 2\pi \]
 </div>
 
 <p>and the reconstruction term becomes squared error. Meanwhile the KL is available
@@ -484,14 +622,21 @@ in closed form, because both sides are Gaussian and the prior is standard normal
 \(P_\theta(z) = \mathcal{N}(0, I)\), then</p>
 
 <div class="mathblock">
-\[ D_{KL} = -\tfrac{1}{2}\log|\Sigma_\varphi(x)| - k + \text{tr}\!\left[\Sigma_\varphi(x)\right]
-   + \|\mu_\varphi(x)\|_2^2 \]
+\[ D_{KL} = \tfrac{1}{2}\left[\text{tr}\,\Sigma_\varphi(x) + \|\mu_\varphi(x)\|_2^2 - k - \log|\Sigma_\varphi(x)|\right]
+   \;\overset{\text{diagonal}}{=}\; \tfrac12\sum_{j=1}^{k}\left(\sigma_j^2 + \mu_j^2 - 1 - \log\sigma_j^2\right) \]
 </div>
 
 <p>Two terms, two jobs. The decoder only ever sees the reconstruction error, because
 the KL contains no \(\theta\). The encoder sees both, and has to satisfy two
 demands at once: encode informatively, but keep the encoding near the prior. Almost
 everything that goes wrong with VAEs is a consequence of that tension.</p>
+<p class="small">(The notes drop the overall \(\tfrac12\) on every term but the
+log-determinant. It changes no minimiser, but it changes the number you report, and
+it silently doubles the KL&rsquo;s weight against the reconstruction.)</p>
+<p>One dimension, one number. An encoder that outputs \(\mu = 1\), \(\sigma = 0.5\)
+pays \(\tfrac12(0.25 + 1 - 1 - \log 0.25) = \tfrac12(0.25 + 1.386) \approx 0.82\)
+nats for being that far from a standard normal: a little for the shifted mean, most of
+it for being too narrow.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
@@ -521,7 +666,7 @@ everything that goes wrong with VAEs is a consequence of that tension.</p>
   Pass \(x_i\) through the encoder to get \(\mu_\varphi(x_i)\) and
   \(\Sigma_\varphi(x_i)\); draw \(\epsilon_1,\dots,\epsilon_M\) from
   \(\mathcal{N}(0,I)\) <i>outside</i> the networks; form
-  \(z_j = \mu_\varphi(x_i) + \Sigma_\varphi(x_i)\epsilon_j\); push each
+  \(z_j = \mu_\varphi(x_i) + \sigma_\varphi(x_i)\odot\epsilon_j\); push each
   \(z_j\) through the decoder to get \(\hat{x}_\theta(z_j)\); average
   \(\|x_i - \hat{x}_\theta(z_j)\|_2^2\) over \(j\); add the KL.</p>
 </div>
@@ -532,11 +677,39 @@ everything that goes wrong with VAEs is a consequence of that tension.</p>
 has. Compare a Gaussian with mean and variance to a standard normal, and ask what makes
 two bell curves different: only their position and their width. So the divergence has
 one term per difference. The mean term is the squared distance of the mean from zero.
-The variance terms are the variance plus one over the variance minus the logarithm of
+The variance terms are the variance, minus one, minus the logarithm of
 the variance — and that trio is doing real work. A variance above one is punished, a
 variance squeezed toward zero is punished harder, and the minimum sits quietly at one.
 Completing the square is how you get there; the interpretation is that the bound is
 charging you for every way your guess fails to be an ordinary bell curve.</p>
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.4</span></span>
+  Write \(D_{KL}(\mathcal{N}(\mu, \sigma^2)\,\|\,\mathcal{N}(0,1))\) in one dimension.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\tfrac12(\sigma^2 + \mu^2 - 1 - \log\sigma^2)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.5</span></span>
+  In the 1-D Gaussian KL to \(\mathcal{N}(0,1)\), at what \(\sigma^2\) is the variance part \(\sigma^2 - 1 - \log\sigma^2\) minimised, and what happens as \(\sigma^2 \to 0\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Minimised at \(\sigma^2 = 1\) (derivative \(1 - 1/\sigma^2 = 0\)). As \(\sigma^2 \to 0\), \(-\log\sigma^2 \to \infty\): an over-confident encoder is punished without limit.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.6</span></span>
+  An encoder outputs \(\mu = 1\), \(\sigma = 0.5\). What is its KL to \(\mathcal{N}(0,1)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\tfrac12(0.25 + 1 - 1 - \log 0.25) \approx 0.82\) nats.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.7</span></span>
+  With decoder \(\mathcal{N}(x;\hat{x}_\theta(z), I)\), what exactly is \(\log P_\theta(x\mid z)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(-\tfrac12\|x - \hat{x}_\theta(z)\|_2^2 - \tfrac{d}{2}\log 2\pi\): squared error, halved, plus a constant.</p>
+</div>
+
 
 <div class="part">Part VII &mdash; Using it, and the way it fails</div>
 
@@ -559,6 +732,25 @@ description of the latent space, so sampling from it samples from the model.</p>
 \(\mu_\varphi(x_{test})\) as a \(k\)-dimensional feature vector for a
 \(d\)-dimensional input. The bottleneck is doing the compression you asked for.</p>
 
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  Why is &ldquo;sample \(z\) from \(\mathcal{N}(0,I)\) and decode&rdquo; a valid way to generate?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the KL term has driven every \(q_\varphi(z\mid x)\) towards the prior
+  \(\mathcal{N}(0,I)\). If training succeeded, the marginal latent distribution is
+  the prior, so drawing from the prior is drawing from the model's latent
+  distribution, and decoding maps it back to data space.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  What are the two ways to read an embedding out of a trained VAE?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Either take the mean \(z = \mu_\varphi(x_{test})\) — the deterministic choice —
+  or sample \(z \sim \mathcal{N}(\mu_\varphi(x_{test}), \Sigma_\varphi(x_{test}))\).
+  The first is what people usually mean by "the embedding".</p>
+</div>
+
 <h2>9 &middot; Posterior collapse, and two ways out</h2>
 
 <p>Imagine a filing clerk given two instructions: the files must be findable, and every
@@ -576,57 +768,179 @@ for all inputs. The latent code then carries no information about \(x\) at all, 
 the decoder, receiving the same distribution whatever it is shown, can only learn the
 average of the dataset. This is <b>posterior collapse</b>.</p>
 
-<p>Two standard repairs. Weight the KL by a coefficient \(\beta\) and tune the
-trade-off explicitly — the \(\beta\)-VAE. Small \(\beta\) favours reconstruction at
-the cost of generation; large \(\beta\) favours a clean prior at the cost of blurry
-reconstructions. Or sidestep the continuous prior entirely: the <b>VQ-VAE</b> replaces
-the Gaussian posterior with vector quantisation, snapping each encoder column to its
-nearest entry in a learned dictionary
-(\(z_q(x_i) = z_{j^*}\) with
-\(j^* = \arg\min_j \|z_e(x_i) - z_j\|_2^2\)), and trains encoder, decoder and the
-dictionary together. A discrete latent cannot drift towards a Gaussian prior, so the
-collapse mode does not arise in the same way — but sampling then requires a separate
-model over the discrete codes, because the prior is no longer something you can just
-draw from.</p>
-
-<div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
-  Why is \"sample \(z\) from \(\mathcal{N}(0,I)\) and decode"@ a valid way to generate?</p>
-  <p class="a"><span class="lbl">Answer</span>
-  Because the KL term has driven every \(q_\varphi(z\mid x)\) towards the prior
-  \(\mathcal{N}(0,I)\). If training succeeded, the marginal latent distribution is
-  the prior, so drawing from the prior is drawing from the model's latent
-  distribution, and decoding maps it back to data space.</p>
-</div>
-
-<div class="card-qa">
-  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
-  What are the two ways to read an embedding out of a trained VAE?</p>
-  <p class="a"><span class="lbl">Answer</span>
-  Either take the mean \(z = \mu_\varphi(x_{test})\) — the deterministic choice —
-  or sample \(z \sim \mathcal{N}(\mu_\varphi(x_{test}), \Sigma_\varphi(x_{test}))\).
-  The first is what people usually mean by "the embedding".</p>
-</div>
+<p>Two standard repairs follow.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
-  Describe posterior collapse mechanically.</p>
+  What is posterior collapse?</p>
   <p class="a"><span class="lbl">Answer</span>
-  The KL term forces \(q_\varphi(z\mid x)\) to equal the prior for every \(x\),
-  so \(q_\varphi(z\mid x_i) = q_\varphi(z\mid x_j) = \mathcal{N}(0,I)\) for any
-  two inputs. The decoder receives samples from the same distribution regardless of
-  the input and becomes unable to distinguish inputs — the latent variable has been
-  switched off.</p>
+  The encoder outputs the prior for every input, \(q_\varphi(z\mid x) = \mathcal{N}(0,I)\) for all \(x\), so the latent code carries no information about \(x\).</p>
 </div>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  Under posterior collapse, what can the decoder learn, and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Only the average of the dataset: it receives the same distribution of \(z\) whatever the input, so it cannot tell inputs apart.</p>
+</div>
+
+<h3>Turning the dial: the \(\beta\)-VAE</h3>
+<p>Every regularised loss in machine learning has the shape "cost plus a constant times
+a penalty". The VAE is the odd one out: its constant is fixed at one by the
+derivation. Put the dial back:</p>
+<div class="mathblock">
+\[ \hat{J} = \|x - \hat{x}_\theta(z)\|_2^2 + \beta\,D_{KL}\!\left(q_\varphi(z\mid x)\,\|\,P(z)\right) \]
+</div>
+<p>(a loss to minimise, so the signs have flipped). The notes keep
+\(0 \le \beta \le 1\): lower \(\beta\) gives sharper reconstructions but a latent space
+the prior no longer describes, so generation suffers; higher \(\beta\) gives cleaner
+sampling and edges toward collapse.</p>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>The paper that named the \(\beta\)-VAE used \(\beta > 1\) on purpose. Squeezing
+harder towards an isotropic prior pressures the encoder to give each latent dimension one
+independent factor of variation (pose, lighting, size), which is called
+<i>disentanglement</i>. The dial is useful in both directions.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.5</span></span>
   What does a VAE look like once you stop calling the KL a bound and call it a penalty?</p>
   <p class="a"><span class="lbl">Answer</span>
   A regularised auto-encoder: reconstruction cost plus a weighted penalty on the
-  latent code. The ELBO's two terms <i>are</i> \"loss plus regularisation"@, with
+  latent code. The ELBO's two terms <i>are</i> &ldquo;loss plus regularisation&rdquo;, with
   the implicit weight fixed at 1. Writing that weight explicitly as \(\beta\) gives
   the \(\beta\)-VAE and makes the trade-off tunable.</p>
+</div>
+
+<h3>Making the code discrete: the VQ-VAE</h3>
+<p>The other repair abandons the Gaussian. Keep a learned dictionary of \(M\)
+vectors, \(L = \{z_1, \dots, z_M\}\) with \(z_j \in \mathbb{R}^k\). The encoder
+outputs a grid of \(p\) vectors, \(\hat{z}_e(x) \in \mathbb{R}^{k\times p}\), and
+each column is snapped to its nearest dictionary entry:</p>
+<div class="mathblock">
+\[ z_q(x_i) = z_{j^*}, \qquad j^* = \arg\min_{j} \|z_e(x_i) - z_j\|_2^2 \]
+</div>
+<p>The decoder sees only the snapped vectors, and the notes train everything on
+reconstruction plus a term pulling code and encoder output together:</p>
+<div class="mathblock">
+\[ J = \|x - \hat{x}_\theta(z_q)\|_2^2 + \|z_e(x) - z_q(x)\|_2^2 \]
+</div>
+<p class="beyond-note">Beyond the notes &mdash; not in pages 43&ndash;71.</p>
+<p>Two details make this actually train. First, \(\arg\min\) has no gradient,
+so nothing would reach the encoder. The fix is the <i>straight-through</i> estimator:
+in the backward pass, pretend quantisation was the identity and copy the decoder's
+gradient with respect to \(z_q\) straight onto \(z_e\). Second, the single
+\(\|z_e - z_q\|^2\) is split with a stop-gradient \(\mathrm{sg}[\cdot]\) so that each
+side moves for its own reason:</p>
+<div class="mathblock">
+\[ \|\mathrm{sg}[z_e] - z_q\|_2^2 \;+\; \beta\,\|z_e - \mathrm{sg}[z_q]\|_2^2 \]
+</div>
+<p>The first term moves the dictionary toward the encoder outputs; the second, the
+<i>commitment</i> loss with \(\beta\) around 0.25, stops the encoder's outputs from
+wandering off faster than the dictionary can follow.</p>
+<p>Why does this dodge collapse? With a uniform prior over \(M\) codes and a
+deterministic snap, the KL term is the constant \(\log M\): there is no gradient
+dragging every code toward the prior, because there is no gradient from the prior at
+all. The cost appears at generation time. You cannot draw from "a uniform choice of
+code per position" and get an image, because neighbouring positions are correlated.
+So a second generative model is fitted to the codes the encoder actually produces
+&mdash; the notes suggest a GMM; the original paper used an autoregressive PixelCNN
+&mdash; and its samples are decoded.</p>
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.6</span></span>
+  Write the \(\beta\)-VAE loss.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\|x - \hat{x}_\theta(z)\|_2^2 + \beta\,D_{KL}(q_\varphi(z\mid x)\,\|\,P(z))\), with \(\beta\) a hyperparameter (the plain VAE is \(\beta = 1\)).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.7</span></span>
+  In a \(\beta\)-VAE, what does lowering \(\beta\) trade for what?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Sharper reconstructions in exchange for worse generation, because \(q_\varphi(z\mid x)\) drifts away from the prior you sample from.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.8</span></span>
+  Why did the original \(\beta\)-VAE paper use \(\beta > 1\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  For disentanglement: stronger pressure toward an isotropic prior pushes each latent dimension to capture one independent factor of variation.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.9</span></span>
+  In a VQ-VAE, how is an encoder output \(z_e\) turned into a code?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Snapped to its nearest dictionary vector: \(z_q = z_{j^*}\), \(j^* = \arg\min_j\|z_e - z_j\|_2^2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.10</span></span>
+  Quantisation is an \(\arg\min\), which has no gradient. How does the encoder of a VQ-VAE get trained?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The straight-through estimator: the backward pass treats quantisation as the identity and copies \(\partial\mathcal{L}/\partial z_q\) onto \(z_e\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.11</span></span>
+  In the VQ-VAE loss \(\|\mathrm{sg}[z_e] - z_q\|^2 + \beta\|z_e - \mathrm{sg}[z_q]\|^2\), what does each term update?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The first moves the dictionary vectors toward the encoder outputs; the second (commitment) keeps the encoder outputs close to their chosen codes.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.12</span></span>
+  How do you generate new samples from a trained VQ-VAE?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Fit a separate generative model to the discrete codes the encoder produces (a GMM in the notes, an autoregressive PixelCNN in the original), sample codes from it, and decode them.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.13</span></span>
+  Why does a VQ-VAE with a uniform code prior not suffer posterior collapse in the usual way?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Its KL term is the constant \(\log M\), so no gradient pulls the codes toward the prior. The price is that a separate prior over codes must be learned for generation.</p>
+</div>
+
+
+
+
+
+
+
+
+<div class="part">Part VIII &mdash; Footnotes to the notes</div>
+
+<h2>10 &middot; Five places the notes need correcting</h2>
+
+<p>Lecture notes compress, and a few compressions here would cost you marks or a
+working model. Each appears where it bites, above; collected:</p>
+
+<p><b>1. "Can't be computed" (page 55).</b> The second gradient term is computable
+by the log-derivative trick. It is noisy, which is the real reason for the
+reparameterization trick.</p>
+
+<p><b>2. \(z = \mu + \Sigma\epsilon\) (pages 57&ndash;60).</b> Should be
+\(\mu + \Sigma^{1/2}\epsilon\). For the usual diagonal posterior that is
+\(\mu + \sigma\odot\epsilon\), with the encoder outputting standard deviations, not
+variances.</p>
+
+<p><b>3. The Gaussian KL (page 61).</b> The whole bracket carries the \(\tfrac12\):
+\(\tfrac12[\mathrm{tr}\,\Sigma + \|\mu\|^2 - k - \log|\Sigma|]\).</p>
+
+<p><b>4. "\(\propto -\|x - \hat{x}\|^2\)" (page 59).</b> The log-likelihood is
+\(-\tfrac12\|x-\hat{x}\|^2\) <i>plus</i> a constant, which is affine rather than
+proportional. Harmless for the argmax, but the \(\tfrac12\) sets the balance between
+reconstruction and KL, so it matters for what a "\(\beta = 1\)" VAE actually is.</p>
+
+<p><b>5. The VQ-VAE objective (page 70).</b> As written it cannot train the encoder,
+because the gradient stops at the \(\arg\min\). It needs the straight-through
+estimator and the stop-gradient split into codebook and commitment terms.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  In practice, what does a VAE encoder usually output for a diagonal Gaussian posterior, and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mu\) and \(\log\sigma^2\) (log-variance): it is unconstrained, so any real network output is valid, and \(\sigma = e^{\frac12\log\sigma^2}\) is positive automatically.</p>
 </div>
 
 <hr class="rule">

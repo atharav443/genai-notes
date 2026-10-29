@@ -1,15 +1,15 @@
 {
   "site": {
     "title": "Generative AI — Cheat Sheets",
-    "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes (104 pages). Each one ships twice: as a self-contained interactive cheat sheet with an undergraduate-level PDF, and as an essay in the mnemonic medium with recall cards and a review deck.",
+    "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes (104 pages), plus a primer on the mathematics they all share. Each algorithm ships twice: as a self-contained interactive cheat sheet with an undergraduate-level PDF, and as an essay in the mnemonic medium with recall cards and a review deck.",
     "footer": "Every page is fully self-contained — no CDN, no network, works offline. Notation follows the source notes; the interactive demos are illustrative.",
     "hero": {
       "eyebrow": "IIT Madras · Mathematical Foundations of Generative AI",
       "title": "Four algorithms,<br>written twice each.",
-      "lede": "Generative adversarial networks, variational autoencoders, diffusion and RLHF — pulled from 104 pages of handwritten lecture notes. Every topic ships twice: once as a self-contained interactive cheat sheet you can read in ten minutes, and once as a long-form essay in the mnemonic medium, where recall cards inside the prose turn reading into remembering.",
+      "lede": "Generative adversarial networks, variational autoencoders, diffusion and RLHF — pulled from 104 pages of handwritten lecture notes. Every topic ships twice: once as a self-contained interactive cheat sheet you can read in ten minutes, and once as a long-form essay in the mnemonic medium, where small recall cards inside the prose turn reading into remembering. New to the maths? Start with the foundations essay: expectations, KL, Jensen, Gaussians, Bayes and the two gradient tricks, each tied to where it reappears.",
       "primary": {
-        "label": "Start with RLHF",
-        "href": "html/RLHF-Curious.html"
+        "label": "Start with the foundations",
+        "href": "html/Foundations-Curious.html"
       },
       "secondary": {
         "label": "Browse the cheat sheets",
@@ -32,6 +32,24 @@
     }
   },
   "topics": [
+    {
+      "id": "foundations-curious",
+      "status": "ready",
+      "tag": "Foundations · essay",
+      "tagColor": "#475569",
+      "title": "The maths under generative AI, for the very curious",
+      "blurb": "Expectation and Monte Carlo → importance sampling → entropy, cross-entropy, KL → Jensen → Gaussian algebra → Bayes → score-function vs reparameterization. 8 parts, 57 recall cards.",
+      "html": "html/Foundations-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/foundations/flashcards.tsv"
+        }
+      ],
+      "kind": "essay",
+      "cards": 57
+    },
     {
       "id": "rlhf-curious",
       "status": "ready",
@@ -60,7 +78,7 @@
       "tag": "GAN · essay",
       "tagColor": "#7c3aed",
       "title": "GANs, for the very curious",
-      "blurb": "f-divergence → the conjugate bound → an adversarial game → why it saturates → Wasserstein → inversion → FID. 8 parts, 21 recall cards.",
+      "blurb": "f-divergence → the conjugate bound → the optimal discriminator and JS → why it saturates, in numbers → Wasserstein → cGAN, inversion → FID. 9 parts, 57 recall cards.",
       "html": "html/GAN-Curious.html",
       "cta": "Read the essay",
       "extras": [
@@ -70,7 +88,7 @@
         }
       ],
       "kind": "essay",
-      "cards": 21
+      "cards": 57
     },
     {
       "id": "vae-curious",
@@ -78,7 +96,7 @@
       "tag": "VAE · essay",
       "tagColor": "#0d9488",
       "title": "VAEs, for the very curious",
-      "blurb": "Why the likelihood is intractable → Jensen → the ELBO → EM and where it dies → the reparameterization trick → posterior collapse. 7 parts, 18 recall cards.",
+      "blurb": "Why the likelihood is intractable → Jensen and the exact ELBO gap → EM by hand → two gradient estimators → reparameterization → β-VAE and VQ-VAE. 8 parts, 44 recall cards.",
       "html": "html/VAE-Curious.html",
       "cta": "Read the essay",
       "extras": [
@@ -88,7 +106,7 @@
         }
       ],
       "kind": "essay",
-      "cards": 18
+      "cards": 44
     },
     {
       "id": "diffusion-curious",
@@ -96,7 +114,7 @@
       "tag": "Diffusion · essay",
       "tagColor": "#ea580c",
       "title": "Diffusion, for the very curious",
-      "blurb": "A VAE stretched over a thousand steps → the forward schedule → a bound in three terms → a regression on noise → guidance, latent diffusion, DDIM. 8 parts, 19 recall cards.",
+      "blurb": "A VAE stretched over a thousand steps → the schedule in numbers → a bound in three terms → a regression on noise → Tweedie → guidance, latent diffusion, DDIM. 9 parts, 42 recall cards.",
       "html": "html/Diffusion-Curious.html",
       "cta": "Read the essay",
       "extras": [
@@ -106,7 +124,7 @@
         }
       ],
       "kind": "essay",
-      "cards": 19
+      "cards": 42
     },
     {
       "id": "rlhf-study-notes",
