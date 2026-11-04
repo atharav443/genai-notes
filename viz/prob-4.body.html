@@ -1,0 +1,720 @@
+<!--META
+{ "title": "Expectation, variance, and the bridge between them" }
+-->
+<h1>Expectation, variance,<br>and the bridge<br>between them</h1>
+<h1 class="sub-title">One weighted average that works whether or not anything is independent,
+one second moment that does not, and the reason four times the data buys you exactly half the
+error</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question and its
+answer. They are not decoration. They are the essay testing you &mdash; and if you take them
+seriously, you will remember this material for years instead of days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong is useful;
+the effort of a failed recall is what makes the next one stick. The cards here are
+deliberately small: one fact, one step, one number each.</p>
+
+<p>This is the fourth of seven essays on probability. It needs the third — random variables and
+their distributions — and it is the last one you can read without calculus. Everything in the
+generative-AI series is an expectation of something, so this essay is the one that makes the
+rest legible: the loss, the gradient, the bound and the baseline are all averages, and their
+differences are all variances.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; Averages you can compute</div>
+
+<h2>1 &middot; A weighted average, read twice</h2>
+
+<p>A fairground game pays &#8377;10 with probability 0.2 and nothing otherwise. What is it worth
+to play?</p>
+
+<p>Not &#8377;10, and not zero. Play it a hundred times and you collect about twenty times, so
+the fair price per go is &#8377;2. That number is the expectation, and there is nothing more to
+it than that: every outcome, weighted by how often it happens, added up.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X] = \sum_x x\, p_X(x) \]
+</div>
+
+<p>Now read the same formula as physics. Put a unit of mass at each value \(x\), with the amount
+of mass proportional to \(p_X(x)\). The expectation is where the whole thing balances on a
+finger. That reading is not a decoration &mdash; it predicts things. Just as a balance point can
+sit between two masses with nothing there, an expectation can sit at a value the variable never
+takes.</p>
+
+<p>A fair die is the example to keep. \(\mathbb{E}[X] = (1+2+3+4+5+6)/6 = 21/6 = 3.5\). A die
+never shows 3.5. Nobody finds this paradoxical once they have seen a seesaw.</p>
+
+<div class="aside">
+<span class="who">The two readings disagree about nothing</span>
+<b>The average reading and the centre-of-mass reading are the same equation.</b> The average
+reading is what you would see if you ran the experiment many times; the centre-of-mass reading
+is what you get from the distribution alone, in one shot. They agree because of the law of large
+numbers, which is the seventh essay in this series. Until then, treat the centre of mass as the
+definition and the long-run average as the reason you care.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  Define \(\mathbb{E}[X]\) for a discrete random variable.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The sum of each value weighted by its probability: \(\sum_x x\,p_X(x)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  What is the expectation of a fair die, and is it a value the die can show?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(3.5\), which the die never shows &mdash; an expectation is a balance point, not necessarily
+  an outcome.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  Which physical picture corresponds to the expectation, and what does it predict about values
+  the variable cannot take?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The centre of mass of weights \(p_X(x)\) placed at positions \(x\); a balance point can lie
+  between the masses, so the expectation need not be attainable.</p>
+</div>
+
+<h2>2 &middot; Linearity, and the independence you do not need</h2>
+
+<p>The single most useful fact in this essay, and it is worth saying three times in three
+different ways so that it survives being forgotten.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X + Y] = \mathbb{E}[X] + \mathbb{E}[Y] \qquad\text{always, with no conditions} \]
+</div>
+
+<p>First way: expectations add. Second way: they add <i>whether or not</i> \(X\) and \(Y\) are
+independent &mdash; whether they are dependent, negatively dependent, or deterministic functions
+of each other. Third way: for any number of terms, \(\mathbb{E}\left[\sum_i X_i\right] =
+\sum_i \mathbb{E}[X_i]\), with no assumption anywhere.</p>
+
+<p>Compare that with the corresponding fact for variance, which has a condition attached (essay
+section 5). The asymmetry is the whole reason expectations are easy and variances are hard, and
+it is why so much of applied probability is an attempt to express a quantity as a sum of
+indicators.</p>
+
+<h3>Two dependent variables, computed both ways</h3>
+
+<p>Draw one card from a deck. Let \(X = 1\) if it is an ace, and \(Y = 1\) if it is a spade.
+These are dependent: an ace is slightly more likely to be a spade than a random card is, because
+there are four aces and one of them is the ace of spades.</p>
+
+<p>By linearity, \(\mathbb{E}[X] = 4/52\) and \(\mathbb{E}[Y] = 13/52\), so
+\(\mathbb{E}[X+Y] = 17/52\). Directly: the number of cards that are an ace or a spade is
+\(4 + 13 - 1 = 16\), so the probability of the indicator sum being 1 is \(16/52\).</p>
+
+<p>Now count directly, and mind the difference. The number of cards that are an ace or a
+spade is \(4 + 13 - 1 = 16\), so the probability that \(X + Y \ge 1\) is \(16/52 \approx 0.3077\).
+But that is not the average of \(X + Y\), and the reason is one card. \(X + Y\) is an indicator
+only when the two conditions are exclusive; for the ace of spades both hold, so \(X + Y = 2\),
+while every other ace-or-spade card contributes 1. Hence</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X+Y] = \frac{15}{52}(1) + \frac{1}{52}(2) = \frac{17}{52} \]
+</div>
+
+<p>and linearity had it right all along. The direct count was not wrong; it was taken on the
+wrong variable. Here \(X + Y\) can take the value 2, and an indicator cannot.</p>
+
+<p>Constant shifts and scalings behave as you would want: \(\mathbb{E}[aX + b] = a\mathbb{E}[X] + b\).
+Averages are linear, and that is the end of it.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  Does \(\mathbb{E}[X+Y] = \mathbb{E}[X] + \mathbb{E}[Y]\) require independence?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  No. It holds for every pair of random variables, dependent or not.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  One card is drawn. \(X = 1\) for an ace, \(Y = 1\) for a spade. Compute \(\mathbb{E}[X+Y]\) by
+  linearity.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(4/52 + 13/52 = 17/52\). The ace of spades contributes 2 to \(X+Y\), which is why this
+  exceeds the 16/52 probability of &ldquo;ace or spade&rdquo;.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  What is \(\mathbb{E}[aX + b]\) in terms of \(\mathbb{E}[X]\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(a\,\mathbb{E}[X] + b\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.4</span></span>
+  Why does the absence of a condition on linearity make expectations easier to work with than
+  variances?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because any quantity expressible as a sum of indicators can be averaged term by term with no
+  assumptions, while variances of sums need a covariance term unless independence holds.</p>
+</div>
+
+<h2>3 &middot; Indicators, and the fundamental bridge</h2>
+
+<p>Ten letters are stuffed into ten addressed envelopes at random. On average, how many letters
+reach the right envelope?</p>
+
+<p>The direct route is grim. You would need the probability of exactly \(k\) correct, which is
+the derangement count from the previous essay, and then you would sum \(k\) times it over all
+\(k\) &mdash; a page of algebra that tests your patience rather than your understanding. The
+indicator route takes two lines and works for any \(n\).</p>
+
+<p>Write \(I_j = 1\) if letter \(j\) lands in envelope \(j\). Then the number of correct letters
+is \(X = \sum_{j=1}^{n} I_j\), and by linearity</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X] = \sum_{j=1}^{n} \mathbb{E}[I_j] = \sum_{j=1}^{n} P(\text{letter } j \text{ is correct}) = n \cdot \frac{1}{n} = 1 \]
+</div>
+
+<p>One. Always one, for every \(n\). The indicators are heavily dependent &mdash; if nine letters
+are correct the tenth must be &mdash; and linearity does not care.</p>
+
+<p>Check it for \(n = 3\) by hand. The six permutations of \(123\) give fixed-point counts
+\(3, 1, 1, 0, 0, 1\), which sum to 6, and \(6/6 = 1\). The distribution of \(X\) is genuinely
+awkward: \(P(X = 0) = 2/6\), \(P(X=1) = 3/6\), \(P(X=3) = 1/6\), and \(P(X=2) = 0\) because
+two correct letters force the third.</p>
+
+<p>The move that made this easy has a name, the <i>fundamental bridge</i>:</p>
+
+<div class="mathblock">
+\[ P(A) = \mathbb{E}[1_A] \]
+</div>
+
+<p>It is obvious once stated &mdash; the average of a 0/1 variable is the fraction of ones
+&mdash; and it converts probability questions into addition questions. That conversion is the
+whole trick. A union bound, an expected count, a loss: all of them become sums of indicators,
+and sums can be averaged term by term without knowing anything about how the terms interact.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  State the fundamental bridge and say what it converts.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(A) = \mathbb{E}[1_A]\) &mdash; it converts a probability question into a question about
+  the average of a 0/1 variable.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  On average, how many of \(n\) randomly stuffed letters land in the correct envelope?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Exactly 1, for every \(n\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
+  Verify the answer for \(n = 3\) from the six permutations.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Fixed-point counts are \(3,1,1,0,0,1\), summing to 6, so the average is \(6/6 = 1\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.4</span></span>
+  Why does the indicator method avoid needing the PMF of \(X\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because linearity averages the indicators term by term, and each term needs only its own
+  marginal probability, never the joint distribution.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part II &mdash; The second moment</div>
+
+<h2>4 &middot; LOTUS: you do not need the distribution of \(g(X)\)</h2>
+
+<p>You know the distribution of \(X\). You want the average of \(X^2\). Do you have to work out
+the distribution of \(X^2\) first?</p>
+
+<p>No, and the fact that you do not is what makes applied probability computable at all. The
+result is called the law of the unconscious statistician, because it is used so habitually that
+people forget it is a theorem.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[g(X)] = \sum_x g(x)\, p_X(x) \]
+</div>
+
+<p>You push \(g\) inside the sum and weight by the distribution of \(X\) itself. Nothing is
+rearranged; you simply never needed the induced distribution of \(g(X)\), only the probability
+of each original value.</p>
+
+<p>Take \(X\) uniform on \(\{1,2,3,4\}\) and \(g(X) = X^2\). Then
+\(\mathbb{E}[X^2] = (1 + 4 + 9 + 16)/4 = 30/4 = 7.5\). For comparison \(\mathbb{E}[X] = 2.5\),
+so \((\mathbb{E}[X])^2 = 6.25\), and the gap between the two will turn out to be the variance.</p>
+
+<p>The reason LOTUS is indispensable in practice: the functions you care about are usually not
+invertible. A loss is not one-to-one in its input, so the distribution of the loss is a mess;
+but you never need it, because you average the loss over the data distribution instead. Every
+training loop is LOTUS executed on a sample.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  State LOTUS for a discrete random variable.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[g(X)] = \sum_x g(x)p_X(x)\) &mdash; weight \(g\)'s values by \(X\)'s
+  probabilities.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  \(X\) is uniform on \(\{1,2,3,4\}\). What is \(\mathbb{E}[X^2]\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((1+4+9+16)/4 = 7.5\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  What does LOTUS save you from having to compute?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The probability distribution of \(g(X)\) itself, which is often unobtainable when \(g\) is not
+  invertible.</p>
+</div>
+
+<h2>5 &middot; Variance, and why the standard deviation is the one with units</h2>
+
+<p>Two archers both average the bullseye. One clusters; one sprays. The mean cannot tell them
+apart, so we need a number for spread.</p>
+
+<p>The recipe is to measure each draw's distance from the mean, square it, and average. Squaring
+is there to stop the two directions cancelling; averaging is the expectation.</p>
+
+<div class="mathblock">
+\[ \mathrm{Var}(X) = \mathbb{E}\big[(X - \mathbb{E}X)^2\big] = \mathbb{E}[X^2] - \big(\mathbb{E}X\big)^2 \]
+</div>
+
+<p>The second form is the one you compute with, and the identity is one line of expanding the
+square and using linearity. For \(X\) uniform on \(\{1,2,3,4\}\) it gives \(7.5 - 6.25 = 1.25\),
+matching the shortcut \((n^2-1)/12 = 15/12\) for a discrete uniform on \(1..n\).</p>
+
+<p>Variances are in squared units, which is why nobody quotes them. Heights measured in
+centimetres have a variance in square centimetres, an object with no physical meaning. The
+standard deviation \(\sigma = \sqrt{\mathrm{Var}(X)}\) puts you back in centimetres, and that is
+the number to report.</p>
+
+<h3>What variance does and does not respect</h3>
+
+<p>Shifting leaves it alone and scaling squares: \(\mathrm{Var}(aX + b) = a^2\,\mathrm{Var}(X)\).
+That one fact does a surprising amount of work &mdash; it is why standardising a variable is
+\((X - \mu)/\sigma\) and not \((X-\mu)/\sigma^2\).</p>
+
+<p>For sums, unlike expectations, there is a price:</p>
+
+<div class="mathblock">
+\[ \mathrm{Var}(X + Y) = \mathrm{Var}(X) + \mathrm{Var}(Y) + 2\,\mathrm{Cov}(X,Y) \]
+</div>
+
+<p>and the covariance term vanishes only when \(X\) and \(Y\) are independent (or at least
+uncorrelated). This is the asymmetry from section 2 made quantitative: expectations compose for
+free, variances cost you a covariance. Learn the shape of that sentence; it explains why every
+gradient-variance discussion in machine learning is a discussion about correlations.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Give both forms of the variance and say which one you compute with.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[(X-\mathbb{E}X)^2]\) by definition, and \(\mathbb{E}[X^2] - (\mathbb{E}X)^2\) for
+  computation.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  What is \(\mathrm{Var}(aX + b)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(a^2\,\mathrm{Var}(X)\) &mdash; the shift does nothing and the scale is squared.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  Why is the standard deviation reported instead of the variance?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the variance is in squared units, while \(\sigma = \sqrt{\mathrm{Var}(X)}\) is in the
+  same units as the variable.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.4</span></span>
+  Write \(\mathrm{Var}(X+Y)\) and say exactly when the extra term disappears.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathrm{Var}X + \mathrm{Var}Y + 2\,\mathrm{Cov}(X,Y)\); the covariance term vanishes when
+  \(X\) and \(Y\) are uncorrelated, in particular when independent.</p>
+</div>
+
+<h2>6 &middot; Expectation does not commute with a curve</h2>
+
+<p>A factory makes rods whose lengths vary. The area of a rod's cross-section goes as the square
+of its diameter. If the average diameter is 10 mm, is the average area the area at 10 mm?</p>
+
+<p>No, and the direction of the error is predictable rather than accidental. Averages pass
+through straight lines and stop there. Through a curve, they get bent, and which way they bend
+depends on the curvature.</p>
+
+<p>Two examples make it concrete. Let \(X\) be 1 or 2 with probability \(1/2\) each.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X] = 1.5, \quad \frac{1}{\mathbb{E}[X]} = 0.6667 \qquad\text{but}\qquad \mathbb{E}\!\left[\frac{1}{X}\right] = \tfrac12(1) + \tfrac12(0.5) = 0.75 \]
+</div>
+
+<p>\(0.75 > 0.6667\), so the average of the reciprocal exceeds the reciprocal of the average.
+And for the square, \(\mathbb{E}[X^2] = 2.5\) while \((\mathbb{E}X)^2 = 2.25\) &mdash; again the
+curve wins.</p>
+
+<p>The general statement is Jensen's inequality, and it gets a section of its own in the seventh
+essay because it is the engine behind the variational lower bound. For now, the working rule:
+<code>E[g(X)]</code> equals <code>g(E[X])</code> when \(g\) is affine, and otherwise the two
+differ in a direction set by whether \(g\) curves up or down.</p>
+
+<p>A special case worth separating out, because it is used constantly: since
+\(\mathrm{Var}(X) \ge 0\) and \(\mathrm{Var}(X) = \mathbb{E}[X^2] - (\mathbb{E}X)^2\), it follows
+that \(\mathbb{E}[X^2] \ge (\mathbb{E}X)^2\) always, with equality only for a constant. The
+variance is literally the gap between the two sides of that inequality.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  \(X = 1\) or \(2\) with probability \(1/2\) each. Compute \(\mathbb{E}[1/X]\) and
+  \(1/\mathbb{E}[X]\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[1/X] = 0.75\) and \(1/\mathbb{E}[X] = 0.6667\); they differ.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  For which functions \(g\) is \(\mathbb{E}[g(X)] = g(\mathbb{E}[X])\) exactly?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Affine ones, \(g(x) = ax + b\) &mdash; straight lines are the only curves with no bending.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  Why must \(\mathbb{E}[X^2] \ge (\mathbb{E}X)^2\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because their difference is \(\mathrm{Var}(X)\), which is an average of squares and so cannot
+  be negative.</p>
+</div>
+
+<h2>7 &middot; Moments, and the generating function that produces them</h2>
+
+<p>Mean and variance are the first two of an infinite family, and the family is worth naming
+because each member answers a different question about shape.</p>
+
+<table>
+<tr><th>name</th><th>definition</th><th>what it tells you</th></tr>
+<tr><td>raw moment \(k\)</td><td>\(\mathbb{E}[X^k]\)</td><td>scale, then spread, then lean</td></tr>
+<tr><td>central moment \(k\)</td><td>\(\mathbb{E}[(X-\mu)^k]\)</td><td>spread with the location removed</td></tr>
+<tr><td>skewness</td><td>\(\mathbb{E}[(X-\mu)^3]/\sigma^3\)</td><td>which tail is longer; sign gives the direction</td></tr>
+<tr><td>kurtosis</td><td>\(\mathbb{E}[(X-\mu)^4]/\sigma^4\)</td><td>how much weight sits in the tails (3 for a Gaussian)</td></tr>
+</table>
+
+<p>The <i>moment generating function</i> is a single object that carries them all:</p>
+
+<div class="mathblock">
+\[ M_X(t) = \mathbb{E}\left[e^{tX}\right] \qquad\Longrightarrow\qquad M_X'(0) = \mathbb{E}[X], \quad M_X''(0) = \mathbb{E}[X^2] \]
+</div>
+
+<p>Differentiate under the expectation, and each derivative brings down a factor of \(X\). Do it
+once for the Bernoulli to see the machine work. With \(P(X=1) = p\):</p>
+
+<div class="mathblock">
+\[ M(t) = (1-p) + p\,e^{t} \qquad M'(t) = p\,e^{t} \qquad M''(t) = p\,e^{t} \]
+</div>
+
+<p>so \(M'(0) = p\) and \(M''(0) = p\), giving \(\mathrm{Var}(X) = p - p^2 = p(1-p)\) &mdash;
+the answer from the previous essay, re-derived without the fundamental bridge.</p>
+
+<p>Two properties earn the name. First, the MGF identifies the distribution: if two variables
+have the same MGF in a neighbourhood of zero, they have the same distribution. Second, and this
+is the one used constantly, <b>sums of independent variables become products of MGFs</b>:</p>
+
+<div class="mathblock">
+\[ M_{X+Y}(t) = \mathbb{E}\left[e^{tX}e^{tY}\right] = \mathbb{E}\left[e^{tX}\right]\mathbb{E}\left[e^{tY}\right] = M_X(t)\,M_Y(t) \]
+</div>
+
+<p>The middle step is exactly where independence is used &mdash; it is the only step that could
+fail. That is how the Binomial's MGF is obtained from the Bernoulli's, and why
+\(\text{Bin}(n,p)\) is a sum of \(n\) Bernoulli(\(p\)) variables.</p>
+
+<div class="aside">
+<span class="who">Where this breaks</span>
+<b>An MGF need not exist.</b> The definition involves \(e^{tX}\), which grows faster than any
+polynomial; for heavy-tailed variables the expectation diverges for every \(t \ne 0\), and the
+Cauchy and lognormal distributions are the standard casualties. The characteristic function,
+which replaces \(t\) with \(it\), always exists &mdash; that is why the rigorous theory uses it.
+For everything in this series, the MGF is fine.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  Define the MGF and say how to extract the first two moments from it.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(M_X(t) = \mathbb{E}[e^{tX}]\), with \(M'(0) = \mathbb{E}[X]\) and \(M''(0) =
+  \mathbb{E}[X^2]\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  Write the Bernoulli(\(p\)) MGF and use it to get the variance.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(M(t) = (1-p) + pe^t\), so \(M'(0) = M''(0) = p\) and \(\mathrm{Var} = p - p^2 = p(1-p)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  Why does an MGF turn a sum of independent variables into a product, and which step needs the
+  independence?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(M_{X+Y}(t) = \mathbb{E}[e^{tX}e^{tY}] = \mathbb{E}[e^{tX}]\mathbb{E}[e^{tY}]\); the
+  factorisation of the expectation is the step that requires independence.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  Give a distribution for which the MGF does not exist, and name the replacement.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The Cauchy distribution (and the lognormal); the characteristic function, which uses \(it\),
+  always exists.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part III &mdash; Variance as something you can spend</div>
+
+<h2>8 &middot; The square-root tax</h2>
+
+<p>You estimate an average by sampling \(n\) times and dividing by \(n\). How wrong are you,
+typically?</p>
+
+<p>Suppose a single observation has standard deviation \(\sigma\). The average of \(n\)
+independent observations has standard deviation</p>
+
+<div class="mathblock">
+\[ \mathrm{sd}\!\left(\frac{1}{n}\sum_{i=1}^{n} X_i\right) = \frac{\sigma}{\sqrt{n}} \]
+</div>
+
+<p>and the derivation is three lines of the variance rules: \(\mathrm{Var}(\frac1n\sum X_i) =
+\frac{1}{n^2}\sum \mathrm{Var}(X_i) = \frac{1}{n^2}\cdot n\sigma^2 = \sigma^2/n\). Square-root
+that, and the tax appears.</p>
+
+<p>The tax is severe and it is the reason simulation is expensive. Read it as a table.</p>
+
+<table>
+<tr><th>samples \(n\)</th><th>error relative to one sample</th><th>with \(\sigma = 2\)</th></tr>
+<tr><td>1</td><td>1</td><td>2.0</td></tr>
+<tr><td>4</td><td>1/2</td><td>1.0</td></tr>
+<tr><td>100</td><td>1/10</td><td>0.2</td></tr>
+<tr><td>400</td><td>1/20</td><td>0.1</td></tr>
+<tr><td>10,000</td><td>1/100</td><td>0.02</td></tr>
+</table>
+
+<p>Halving the error costs four times the samples. Cutting it by ten costs a hundred times. There
+is no way around this by computing harder; the only escape is to attack \(\sigma\) itself.</p>
+
+<p>That single sentence explains a great deal of modern machine learning. Why are there so many
+variance-reduction tricks &mdash; baselines, control variates, importance sampling, the
+reparameterization trick? Because every one of them reduces \(\sigma\), and reducing \(\sigma\)
+by a factor of ten is worth a hundredfold increase in batch size.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  What is the standard deviation of the average of \(n\) independent observations each with
+  standard deviation \(\sigma\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\sigma/\sqrt{n}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  With \(\sigma = 2\), what sample count gives an error of 0.1?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(n = 400\), since \(2/\sqrt{400} = 2/20 = 0.1\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  To halve a Monte Carlo error, by what factor must \(n\) grow?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Four, because the error scales as \(1/\sqrt{n}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  Why is reducing \(\sigma\) by ten better than buying more samples?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(\sigma/\sqrt{n}\) makes a tenfold \(\sigma\) reduction worth a hundredfold increase in
+  \(n\) &mdash; and the variance reduction is usually free once you find it.</p>
+</div>
+
+<h2>9 &middot; Subtracting something that averages to zero</h2>
+
+<p>An estimator can be unbiased and still useless. Unbiasedness says the average over many runs
+is right; it says nothing about how far any single run lands. This section is about buying
+precision for free by exploiting one identity.</p>
+
+<p>The identity is that the score function has zero mean. For a density \(p_\theta(x)\),</p>
+
+<div class="mathblock">
+\[ \mathbb{E}\left[\nabla_\theta \log p_\theta(X)\right] = \int p_\theta(x)\,\frac{\nabla_\theta p_\theta(x)}{p_\theta(x)}\,dx = \nabla_\theta \int p_\theta(x)\,dx = \nabla_\theta 1 = 0 \]
+</div>
+
+<p>So you may subtract any constant \(b\), called a baseline, from your estimator without moving
+its mean:</p>
+
+<div class="mathblock">
+\[ \mathbb{E}\big[(f(X) - b)\nabla_\theta \log p_\theta(X)\big] = \mathbb{E}\big[f(X)\nabla_\theta \log p_\theta(X)\big] - b \cdot 0 \]
+</div>
+
+<p>Unchanged in expectation, and the variance can collapse. Here is the smallest case where it
+does. Let \(X\) be 0 or 1 with probability \(1/2\), with \(f(1) = 10\) and \(f(0) = 0\), and let
+the score be \(+1\) at \(X=1\) and \(-1\) at \(X=0\).</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  estimator  (f(X) - b) * score
+
+  b = 0     X=1 ->  +10        X=0 ->   0      mean 5   values {10, 0}
+                                                  variance 25
+
+  b = 5     X=1 ->  +5         X=0 ->  +5      mean 5   values {5, 5}
+                                                  variance 0
+
+  same mean, and the second estimator never moves at all
+</pre></div><div class="cap"><b>A baseline buys precision, not accuracy.</b> The mean was
+already right; the baseline removes the part of the variation that cancelled out anyway.</div></div>
+
+<p>Check the numbers. With \(b = 0\) the estimator takes values 10 and 0, so
+\(\mathbb{E}[\text{est}^2] = 50\) and the mean is 5, giving a variance of 25. With \(b = 5\) both
+draws give \(5\), so the variance is 0 &mdash; and the mean is still 5. Nothing was lost and
+everything was gained, because \(b\) subtracted a quantity that had no effect on the mean in the
+first place.</p>
+
+<p>The best baseline in general is not the mean of \(f\) but the conditional expectation
+\(\mathbb{E}[f \mid \text{state}]\), which is exactly what a value function in reinforcement
+learning estimates. That is why actor-critic methods carry a critic at all: it is a variance
+reduction device wearing the costume of a second network.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  Why may you subtract a constant baseline from a score-function estimator without introducing
+  bias?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(\mathbb{E}[\nabla_\theta \log p_\theta(X)] = 0\), so the baseline's contribution to
+  the mean is zero.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  In the two-point example, what are the estimator's variance with \(b=0\) and with \(b=5\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  25 with \(b=0\) (values 10 and 0) and 0 with \(b=5\) (both values 5); the mean is 5 either
+  way.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.3</span></span>
+  What is the ideal baseline, and what role does it play in actor-critic methods?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[f \mid \text{state}]\), estimated by the value function &mdash; the critic exists
+  to supply the baseline.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.4</span></span>
+  What does an unbiased estimator with large variance fail to guarantee?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  That any single run lands near the truth &mdash; unbiasedness is a statement about the average
+  over infinitely many runs.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part IV &mdash; Where this lands in generative AI</div>
+
+<h2>10 &middot; Every loss is an expectation, and every problem is a variance</h2>
+
+<p>A training loop computes a number from a minibatch and takes a gradient step. That number is
+an estimate of an average over a distribution of data, and the whole of this essay is about what
+that sentence does and does not guarantee.</p>
+
+<div class="mathblock">
+\[ \mathcal{L}(\theta) = \mathbb{E}_{x \sim p_{\text{data}}}\big[\ell_\theta(x)\big] \approx \frac{1}{B}\sum_{i=1}^{B} \ell_\theta(x_i) \]
+</div>
+
+<p>Linearity is why the gradient of the estimate is an estimate of the gradient, when the
+sampling distribution does not depend on \(\theta\). When it does &mdash; which is exactly the
+case for a policy or an encoder &mdash; linearity is not enough, and you need the score function
+trick or a reparameterization. Recognizing which case you are in is most of the skill.</p>
+
+<table>
+<tr><th>from this essay</th><th>where it reappears</th></tr>
+<tr><td>expectation as a weighted average</td><td>the objective in every essay: \(\mathcal{L} = \mathbb{E}_{x\sim p_{\text{data}}}[\ell(x)]\) in <i>GAN-Curious</i>, \(\mathbb{E}_{q_\phi(z\mid x)}[\log p_\theta(x\mid z)]\) in <i>VAE-Curious</i>, \(\mathbb{E}_{\pi_\theta}[r]\) in <i>RLHF-Curious</i></td></tr>
+<tr><td>linearity of expectation</td><td>the legality of swapping \(\nabla_\theta\) and \(\mathbb{E}\) when the sampling distribution is independent of \(\theta\) &mdash; the first move in <i>Foundations-Curious</i>, and the reason a second estimator is needed when it fails</td></tr>
+<tr><td>indicators and the fundamental bridge</td><td>PPO's clipped objective in <i>RLHF-Curious</i>: the clip activates on a subset of samples, and that subset is an indicator inside the expectation</td></tr>
+<tr><td>LOTUS</td><td>why you can average a loss without ever knowing the loss's own distribution &mdash; the loss is not invertible, and it does not have to be</td></tr>
+<tr><td>\(\mathrm{Var}(X+Y) = \mathrm{Var}X + \mathrm{Var}Y + 2\mathrm{Cov}\)</td><td>the variance of a minibatch gradient across examples; correlated samples inflate it, which is why data is shuffled and why stratified sampling helps</td></tr>
+<tr><td>the square-root tax</td><td>batch size as a compute-for-variance dial: quadrupling \(B\) halves the gradient noise, in every essay in the series</td></tr>
+<tr><td>zero-mean score, and the baseline</td><td><i>RLHF-Curious</i>: the advantage \(A = Q - V\) is precisely the baseline of section 9, and subtracting it is what makes REINFORCE usable</td></tr>
+<tr><td>moments and MGFs</td><td>not used directly anywhere in the series; they matter for the central limit theorem in the seventh essay and for understanding why "matching the first two moments" is a weak guarantee</td></tr>
+</table>
+
+<p>The one place this essay is most load-bearing is the VAE. Its reconstruction term,
+\(\mathbb{E}_{q_\phi(z\mid x)}[\log p_\theta(x\mid z)]\), is an expectation under a distribution
+that depends on the parameters &mdash; so the naive gradient is biased, the score-function
+estimator is unbiased but has variance large enough to be useless at realistic dimensions, and
+the reparameterization trick fixes it by rewriting the sample as a deterministic function of
+noise. That whole story is one sentence: <i>same mean, smaller variance</i>.</p>
+
+<p>The habit to take away is a two-question diagnostic. What is the expectation here, and under
+which distribution? And what is the variance of my estimate of it? The first question finds the
+objective. The second finds the bug.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.1</span></span>
+  A minibatch loss with \(B\) examples estimates an expectation. What is the standard deviation
+  of that estimate, and in which quantity is it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\sigma/\sqrt{B}\), where \(\sigma\) is the standard deviation of the per-example loss.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.2</span></span>
+  When is linearity enough to justify swapping a gradient and an expectation, and when is it
+  not?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Enough when the distribution being averaged over does not depend on \(\theta\); not enough when
+  it does, which is when the score-function or reparameterization trick is needed.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.3</span></span>
+  What is the RLHF advantage \(A = Q - V\) in the language of this essay?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A baseline: a quantity subtracted from the reward whose own expected contribution is zero, so
+  the estimator stays unbiased while its variance falls.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.4</span></span>
+  Why does the reparameterization trick count as variance reduction rather than bias removal?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the score-function estimator was already unbiased; the trick keeps the same mean and
+  replaces a high-variance estimate with a low-variance one by moving the randomness outside the
+  parameters.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from Blitzstein &amp; Hwang, <i>Introduction to Probability</i>, chapter 4 and
+&sect;6.1&ndash;&sect;6.6. Typeset with KaTeX. Source: <i>viz/prob-4.body.html</i>,
+assembled by <i>build/build-essay.js</i>.</p>

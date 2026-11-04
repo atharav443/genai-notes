@@ -1,0 +1,853 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conditional probability, Bayes, and being fooled by base rates</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/Prob2-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/prob-2.body.html</code>.</div>
+
+<h1>Conditional probability,<br>Bayes, and being<br>fooled by base rates</h1>
+<h1 class="sub-title">What happens to a probability when you learn something, why the answer
+surprises almost everyone the first time, and why an integral you cannot compute is the reason
+variational autoencoders exist</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question and its
+answer. They are not decoration. They are the essay testing you &mdash; and if you take them
+seriously, you will remember this material for years instead of days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong is useful;
+the effort of a failed recall is what makes the next one stick. The cards here are
+deliberately small: one fact, one step, one number each.</p>
+
+<p>This is the second of seven essays on probability. It needs the first one — sample spaces,
+events, counting — and nothing else. It is also the essay to read before any of the
+generative-AI material, because every one of those models is, at bottom, a conditional
+distribution: the distribution of the next token <i>given</i> the previous ones, of an image
+<i>given</i> a prompt, of a latent code <i>given</i> a picture.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; The room gets smaller</div>
+
+<h2>1 &middot; A hundred people, and a smaller room</h2>
+
+<p>A hundred people are in a hall. Sixty of them drink tea. Thirty of those sixty also drink
+coffee. You pick a person at random, and someone whispers in your ear: <i>this one drinks
+tea</i>. Now what is the chance they drink coffee?</p>
+
+<p>Not \(30/100\). The whisper did something to the problem that is easy to state and easy to
+get wrong: it threw away forty people. The forty who do not drink tea are gone, and any
+probability you quote is now a probability among the sixty who remain. Thirty of the sixty
+drink coffee, so the answer is \(30/60 = 1/2\).</p>
+
+<p>That is the whole definition. Conditioning on an event is deleting the outcomes where that
+event did not happen, and then renormalising so the survivors still weigh one between
+them.</p>
+
+<div class="mathblock">
+\[ P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \qquad P(B) > 0 \]
+</div>
+
+<div class="fig"><div class="box"><pre class="d">
+  before the whisper:  100 people, each weight 1/100
+
+    +----------------------+--------+
+    |  tea, and coffee  30 | tea 30 |
+    |                      |        |
+    +----------------------+--------+
+    |        neither  40           |
+    +------------------------------+
+
+  after the whisper:  the 40 are deleted, and the 60 rescale to 1
+
+    +----------------------+--------+
+    |  tea, and coffee  30 | tea 30 |
+    |  weight  30/60 = 1/2 |  1/2   |
+    +----------------------+--------+
+
+  P(coffee | tea) = 1/2,  not 30/100
+</pre></div><div class="cap"><b>Conditioning is deletion plus rescaling.</b> The numerator
+is the survivors who also satisfy the new condition; the denominator is all the survivors, and
+it is there because the deleted mass has to go somewhere.</div></div>
+
+<p>The numerator is doing the obvious thing &mdash; keeping the people who are both. The
+denominator is doing the non-obvious thing, and it is the part worth naming. Dividing by
+\(P(B)\) is not bookkeeping; it is the act of pretending that \(B\) was the whole world all
+along. Without it, the numbers would not sum to one and none of the machinery would work.</p>
+
+<p>Notice also what conditioning does not do. It does not change the truth about any person;
+it changes the question. This person's coffee habit is a fixed fact. What moved is your
+information.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  Write the definition of \(P(A \mid B)\) and say in words what the denominator is doing
+  there.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(A \mid B) = P(A \cap B)/P(B)\). The denominator renormalises: conditioning deletes the
+  outcomes outside \(B\), and dividing by \(P(B)\) makes the survivors sum to one.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  Of 100 people, 60 drink tea and 30 of those drink coffee too. Given that a person drinks
+  tea, what is the probability they drink coffee?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(30/60 = 1/2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  Why must \(P(A \mid B) + P(A^c \mid B) = 1\) for any \(B\) with positive probability?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because inside the shrunken space \(B\), the two events are complementary and cover it, and
+  the conditional weights sum to one by construction.</p>
+</div>
+
+<h2>2 &middot; Trees, and the multiplication rule again</h2>
+
+<p>Two cards are dealt from a well-shuffled deck. What is the chance both are aces?</p>
+
+<p>Here is the trouble with the unconditional view: the second card's probability depends on
+what the first card was, so there is no single number for &ldquo;the chance the second card is
+an ace&rdquo; until you say what happened first. Conditioning is what makes the question
+answerable, and it answers it by turning one hard question into two easy ones.</p>
+
+<div class="mathblock">
+\[ P(A \cap B) = P(A \mid B)\,P(B) = P(B \mid A)\,P(A) \]
+</div>
+
+<p>Read it as a chain: the chance of both is the chance of the first, times the chance of the
+second given the first. For the aces, the first card is an ace with probability \(4/52\).
+Given that, three aces remain among 51 cards, so the second is an ace with probability
+\(3/51\).</p>
+
+<div class="mathblock">
+\[ P(\text{both aces}) = \frac{4}{52} \times \frac{3}{51} = \frac{12}{2652} = \frac{1}{221} \approx 0.00452 \]
+</div>
+
+<p>The same product read the other way round &mdash; second card first, then first card given
+the second &mdash; gives the identical number, which is worth checking once because it is the
+identity that Bayes' rule is built on.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  first card          second card              path weight
+  ------------------- ------------------------- -------------
+  ace      4/52   ->  ace      3/51           12/2652
+                      not ace  48/51           192/2652
+  not ace  48/52  ->  ace      4/51            192/2652
+                      not ace  47/51           2256/2652
+                                             -------------
+                                             2652/2652  ok
+</pre></div><div class="cap"><b>A two-stage tree.</b> Each path's weight is a product along
+the path, and the four weights sum to one. The two middle paths are equal, which is not a
+coincidence &mdash; it is the symmetry that makes the deck's order irrelevant.</div></div>
+
+<p>The multiplication rule is where the phrase &ldquo;a chain of conditional probabilities&rdquo;
+comes from, and it is the reason autoregressive language models work at all: the probability of
+a sentence is the probability of its first token, times the second given the first, times the
+third given the first two, and so on down a tree with one level per position.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  State the multiplication rule in both of its symmetric forms.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(A \cap B) = P(A \mid B)P(B) = P(B \mid A)P(A)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  Two cards are dealt. What is the probability both are aces?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\frac{4}{52} \times \frac{3}{51} = \frac{1}{221} \approx 0.00452\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  Why does a tree's path weights always sum to one, no matter how deep it is?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because each node's outgoing probabilities sum to one, so the leaves partition all the mass
+  --- the tree is just the multiplication rule applied level by level.</p>
+</div>
+
+<h2>3 &middot; The law of total probability</h2>
+
+<p>Two urns. The first holds 3 red and 2 blue balls; the second holds 1 red and 4 blue. You
+flip a fair coin, take an urn, and draw one ball. What is the chance it is red?</p>
+
+<p>You cannot answer directly, because the answer depends on the urn and you do not know which
+urn you got. But the coin is the missing piece, and it partitions the world into two cases you
+<i>can</i> compute.</p>
+
+<div class="mathblock">
+\[ P(\text{red}) = P(\text{red} \mid \text{urn 1})P(\text{urn 1}) + P(\text{red} \mid \text{urn 2})P(\text{urn 2}) \]
+\[ = \tfrac{3}{5} \cdot \tfrac{1}{2} + \tfrac{1}{5} \cdot \tfrac{1}{2} = 0.3 + 0.1 = 0.4 \]
+</div>
+
+<p>Four in ten. And the shape of the calculation is the general statement: if \(B_1, \dots,
+B_k\) split the sample space into disjoint pieces that together cover it, then</p>
+
+<div class="mathblock">
+\[ P(A) = \sum_{i=1}^{k} P(A \mid B_i)\,P(B_i) \]
+</div>
+
+<p>This is the law of total probability, and it deserves its name. It says a probability you
+cannot compute directly can be assembled from pieces you can. It is the single most useful
+computational move in the subject, and it is what makes Bayes' rule possible: read the formula
+right to left and it is a numerator; read it as a whole and it is the denominator.</p>
+
+<div class="aside">
+<span class="who">Both conditions matter</span>
+<b>Disjoint is not enough, and covering is not enough.</b> If the pieces overlap you will
+double-count &mdash; the same error as adding \(P(A)\) and \(P(B)\) without subtracting the
+intersection. If they fail to cover the space you will silently drop mass, and the answer will
+be too small with no warning. When a total-probability computation gives a suspiciously round
+or surprisingly small number, check the partition before checking the arithmetic.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  State the law of total probability for a partition \(B_1, \dots, B_k\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(A) = \sum_i P(A \mid B_i)P(B_i)\), given the \(B_i\) are disjoint and exhaust the sample
+  space.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  Urn 1 has 3 red of 5, urn 2 has 1 red of 5, and the urn is chosen by a fair coin. What is
+  \(P(\text{red})\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\tfrac12 \cdot \tfrac35 + \tfrac12 \cdot \tfrac15 = 0.3 + 0.1 = 0.4\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
+  What two properties must the conditioning events have before the law applies, and what goes
+  wrong if one fails?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  They must be disjoint and cover the space. Overlap double-counts mass; a gap drops it, and
+  both errors are silent.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part II &mdash; Turning it around</div>
+
+<h2>4 &middot; Bayes' rule, and the version you can do in your head</h2>
+
+<p>A test comes back positive. You want to know the chance you have the disease. The
+manufacturer has told you the reverse: the chance of a positive result, given the disease.
+Those are two different conditional probabilities, and confusing them is the most expensive
+mistake in applied probability.</p>
+
+<p>Bayes' rule is the exchange rate between them, and it is nothing but the multiplication rule
+written twice and divided.</p>
+
+<div class="mathblock">
+\[ P(B \mid A) = \frac{P(A \mid B)\,P(B)}{P(A)} \qquad\text{and, with total probability in the denominator,}\qquad P(B \mid A) = \frac{P(A \mid B)\,P(B)}{P(A \mid B)P(B) + P(A \mid B^c)P(B^c)} \]
+</div>
+
+<p>Four quantities with names worth owning. \(P(B)\) is the <i>prior</i>: what you believed
+before the test. \(P(A \mid B)\) is the <i>likelihood</i>: how often the evidence appears when
+the hypothesis is true. \(P(A)\) is the <i>evidence</i>: how often it appears at all. And
+\(P(B \mid A)\) is the <i>posterior</i>: what you should believe now.</p>
+
+<h3>The odds form, and why it is the one that fits in your head</h3>
+
+<p>Divide the posterior by the posterior of the negation and the \(P(A)\) cancels:</p>
+
+<div class="mathblock">
+\[ \frac{P(B \mid A)}{P(B^c \mid A)} = \frac{P(A \mid B)}{P(A \mid B^c)} \times \frac{P(B)}{P(B^c)} \qquad\text{posterior odds} = \text{likelihood ratio} \times \text{prior odds} \]
+</div>
+
+<p>This is the form people can actually reason with, because odds compose by multiplication and
+because the likelihood ratio is the one number a test can legitimately advertise. It also
+explains immediately why a great test can still leave you unconvinced: multiplying odds by 19
+does almost nothing to odds of 1 to 99.</p>
+
+<p>Concretely. A disease affects 1% of people. A test catches 95% of cases and falsely flags 5%
+of healthy people. You test positive. What is the chance you have it?</p>
+
+<div class="mathblock">
+\[ P(D \mid +) = \frac{0.95 \times 0.01}{0.95 \times 0.01 + 0.05 \times 0.99} = \frac{0.0095}{0.0095 + 0.0495} = \frac{0.0095}{0.059} \approx 0.161 \]
+</div>
+
+<p>Sixteen percent. In odds: prior 1 to 99, likelihood ratio \(0.95/0.05 = 19\), posterior odds
+\(19\) to \(99\), which is \(19/118 \approx 0.161\). Same number, and the odds version shows
+where it came from in one line.</p>
+
+<h3>Coherency: the order of evidence cannot matter</h3>
+
+<p>Learn \(A\), then \(B\). Or learn \(B\), then \(A\). Bayes' rule applied twice gives the same
+posterior both times, because both are \(P(B \mid A \cap B)P(A \cap B)/P(A \cap B)\) in
+disguise. This is the coherency property of §2.6, and it is worth knowing because it is a
+<i>test</i>: any belief-updating scheme that depends on the order in which you heard things is
+wrong, and you can detect it without knowing the right answer.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  Write Bayes' rule and name its four parts.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(B \mid A) = P(A \mid B)P(B)/P(A)\): prior \(P(B)\), likelihood \(P(A \mid B)\), evidence
+  \(P(A)\), posterior \(P(B \mid A)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  Prevalence 1%, sensitivity 95%, false-positive rate 5%. What is \(P(D \mid +)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(0.0095/0.059 \approx 0.161\) &mdash; about 16%.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  In the odds form of Bayes' rule, what does the likelihood ratio multiply, and what is its
+  value in the 95%/5% test?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It multiplies the prior odds; here \(0.95/0.05 = 19\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.4</span></span>
+  State the coherency property and why it is a useful check.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Bayesian updating is order-independent: hearing \(A\) then \(B\) gives the same posterior as
+  \(B\) then \(A\). Any scheme whose answer depends on the order is therefore wrong.</p>
+</div>
+
+<h2>5 &middot; A rare disease, in full</h2>
+
+<p>One person in ten thousand has a condition. The test is excellent: it catches 99% of cases,
+and it falsely flags 1% of healthy people. You test positive.</p>
+
+<p>Almost everyone says the chance is about 99%. It is about one percent, and the gap between
+those two answers is the single most consequential error in this chapter. Here is the
+arithmetic.</p>
+
+<div class="mathblock">
+\[ P(D \mid +) = \frac{0.99 \times 0.0001}{0.99 \times 0.0001 + 0.01 \times 0.9999} = \frac{0.000099}{0.000099 + 0.009999} = \frac{0.000099}{0.010098} \approx 0.0098 \]
+</div>
+
+<p>Under one percent. Now the same fact in whole people, which is how it should have been
+explained in the first place. Take a million people.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  one million people tested
+
+    have the disease       100      ->   99 test positive
+    do not                 999,900  ->  9,999 test positive
+
+                                       10,098 positives in all
+
+    of those 10,098, how many really have it?   99
+
+    P(disease | positive) = 99 / 10,098 = 0.0098
+</pre></div><div class="cap"><b>Natural frequencies.</b> The false positives outnumber the true
+ones a hundred to one, not because the test is bad but because there are ten thousand times as
+many healthy people to be wrong about.</div></div>
+
+<p>The lesson generalises into a rule of thumb. When the prior is tiny, the likelihood ratio has
+to be <i>enormous</i> to move the posterior, because it is fighting a hundred-to-one or
+ten-thousand-to-one head start. A test that multiplies your odds by 99 is impressive, and 99
+times one-in-ten-thousand is still about one-in-a-hundred.</p>
+
+<p>The corollary is uncomfortable and worth stating: the same positive result means very
+different things for a person with symptoms and a person picked at random. The test did not
+change. The prior did.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Prevalence 1 in 10,000, sensitivity 99%, false positives 1%. What is \(P(D \mid +)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(0.000099/0.010098 \approx 0.0098\), under one percent.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  In a million people, how many true positives and how many false positives does that test
+  produce?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  99 true positives and 9,999 false positives &mdash; out of 10,098 positives.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  The same test is given to two people and both test positive. Why can the two posteriors
+  differ enormously?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because their priors differ &mdash; symptoms versus a random screening &mdash; and Bayes' rule
+  multiplies the likelihood ratio into the prior odds.</p>
+</div>
+
+<h2>6 &middot; Conditional probabilities are probabilities</h2>
+
+<p>A short section with a large payoff. Fix an event \(B\) with \(P(B) > 0\) and define a new
+set of weights by \(A \mapsto P(A \mid B)\). Then that function satisfies all three axioms.</p>
+
+<p>Non-negative, because both numerator and denominator are. The whole space gets weight
+\(P(S \mid B) = P(S \cap B)/P(B) = 1\). And for disjoint \(A_1, A_2\), the intersections with
+\(B\) are disjoint too, so the weights add.</p>
+
+<p>What this buys is not a new theorem but the licence to reuse every old one. Inclusion&ndash;
+exclusion, the union bound, complementary events, independence — all of it transfers inside the
+shrunken space, for free, without re-proving anything. It is the same reason a change of units
+does not invalidate an equation.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  Fix \(B\) with \(P(B) > 0\). Why is \(A \mapsto P(A \mid B)\) a probability in its own
+  right?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It satisfies all three axioms: non-negative, \(P(S \mid B) = 1\), and additive over disjoint
+  events.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  What does that fact let you do that you otherwise could not?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Apply every theorem already proved about probabilities &mdash; inclusion&ndash;exclusion, the
+  union bound, complements &mdash; inside the conditional space without re-deriving them.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part III &mdash; Independence, and four ways to be fooled</div>
+
+<h2>7 &middot; Independence is an assumption you make</h2>
+
+<p>Flip a coin twice. Does the first result tell you anything about the second? No &mdash; and
+that &ldquo;no&rdquo; is not a theorem about coins. It is a claim about the world that you are
+entitled to assert and that could turn out to be false.</p>
+
+<div class="mathblock">
+\[ A, B \text{ independent} \iff P(A \cap B) = P(A)\,P(B) \iff P(A \mid B) = P(A) \]
+</div>
+
+<p>Independence means conditioning tells you nothing: learning \(B\) leaves \(A\)'s probability
+exactly where it was. The multiplicative form is the one to remember, because it is the form
+that extends to three events and to random variables.</p>
+
+<p>The most useful consequence is a freebie: independence propagates to complements. If \(A\)
+and \(B\) are independent, so are \(A\) and \(B^c\), and \(A^c\) and \(B^c\). The reason is a
+two-line computation with total probability, and the intuition is that a fact which tells you
+nothing about \(A\) also tells you nothing about its negation.</p>
+
+<p>One warning, because this is where the words part company from the mathematics. In everyday
+speech &ldquo;independent&rdquo; suggests two things that do not interact. In probability it is
+a numerical condition on a joint distribution, and two events can satisfy it while being
+causally entangled in the most intimate way — see the next section, where the assumption is
+precisely what fails.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  Give two equivalent definitions of independence for events \(A\) and \(B\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(A \cap B) = P(A)P(B)\), equivalently \(P(A \mid B) = P(A)\) when \(P(B) > 0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  Is independence of two coin flips a theorem or an assumption?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  An assumption about the experiment, asserted from symmetry &mdash; it is never derived.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  If \(A\) and \(B\) are independent, what follows for \(A\) and \(B^c\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  They are also independent: a fact that says nothing about \(A\) says nothing about its
+  complement either.</p>
+</div>
+
+<h2>8 &middot; Pairwise is not mutual, and conditional is not either</h2>
+
+<p>Mutual independence for three events means every subset factors, not just the pairs:</p>
+
+<div class="mathblock">
+\[ P(A \cap B) = P(A)P(B), \quad P(A \cap C) = P(A)P(C), \quad P(B \cap C) = P(B)P(C), \quad P(A \cap B \cap C) = P(A)P(B)P(C) \]
+</div>
+
+<p>All four, or it is not mutual. This is not pedantry. Toss two fair coins and define \(A\) =
+&ldquo;first is heads&rdquo;, \(B\) = &ldquo;second is heads&rdquo;, \(C\) = &ldquo;the two coins
+match&rdquo;. Each pair is independent: \(P(A \cap B) = 1/4 = P(A)P(B)\), and similarly for the
+other two pairs. But \(P(A \cap B \cap C) = 1/4\), not \(1/8\), because the first two already
+force the third.</p>
+
+<p>Now the harder and more useful distinction. <i>Conditional</i> independence means</p>
+
+<div class="mathblock">
+\[ P(A \cap B \mid C) = P(A \mid C)\,P(B \mid C) \]
+</div>
+
+<p>and it is genuinely orthogonal to plain independence &mdash; neither implies the other. Both
+directions have a standard example, and both are worth carrying.</p>
+
+<table>
+<tr><th>relationship</th><th>example</th><th>why</th></tr>
+<tr><td>dependent, but conditionally independent</td><td>\(A\) = student 1 passes, \(B\) = student 2 passes, \(C\) = the exam was easy</td><td>unconditionally the shared cause links them; given \(C\) they are just two students</td></tr>
+<tr><td>independent, but conditionally dependent</td><td>\(A\) = coin 1 is heads, \(B\) = coin 2 is heads, \(C\) = exactly one is heads</td><td>marginally the coins are unrelated; given exactly one head, knowing \(A\) settles \(B\)</td></tr>
+</table>
+
+<p>The first row is the whole idea behind latent-variable modelling: observations are dependent
+because they share a hidden cause, and once you condition on the cause they fall apart. Every
+mixture model, every factor model, and every generative model with latents is built on exactly
+this shape.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  What must hold for three events to be mutually independent?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Every pair must factor <i>and</i> the triple must factor:
+  \(P(A \cap B \cap C) = P(A)P(B)P(C)\), not just the three pairwise conditions.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  Two fair coins, \(A\) = first heads, \(B\) = second heads, \(C\) = they match. Which condition
+  fails, and what are the numbers?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The triple: \(P(A \cap B \cap C) = 1/4\) while \(P(A)P(B)P(C) = 1/8\). All three pairs do
+  factor.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  Give an example of two events that are independent but conditionally dependent given a third.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Two fair coins, conditioned on &ldquo;exactly one is heads&rdquo;: the coins are marginally
+  independent, but given that, either result determines the other.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  Why is &ldquo;dependent, but conditionally independent given a common cause&rdquo; the shape
+  that latent-variable models rely on?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because it says observations are linked only through a hidden variable, so conditioning on
+  that variable factorises them &mdash; which is what makes a latent model tractable at all.</p>
+</div>
+
+<h2>9 &middot; Conditioning as a way to solve problems</h2>
+
+<p>How many tosses of a fair coin until you see two heads in a row?</p>
+
+<p>You cannot list the ways, because the process can run arbitrarily long. But you can condition
+on the first toss and get an equation rather than a sum. This is called first-step analysis and
+it is the most powerful use of conditioning there is.</p>
+
+<p>Let \(x\) be the expected number of further tosses from a clean start, and \(y\) the expected
+number of further tosses given that the last toss was a head. Condition on the next toss.</p>
+
+<div class="mathblock">
+\[ x = 1 + \tfrac12\,y + \tfrac12\,x \qquad\qquad y = 1 + \tfrac12 \cdot 0 + \tfrac12\,x \]
+</div>
+
+<p>From the first, \(x = 2 + y\). Substitute into the second: \(y = 1 + \tfrac12(2+y)\), so
+\(y = 4\) and \(x = 6\). Six tosses on average. The first equation says a tail puts you back
+where you started; the second says a head after a head ends the game with no further tosses.</p>
+
+<p>The same move solves gambler's ruin. A fair game, you start with 1 unit, you stop at 3 or at
+0. Let \(p_i\) be the chance of reaching 3 from \(i\). Condition on the next step:
+\(p_i = \tfrac12 p_{i-1} + \tfrac12 p_{i+1}\), with \(p_0 = 0\) and \(p_3 = 1\). The solution
+is a straight line, \(p_i = i/3\), so \(p_1 = 1/3\). With a fair coin, your chance of doubling
+from 1 to 3 before busting is exactly one in three.</p>
+
+<div class="aside">
+<span class="who">Where this breaks</span>
+<b>First-step analysis needs the future to depend on the present only through a summary.</b>
+For &ldquo;two heads in a row&rdquo; the summary is &ldquo;did the last toss show a head&rdquo;
+&mdash; two states suffice. For &ldquo;three heads in a row&rdquo; you would need three. Choose
+the summary badly and you get equations that are not closed, which is the tell that your state
+is too coarse.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  How many tosses of a fair coin, on average, until two heads in a row?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Six.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  In first-step analysis, what does conditioning on the first step actually buy you?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A recursion instead of an infinite sum: the quantity you want is expressed in terms of
+  itself, evaluated in a simpler state.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.3</span></span>
+  In a fair game starting from 1 unit with absorbing barriers at 0 and 3, what is the chance of
+  reaching 3 first?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(1/3\), because the solution of \(p_i = \tfrac12(p_{i-1}+p_{i+1})\) with those boundaries is
+  \(p_i = i/3\).</p>
+</div>
+
+<h2>10 &middot; Four ways to be fooled</h2>
+
+<p>Each of these is the same error in a different costume: a conditional probability quoted with
+the conditioning event silently swapped.</p>
+
+<h3>Monty Hall</h3>
+
+<p>Three doors, one prize. You pick a door. The host, who knows where the prize is, opens a
+different door showing nothing, then offers you the swap. Your door holds the prize with
+probability \(1/3\); the remaining unopened door holds it with probability \(2/3\). The host's
+action was not random &mdash; it was conditioned on where the prize is &mdash; and that is why
+the two doors are no longer symmetric. Switching wins twice as often.</p>
+
+<h3>The prosecutor's fallacy</h3>
+
+<p>A DNA profile matches one person in a million. A suspect is found in a city of two million
+and matches. What is the chance he is innocent? Not one in a million.</p>
+
+<p>The quoted number is \(P(\text{match} \mid \text{innocent})\), which is \(10^{-6}\). The
+question is \(P(\text{innocent} \mid \text{match})\). Among two million innocent people you
+expect about two matches, so with one guilty party there are roughly three matching people in
+the city and the chance this one is innocent is about \(2/3\). Same number, inverted
+conditional, and the answer moves from one in a million to two in three.</p>
+
+<h3>The two-children problem</h3>
+
+<p>&ldquo;At least one of my two children is a boy.&rdquo; The chance both are boys is \(1/3\),
+because the surviving sample space is \(\{BB, BG, GB\}\). &ldquo;My elder child is a boy.&rdquo;
+The chance both are boys is \(1/2\), because the surviving space is \(\{BB, BG\}\). The two
+sentences feel like the same information and are not; the first is a statement about a set of
+outcomes, the second about a named individual.</p>
+
+<h3>Simpson's paradox</h3>
+
+<p>Treatment A beats treatment B in the mild cases and in the severe cases, yet loses overall.</p>
+
+<table>
+<tr><th>group</th><th>A</th><th>A rate</th><th>B</th><th>B rate</th></tr>
+<tr><td>mild</td><td>81 / 87</td><td>93.1%</td><td>234 / 270</td><td>86.7%</td></tr>
+<tr><td>severe</td><td>192 / 263</td><td>73.0%</td><td>55 / 80</td><td>68.8%</td></tr>
+<tr><td><b>combined</b></td><td>273 / 350</td><td><b>78.0%</b></td><td>289 / 350</td><td><b>82.6%</b></td></tr>
+</table>
+
+<p>The reversal is not a trick of arithmetic; it is that A was given mostly to severe cases and
+B mostly to mild ones. The overall rate is a weighted average of the two strata, and the weights
+differ between the arms. Whenever a marginal comparison and a conditional one disagree, the
+conditional one is the causal one &mdash; provided you know which variable to condition on,
+which is exactly the hard part.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.1</span></span>
+  In Monty Hall, what is the probability of winning if you switch, and why is the host's
+  knowledge essential?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(2/3\). The host's choice is conditioned on the prize's location, so the two unopened doors
+  are not symmetric.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.2</span></span>
+  A profile matches one in a million; the city holds two million. Roughly what is the chance a
+  matching suspect is innocent, and which conditional was misquoted?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  About \(2/3\). The quoted \(10^{-6}\) is \(P(\text{match} \mid \text{innocent})\), not
+  \(P(\text{innocent} \mid \text{match})\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.3</span></span>
+  Why does &ldquo;at least one is a boy&rdquo; give \(1/3\) for two boys while &ldquo;the elder
+  is a boy&rdquo; gives \(1/2\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The first leaves three equally likely outcomes \(\{BB,BG,GB\}\), the second leaves two
+  \(\{BB,BG\}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.4</span></span>
+  What mechanism produces Simpson's paradox, in one sentence?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  An unadjusted confounder whose distribution differs between the groups, so the marginal rate
+  is a weighted average with different weights on each side.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part IV &mdash; Where this lands in generative AI</div>
+
+<h2>11 &middot; The integral in the denominator</h2>
+
+<p>Train a model on pictures. The model has a latent variable \(z\) &mdash; a compressed
+description &mdash; and the generative story is \(p(x, z) = p(z)\,p(x \mid z)\): draw a code,
+then draw a picture from it. To score a picture you need \(p(x)\), and total probability says</p>
+
+<div class="mathblock">
+\[ p(x) = \int p(x \mid z)\,p(z)\,dz \]
+</div>
+
+<p>That integral is over every possible code, in however many dimensions the latent space has,
+and it has no closed form for any interesting model. Everything in the variational essay follows
+from this one sentence. The posterior you actually want,</p>
+
+<div class="mathblock">
+\[ p(z \mid x) = \frac{p(x \mid z)\,p(z)}{p(x)} \]
+</div>
+
+<p>is Bayes' rule with an uncomputable denominator &mdash; which is why you approximate it with a
+second network and why the approximation turns the log-likelihood into a lower bound. The
+<span class="small">ELBO</span> is not a modelling choice; it is what you do when the evidence
+in Bayes' rule will not evaluate.</p>
+
+<table>
+<tr><th>from this essay</th><th>where it reappears</th></tr>
+<tr><td>Bayes' rule with an intractable evidence term</td><td><i>VAE-Curious</i>: \(p(z \mid x)\) has \(p(x) = \int p(x \mid z)p(z)\,dz\) in its denominator, so the posterior is approximated by \(q_\phi(z \mid x)\) and \(\log p(x) = \mathrm{ELBO} + \mathrm{KL}(q \,\|\, p(z \mid x))\)</td></tr>
+<tr><td>the definition \(P(A \mid B) = P(A \cap B)/P(B)\)</td><td><i>GAN-Curious</i>: the optimal discriminator is \(D^*(x) = p_{\text{data}}(x)/(p_{\text{data}}(x) + p_g(x))\), the posterior probability that \(x\) came from the data rather than the generator</td></tr>
+<tr><td>law of total probability</td><td>the marginal \(p(x) = \int p(x \mid z)p(z)\,dz\) above, and every mixture model's density</td></tr>
+<tr><td>odds form, i.e. a likelihood ratio</td><td><i>RLHF-Curious</i>: DPO's implicit reward is \(\beta \log\frac{\pi_\theta(y \mid x)}{\pi_{\text{ref}}(y \mid x)}\), a log-likelihood ratio between two conditional distributions</td></tr>
+<tr><td>conditioning on the first step</td><td><i>RLHF-Curious</i>: the Bellman recursion \(V^\pi(s) = \mathbb{E}[\dots + \gamma V^\pi(s')]\), and <i>Diffusion-Curious</i>: \(q(x_{t-1} \mid x_t)\)</td></tr>
+<tr><td>conditional independence given a latent</td><td>the isotropic prior \(p(z) = \prod_i \mathcal{N}(z_i; 0, 1)\) used in every VAE, which <i>asserts</i> that the latent coordinates are independent</td></tr>
+<tr><td>base rates</td><td>preference datasets are wildly imbalanced in quality; the effective prior dominates the likelihood, exactly as in the rare-disease section</td></tr>
+</table>
+
+<p>One more connection, because it is the cleanest example of Bayes' rule surviving intact in a
+deep model. Classifier-free guidance asks for \(p(x \mid c)\) for a condition \(c\), and gets it
+by combining a conditioned and an unconditioned score. Written as gradients of log-densities,
+Bayes' rule gives</p>
+
+<div class="mathblock">
+\[ \nabla_x \log p(x \mid c) = \nabla_x \log p(x) + \nabla_x \log p(c \mid x) \]
+</div>
+
+<p>so the guided update is the unconditional direction plus a multiple of the classifier
+direction. The guidance scale is the multiple. Nothing about the conditional-probability
+structure changed; only the amount of the second term.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.1</span></span>
+  Why can no VAE compute \(p(z \mid x)\) exactly?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because Bayes' rule needs \(p(x) = \int p(x \mid z)p(z)\,dz\), an integral over the whole
+  latent space with no closed form.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.2</span></span>
+  The GAN discriminator \(D^*(x) = p_{\text{data}}/(p_{\text{data}} + p_g)\) is which
+  probability from this essay?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A posterior: the probability that \(x\) came from the data, given that it came from one of the
+  two distributions.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.3</span></span>
+  In classifier-free guidance, what plays the role of the likelihood and what of the prior?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\nabla_x \log p(c \mid x)\) is the likelihood term (the classifier direction) and
+  \(\nabla_x \log p(x)\) the prior term (the unconditional score).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.4</span></span>
+  Why is the isotropic prior \(p(z) = \prod_i \mathcal{N}(z_i; 0, 1)\) an assertion from section
+  7 rather than a derived fact?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It asserts that the latent coordinates are independent, which is a modelling choice made for
+  symmetry and convenience, not a consequence of anything.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from Blitzstein &amp; Hwang, <i>Introduction to Probability</i>, chapter 2
+(&sect;2.1&ndash;&sect;2.8). Typeset with KaTeX. Source: <i>viz/prob-2.body.html</i>,
+assembled by <i>build/build-essay.js</i>.</p>
+
+</body></html>

@@ -36,8 +36,10 @@ lavender, and the accent changes per topic instead of being one brand colour.
 
 **Per-article accents.** `build/inject-nav.js` holds an `ACCENTS` map and sets
 `data-accent` on `<html>` as part of the `site-js` block — GAN violet, VAE teal,
-diffusion orange, RLHF rose, foundations slate. `chrome.css` declares those palettes as `--accent`,
-`--accent-ink` and `--accent-wash`. Unmapped files fall back to indigo, and with JS
+diffusion orange, RLHF rose, foundations slate, and a seven-step blue → cyan → emerald → lime →
+fuchsia → amber → stone ramp for the probability series, so the seven read as one course in
+order. `chrome.css` declares those palettes as `--accent`, `--accent-ink` and
+`--accent-wash`; every palette an article can name lives there. Unmapped files fall back to indigo, and with JS
 off the fallback applies too, so nothing breaks.
 
 **Card grids.** `.grid` fits as many columns as the width allows (used for the three cheat
@@ -196,7 +198,8 @@ Cards follow the prompt-writing rules behind Quantum Country's mnemonic medium:
 Write cards with `card(q, a)` from the patch helpers and number them with `renumber()`,
 which assigns `Part.k` from the DOM order — never number by hand.
 
-Card counts: Foundations 57, GAN 57, VAE 44, Diffusion 42, RLHF 47.
+Card counts: Foundations 57, GAN 57, VAE 44, Diffusion 42, RLHF 47. Probability
+series: 36, 36, 35, 37, 32, 34, 34 — 244 in total, for 491 across the site.
 
 ## Rebuilding the GAN / VAE / diffusion / foundations essays
 
@@ -240,6 +243,50 @@ Keep the prefix.
 **Watch out:** the ladder bars deliberately have no CSS transition. A transition
 makes the rendered width impossible to verify in a headless snapshot — the bar reads
 as 0px under `--virtual-time-budget` because the animation clock never advances.
+## The probability series
+
+Seven essays sit in front of everything else: counting, conditional probability, distributions,
+expectation, continuous variables, joint distributions, and the limit theorems. They are the
+prerequisite layer under `Foundations-Curious`, and their source is **Blitzstein & Hwang,
+*Introduction to Probability***, one chapter per essay — not the IIT Madras notes. Each cites
+`§x.y` rather than page numbers.
+
+| essay | chapters | cards | accent |
+|---|---|---|---|
+| `Prob1-Curious` Counting, and what a probability is | 1 | 36 | blue |
+| `Prob2-Curious` Conditional probability, Bayes, base rates | 2 | 36 | cyan |
+| `Prob3-Curious` Random variables and the six distributions | 3 | 35 | emerald |
+| `Prob4-Curious` Expectation, variance, the fundamental bridge | 4 + 6 | 37 | lime |
+| `Prob5-Curious` Densities, bell curves, added noise | 5 | 32 | fuchsia |
+| `Prob6-Curious` Joint distributions, Jacobian, conditioning | 7–9 | 34 | amber |
+| `Prob7-Curious` Bounds, LLN, CLT | 10 (+ 12.1) | 34 | stone |
+
+`viz/PROB-SPEC.md` is the authoring contract all seven were written against — skeleton, card
+markup, numbering, class whitelist, and the writing rules below restated as a checklist. Read it
+before writing an eighth.
+
+```bash
+for n in 1 2 3 4 5 6 7; do
+  node build/build-essay.js viz/prob-$n.body.html viz/Prob$n-Curious.src.html
+  node viz/build/build-curious.js viz/Prob$n-Curious.src.html html/Prob$n-Curious.html \
+                                 notes/prob$n/flashcards.tsv
+done
+node build/inject-nav.js
+node build/build-index.js
+```
+
+Each prints `katex_failures=0` on success. They carry no PDF: like `Foundations-Curious`, they
+were written for the screen and the deck, and the print exports would need the same verification
+pass the GAN/VAE/diffusion PDFs got.
+
+Every essay closes by mapping its tools onto the algorithm essays — a section titled *Where
+this lands in generative AI*, one table naming the specific formula in `GAN-Curious`,
+`VAE-Curious`, `Diffusion-Curious` or `RLHF-Curious` where each idea reappears, and three to
+five cards. (`Prob1` folds it into its closing Part alongside the axioms; the other six give it
+a Part of its own.) That Part is the reason the series exists, so if you edit one, keep it
+concrete and keep it honest: `Prob3` says outright that the Poisson appears nowhere in the
+algorithm essays rather than inventing a connection.
+
 ## Rebuilding an RLHF article
 
 Both RLHF articles are rendered from the `.src.html` files in `viz/`. See

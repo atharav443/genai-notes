@@ -1,0 +1,720 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Densities, bell curves, and the noise we add on purpose</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/Prob5-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/prob-5.body.html</code>.</div>
+
+<h1>Densities, bell curves,<br>and the noise<br>we add on purpose</h1>
+<h1 class="sub-title">Why a density is not a probability, why there is only one bell curve, why
+the bus never remembers how long you have waited, and why a variational autoencoder writes its
+random sample as a formula instead of drawing it</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question and its
+answer. They are not decoration. They are the essay testing you &mdash; and if you take them
+seriously, you will remember this material for years instead of days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong is useful;
+the effort of a failed recall is what makes the next one stick. The cards here are
+deliberately small: one fact, one step, one number each.</p>
+
+<p>This is the fifth of seven essays on probability, and the first that needs calculus. It needs
+the third and fourth &mdash; random variables, and expectation &mdash; and it is the essay that
+makes diffusion legible, because diffusion is a story about Gaussian noise added a thousand
+times and removed a thousand times.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; A density is not a probability</div>
+
+<h2>1 &middot; A spinner, and a probability of zero</h2>
+
+<p>A spinner is a dial with a needle that stops uniformly anywhere on the circle. What is the
+chance it stops exactly on the mark at the top?</p>
+
+<p>Zero. Not small &mdash; zero. There are uncountably many places it could stop, each as
+likely as the next, and a millionth of the circle is not a number you can assign to a single
+point without the total becoming infinite. Yet the chance it stops in the top quarter is
+\(1/4\), which is not zero.</p>
+
+<p>The resolution is that probability is now an <i>area</i>, not a height. The object that gives
+heights is the <i>probability density function</i>, and its height at a point is not the
+probability of that point. It is the rate at which probability accumulates there.</p>
+
+<div class="mathblock">
+\[ P(X = x) = 0 \quad\text{for every } x, \qquad P(a \le X \le b) = \int_a^b f(x)\,dx \]
+</div>
+
+<div class="fig"><div class="box"><pre class="d">
+  Uniform(0,1):  f(x) = 1 on [0,1], 0 elsewhere
+
+  f
+  1 |  +---------------+          area under the whole thing = 1
+    |  |               |
+    |  |               |          P(0.25 <= X <= 0.5)
+    |  |   ####        |          = width 0.25 x height 1
+    +--+---####--------+---- x    = 0.25
+       0   0.25  0.5   1
+
+  any single point is a line of zero width, hence zero area
+</pre></div><div class="cap"><b>Area, not height.</b> A density may exceed 1 without anything
+breaking, because it is a rate; only the integral has to be a probability.</div></div>
+
+<p>Every consequence of the previous essays survives, with sums replaced by integrals. The
+density is non-negative and integrates to one. Averages become integrals. And the phrase
+&ldquo;with probability one&rdquo; enters the language, because a continuous variable can fail
+to take any particular value yet still have to take some value.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  For a continuous random variable, what is \(P(X = x)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Zero, for every \(x\): probability lives in intervals, not points.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  A density has height 3 at some point. Is the probability of that point 3?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  No. The density is a rate of accumulation; only its integral over an interval is a
+  probability.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  What two conditions must a density satisfy?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f(x) \ge 0\) everywhere, and \(\int_{-\infty}^{\infty} f(x)\,dx = 1\).</p>
+</div>
+
+<h2>2 &middot; From density to probability, and back</h2>
+
+<p>Two functions carry the whole distribution, and each is the other's calculus partner.</p>
+
+<div class="mathblock">
+\[ F(x) = P(X \le x) = \int_{-\infty}^{x} f(u)\,du \qquad\qquad f(x) = F'(x) \]
+</div>
+
+<p>The CDF is the running total, so the density is its slope. That sentence replaces the
+staircase of the discrete case with a ramp: where the density is high, the CDF climbs steeply;
+where the density is zero, the CDF is flat.</p>
+
+<p>Take \(f(x) = 2x\) on \([0,1]\) and zero elsewhere. Check it is a density: the integral is
+\(x^2\) from 0 to 1, which is 1. The CDF is \(F(x) = x^2\) on that interval. Then</p>
+
+<div class="mathblock">
+\[ P(0.3 < X < 0.6) = F(0.6) - F(0.3) = 0.36 - 0.09 = 0.27 \]
+</div>
+
+<p>Note the density exceeding 1 does not happen here, but it does in the next section, and it is
+worth pre-empting the objection now. A density of 2 on a support of width \(1/2\) integrates to
+1 perfectly well. Height is not probability, and a density above 1 is not an error &mdash; it
+just means probability is being laid down faster than one unit per unit of \(x\).</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  How do the CDF and the density relate?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(F(x) = \int_{-\infty}^{x} f(u)\,du\) and \(f(x) = F'(x)\) &mdash; the density is the slope
+  of the CDF.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  With \(f(x) = 2x\) on \([0,1]\), compute \(P(0.3 < X < 0.6)\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(0.6^2 - 0.3^2 = 0.36 - 0.09 = 0.27\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  Can a density exceed 1? Give a case.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Yes. \(\mathrm{Unif}(0, 0.5)\) has density 2 on its support, which integrates to 1 over a
+  width of one half.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.4</span></span>
+  Why is \(P(a \le X \le b) = P(a < X < b)\) for a continuous variable?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the endpoints are single points and each carries probability zero, so including or
+  excluding them changes nothing.</p>
+</div>
+
+<h2>3 &middot; The uniform, and why it needs the axioms</h2>
+
+<p>The simplest continuous distribution is the one the spinner gave us: constant density on an
+interval.</p>
+
+<div class="mathblock">
+\[ f(x) = \frac{1}{b-a} \text{ on } (a,b) \qquad \mathbb{E}[X] = \frac{a+b}{2}, \quad \mathrm{Var}(X) = \frac{(b-a)^2}{12} \]
+</div>
+
+<p>On \((0,1)\) the mean is \(0.5\) and the variance is \(1/12 \approx 0.0833\). That
+\(\sqrt{1/12} \approx 0.289\) as a standard deviation is worth remembering, because it is the
+noise floor of every uniform random number generator and every quantization error you will ever
+analyse.</p>
+
+<p>The uniform is also the reason the axioms of the first essay had to be strengthened. The
+naive definition of probability counted outcomes, and there are uncountably many points in
+\([0,1]\); no counting argument can produce this distribution. Countable additivity can, and
+this is precisely what it was for.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  What are the mean and variance of \(\mathrm{Unif}(a,b)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Mean \((a+b)/2\), variance \((b-a)^2/12\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  Why can the uniform distribution on \([0,1]\) not be justified by the naive definition?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the interval is uncountable, so there is no finite sample space to count; only the
+  axioms of countable additivity can assign it probabilities.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part II &mdash; Three curves with names</div>
+
+<h2>4 &middot; The normal, and the fact that there is only one</h2>
+
+<p>Measure anything with many small independent errors added together &mdash; a person's height,
+a manufactured part's diameter, the position of a pollen grain in water &mdash; and the
+histogram keeps coming out the same shape. Symmetric, peaked at the centre, tails falling off
+fast.</p>
+
+<div class="mathblock">
+\[ f(x) = \frac{1}{\sigma\sqrt{2\pi}}\exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right) \]
+</div>
+
+<p>That shape is a family with two dials: a location \(\mu\) and a width \(\sigma\). And the
+first surprising fact is that there is only <i>one</i> bell curve. Every normal distribution is
+the standard one, stretched and slid. The change of variables</p>
+
+<div class="mathblock">
+\[ z = \frac{x - \mu}{\sigma} \qquad\Longleftrightarrow\qquad x = \mu + \sigma z \]
+</div>
+
+<p>is called standardisation, and it is used so often that the standard normal has its own
+table. If \(X \sim \mathcal{N}(2, 0.5^2)\) and \(x = 2.6\), then \(z = (2.6-2)/0.5 = 1.2\), and
+\(P(X > 2.6) = P(Z > 1.2) \approx 0.115\). One table answers every question about every normal
+distribution, because there is only one curve.</p>
+
+<h3>The three numbers worth memorising</h3>
+
+<p>Within one standard deviation of the mean sits \(68.27\%\); within two, \(95.45\%\); within
+three, \(99.73\%\). Those three numbers explain a large fraction of the folklore about
+outliers, and the last one explains why a four-sigma event is newsworthy rather than
+impossible.</p>
+
+<p>Why this shape and not another? Two answers, one shallow and one deep. The shallow one is the
+central limit theorem, in the seventh essay: sums of many independent small errors are
+approximately normal, whatever the errors were. The deep one is that among all distributions with
+a given variance, the normal is the one with the largest entropy &mdash; the least opinionated
+choice you can make when you know only a mean and a spread. That is why a Gaussian prior is the
+default everywhere in machine learning.</p>
+
+<div class="aside">
+<span class="who">Where this breaks</span>
+<b>&ldquo;Normally distributed&rdquo; is an assumption, and the tails are where it fails.</b>
+Financial returns, file sizes, and the time between earthquakes are routinely modelled as normal
+and are not: their extreme events are far more common than \(99.73\%\) within three sigma
+suggests. The bell curve is the maximum-entropy answer, which means it is what you should assume
+when you know nothing but a mean and a variance, and exactly what you should stop assuming the
+moment you have seen the data.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  Write the standardisation formula and say what it buys you.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(z = (x-\mu)/\sigma\); it converts any normal into the standard normal, so one table serves
+  every normal distribution.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  \(X \sim \mathcal{N}(2, 0.5^2)\). Standardise \(x = 2.6\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(z = (2.6 - 2)/0.5 = 1.2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  What fraction of a normal distribution lies within one, two and three standard deviations?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(68.27\%\), \(95.45\%\) and \(99.73\%\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.4</span></span>
+  Given \(Z \sim \mathcal{N}(0,1)\), how do you build a \(\mathcal{N}(\mu, \sigma^2)\) variable?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(X = \mu + \sigma Z\) &mdash; the location-scale construction.</p>
+</div>
+
+<h2>5 &middot; The exponential, and the memoryless bus</h2>
+
+<p>A bus arrives on average every ten minutes, at no fixed schedule. You have already waited
+seven. Are you due?</p>
+
+<p>No, and the mathematics is emphatic about it. Waiting time for a memoryless process has the
+exponential distribution,</p>
+
+<div class="mathblock">
+\[ f(x) = \lambda e^{-\lambda x}, \quad x \ge 0 \qquad \mathbb{E}[X] = \frac{1}{\lambda}, \quad \mathrm{Var}(X) = \frac{1}{\lambda^2} \]
+</div>
+
+<p>and its defining property is that the past is irrelevant:</p>
+
+<div class="mathblock">
+\[ P(X > s + t \mid X > s) = P(X > t) \]
+</div>
+
+<p>Here is why it holds, in two lines. The tail is \(P(X > t) = e^{-\lambda t}\). So</p>
+
+<div class="mathblock">
+\[ P(X > s+t \mid X > s) = \frac{e^{-\lambda(s+t)}}{e^{-\lambda s}} = e^{-\lambda t} = P(X > t) \]
+</div>
+
+<p>The \(e^{-\lambda s}\) cancels. That cancellation <i>is</i> memorylessness, and the exponential
+is the only continuous distribution that has it.</p>
+
+<p>With \(\lambda = 0.5\) &mdash; a mean wait of two minutes &mdash; the chance the next bus is
+more than three minutes away is \(e^{-1.5} \approx 0.223\). And if you have already waited four
+minutes, the chance of waiting three more is still \(0.223\). You are not due. The bus has not
+been keeping count, because the process that generates arrivals does not have a memory to keep
+count in.</p>
+
+<p>The discrete counterpart is the Geometric distribution from the third essay, and the
+correspondence is exact: \(P(X > n) = (1-p)^n\) there, \(e^{-\lambda t}\) here. Both say that the
+future is independent of the past, one in ticks and one in continuous time.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Write the exponential density and state its mean and variance in terms of \(\lambda\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f(x) = \lambda e^{-\lambda x}\) for \(x \ge 0\); mean \(1/\lambda\), variance \(1/\lambda^2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  State memorylessness as an equation.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(X > s + t \mid X > s) = P(X > t)\) for all \(s, t \ge 0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  With \(\lambda = 0.5\), what is \(P(X > 3)\), and what is \(P(X > 7 \mid X > 4)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Both are \(e^{-1.5} \approx 0.223\), which is the point of memorylessness.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.4</span></span>
+  Which discrete distribution is the exponential's counterpart, and what is the shared
+  property?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The Geometric; both are memoryless, with \(P(X>n) = (1-p)^n\) and \(P(X>t) = e^{-\lambda t}\).</p>
+</div>
+
+<h2>6 &middot; Symmetry, and the ties that never happen</h2>
+
+<p>Two people draw independently from the same continuous distribution. Who is more likely to
+draw the larger value?</p>
+
+<p>Neither, and the reason is worth more than the answer. By symmetry the two are equally
+likely to be larger, and by continuity the chance of an exact tie is zero, so the two cases
+exhaust the probability and split it evenly:</p>
+
+<div class="mathblock">
+\[ P(X < Y) = P(X > Y) = \tfrac12, \qquad P(X = Y) = 0 \]
+</div>
+
+<p>This is the i.i.d. symmetry of §5.7, and it is a workhorse. It says that the ordering of
+independent continuous draws is uniformly random, which is why the minimum and maximum of a
+sample are clean objects and why so many algorithm analyses start with &ldquo;pick a random
+element, by symmetry it is equally likely to be any of them&rdquo;.</p>
+
+<p>Extend it to three: \(P(X_1 \text{ is the smallest}) = 1/3\), since all six orderings are
+equally likely and two of them have \(X_1\) smallest. With \(n\) draws, each has probability
+\(1/n\) of being the maximum.</p>
+
+<p>The &ldquo;ties never happen&rdquo; clause looks like a technicality and is not. The moment
+you discretise &mdash; round the numbers, bucket them &mdash; ties acquire positive probability
+and every such argument needs a tie-breaking rule. That is one reason quantisation is treated as
+a separate error from sampling.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  For i.i.d. continuous \(X, Y\), what is \(P(X < Y)\) and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(1/2\), by symmetry, with \(P(X = Y) = 0\) so the two strict orderings exhaust the
+  probability.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  Why is the probability of a tie zero, and when does that stop being true?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Single points carry probability zero for a continuous variable; discretising or rounding gives
+  ties positive probability.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  Three i.i.d. continuous draws. What is the probability that \(X_1\) is the smallest?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(1/3\) &mdash; all six orderings are equally likely.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part III &mdash; Getting numbers out of a distribution</div>
+
+<h2>7 &middot; Universality of the uniform</h2>
+
+<p>A computer gives you one thing for free: a uniform number in \([0,1]\). How does that become a
+draw from an exponential, or a normal, or anything else?</p>
+
+<p>The answer is the most useful theorem in simulation, and it is called the universality of the
+uniform. Let \(U \sim \mathrm{Unif}(0,1)\) and let \(F\) be any CDF with an inverse. Then</p>
+
+<div class="mathblock">
+\[ X = F^{-1}(U) \quad\text{has CDF } F \]
+</div>
+
+<p>The proof is two lines and reads itself:</p>
+
+<div class="mathblock">
+\[ P(X \le x) = P\big(F^{-1}(U) \le x\big) = P\big(U \le F(x)\big) = F(x) \]
+</div>
+
+<p>where the last step uses that \(U\) is uniform, so the probability of falling below a number
+is that number. The picture is a horizontal line at height \(u\) cutting the CDF and dropping
+down to the axis: the inverse CDF turns a uniform height into the quantile at that height.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  F(x)
+   1 |            +------------
+     |        +---+
+   u |    +---+      <- draw u uniformly on the vertical axis
+     |  +-+ |
+     +--+---+-+--------- x
+            ^
+            x = F^{-1}(u)
+
+  uniform in height  ->  correct density in x
+</pre></div><div class="cap"><b>Inverse-CDF sampling.</b> Draw a height uniformly, then read
+across to the CDF and down. Where the CDF is steep, more height maps to the same width, so the
+density is high there.</div></div>
+
+<p>For the exponential, \(F(x) = 1 - e^{-\lambda x}\), so \(F^{-1}(u) = -\ln(1-u)/\lambda\).
+Since \(1 - U\) is also uniform on \((0,1)\), the practical form is</p>
+
+<div class="mathblock">
+\[ X = -\frac{\ln U}{\lambda} \]
+</div>
+
+<p>With \(\lambda = 2\) and \(U = 0.3\): \(X = -\ln(0.3)/2 = 1.204/2 = 0.602\). Check it
+landed correctly by putting it back through the CDF: \(F(0.602) = 1 - e^{-1.204} = 1 - 0.3 =
+0.7\), which is \(1 - U\). The one-line inverse maps your uniform \(u\) to the quantile at
+\(1-u\), which is still uniform, so the sampler is right.</p>
+
+<p>This is exactly how a categorical distribution is sampled too: draw \(U\), walk the
+cumulative probabilities until you pass \(U\), and emit that label. The softmax's cumulative sum
+is the CDF, and sampling a token is inverse-CDF sampling with the support being a finite list
+instead of an interval.</p>
+
+<p class="beyond-note">Beyond the book &mdash; not in &sect;5.3.</p>
+<p>The Gumbel-max trick is the same idea exploited differently: add independent Gumbel noise to
+each logit and take the argmax, and the result is exactly a draw from the softmax. It replaces a
+sequential scan of the cumulative sum with a fully parallel argmax, which matters when the
+support has fifty thousand entries and the sampler runs on a GPU. Same distribution, different
+arithmetic.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  State the universality of the uniform, and give the one-line proof.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  If \(U \sim \mathrm{Unif}(0,1)\) then \(F^{-1}(U)\) has CDF \(F\), because
+  \(P(F^{-1}(U) \le x) = P(U \le F(x)) = F(x)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  What is the inverse-CDF formula for the exponential distribution with rate \(\lambda\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(X = -\ln(U)/\lambda\), using that \(1-U\) is also uniform.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  \(\lambda = 2\), \(U = 0.3\). What is the sample, and how do you check it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(-\ln(0.3)/2 \approx 0.602\); feeding it back gives \(F(0.602) = 1 - e^{-1.204} = 0.7 =
+  1-U\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  How does inverse-CDF sampling produce a token from a language model?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Draw \(U\) uniformly, walk the cumulative probabilities of the softmax output until you pass
+  \(U\), and emit that token &mdash; the same construction with a finite support.</p>
+</div>
+
+<h2>8 &middot; Reparameterization: the sample is a function of the noise</h2>
+
+<p>You want to train a network that outputs a distribution over \(z\), and you want gradients to
+flow back through a sample from it. There are two ways to write the sample down, and only one of
+them survives backpropagation.</p>
+
+<p>Way one: <i>draw</i> \(z\) from \(\mathcal{N}(\mu, \sigma^2)\). The draw is a black box; you
+cannot differentiate it with respect to \(\mu\) or \(\sigma\), because they were arguments to a
+random number generator rather than inputs to a formula.</p>
+
+<p>Way two: draw \(\varepsilon\) from the fixed standard normal, then compute</p>
+
+<div class="mathblock">
+\[ z = \mu + \sigma\,\varepsilon \]
+</div>
+
+<p>and now \(z\) is an ordinary differentiable function of \(\mu\) and \(\sigma\). Nothing about
+the distribution changed — \(z\) is still \(\mathcal{N}(\mu, \sigma^2)\), because that is what
+adding a location and scaling a spread does to a normal. What changed is that the randomness has
+been moved <i>outside</i> the parameters.</p>
+
+<p>The gradients are then one line each: \(\partial z/\partial \mu = 1\) and
+\(\partial z/\partial \sigma = \varepsilon\). With \(\mu = 1\), \(\sigma = 0.5\),
+\(\varepsilon = -1.2\), the sample is \(z = 1 + 0.5(-1.2) = 0.4\), and the two partials are 1
+and \(-1.2\).</p>
+
+<p>The general name for this is the <i>location-scale</i> family, and the normal is the family
+member that makes it exact rather than approximate. A uniform could be reparameterized as
+\(a + (b-a)U\) just as easily. An exponential can be written \(-\ln(U)/\lambda\) as in the last
+section, which is the same move in different clothes. What cannot be reparameterized so
+cheaply is a discrete distribution — you cannot write a categorical draw as a differentiable
+function of its probabilities without adding a relaxation, and that is precisely why discrete
+latent variables are awkward.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  score function                    reparameterization
+  ------------------------------    ------------------------------
+  z ~ N(mu, sigma^2)                eps ~ N(0, 1)
+                                    z = mu + sigma * eps
+  dz/dmu  : not available           dz/dmu  = 1
+  dz/dsigma: not available          dz/dsigma = eps
+
+  unbiased, high variance           unbiased, low variance
+</pre></div><div class="cap"><b>Two estimators, one distribution.</b> Both give the same
+expected value; the right-hand column has orders of magnitude less noise, which is the whole
+reason variational autoencoders train at all.</div></div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  If \(\varepsilon \sim \mathcal{N}(0,1)\) and \(z = \mu + \sigma\varepsilon\), what is the
+  distribution of \(z\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathcal{N}(\mu, \sigma^2)\) &mdash; the location-scale family.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  \(\mu = 1\), \(\sigma = 0.5\), \(\varepsilon = -1.2\). What is \(z\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(1 + 0.5(-1.2) = 0.4\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  Why does the reparameterized form admit gradients when a direct draw does not?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(z\) becomes an ordinary differentiable expression in \(\mu\) and \(\sigma\), with the
+  randomness in an independent \(\varepsilon\) outside the parameters.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  Which kind of distribution resists reparameterization, and what does that force you to do?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Discrete ones such as the categorical; you must use a relaxation (or the score-function
+  estimator) instead of an exact differentiable transform.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part IV &mdash; Where this lands in generative AI</div>
+
+<h2>9 &middot; The Gaussian at the centre of everything</h2>
+
+<p>Diffusion models add Gaussian noise to an image a thousand times and then learn to remove it.
+Variational autoencoders push data into a Gaussian latent space and sample from it. Both are
+built on the three facts of this essay: a density is not a probability, there is only one bell
+curve, and a random sample can be written as a differentiable formula.</p>
+
+<div class="mathblock">
+\[ x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon, \qquad \varepsilon \sim \mathcal{N}(0, I) \]
+</div>
+
+<p>That is the forward diffusion process in one line, and it is reparameterization applied to a
+Gaussian: a deterministic scaling of the signal plus a deterministic scaling of standard noise.
+Because it is written this way, it is differentiable in \(x_0\), and because the noise is
+standard, the same \(\varepsilon\) can be reused as a regression target. The whole "predict the
+noise" training objective depends on being able to write the sample as a formula rather than as
+a black-box draw.</p>
+
+<table>
+<tr><th>from this essay</th><th>where it reappears</th></tr>
+<tr><td>a density is not a probability</td><td>the VAE's likelihood \(p_\theta(x \mid z)\) is a density in data space, so \(\log p_\theta(x\mid z)\) is a log-density and comparing it across differently-scaled data is meaningless without a change of variables</td></tr>
+<tr><td>standardisation, and one bell curve</td><td>the isotropic prior \(p(z) = \mathcal{N}(0, I)\) in <i>VAE-Curious</i>: every latent coordinate is the same standard normal, which is what makes the KL to the prior \(\sum_i \big(\mu_i^2 + \sigma_i^2 - \log\sigma_i^2 - 1\big)/2\) a sum of independent terms</td></tr>
+<tr><td>the location-scale construction \(x = \mu + \sigma z\)</td><td><i>VAE-Curious</i>: \(z = \mu_\phi(x) + \sigma_\phi(x) \odot \varepsilon\), the reparameterization trick, and <i>Diffusion-Curious</i>: the forward process above</td></tr>
+<tr><td>memorylessness of the exponential, in spirit</td><td><i>Diffusion-Curious</i>: the forward process is Markov, \(q(x_t \mid x_{t-1}, \dots, x_0) = q(x_t \mid x_{t-1})\), so the schedule composes without carrying history</td></tr>
+<tr><td>universality of the uniform</td><td>sampling a categorical token: walk the cumulative softmax and emit the label &mdash; inverse-CDF sampling with finite support, in every autoregressive generation step</td></tr>
+<tr><td>symmetry, and ties of probability zero</td><td>the continuous relaxations used when a discrete variable must be differentiated; the guarantee that a tie is measure-zero is what allows a softmax to stand in for an argmax</td></tr>
+</table>
+
+<p>One honest caveat about the Gaussian's prominence. It is there because it is the maximum
+entropy choice given a mean and a variance, and because it is closed under the operations the
+models need &mdash; sums, conditioning, and affine maps. It is not there because data is
+Gaussian; images are emphatically not. The Gaussian enters generative modelling as a
+<i>convenient prior and a convenient noise</i>, not as a claim about the world. Where the claim
+is made &mdash; a VAE decoder that models pixels with a fixed-variance Gaussian &mdash; it is
+the weakest part of the model, and that is why discrete or learned output distributions are
+preferred when the data allows them.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  Why is the isotropic Gaussian prior what makes the VAE's KL term a sum over coordinates?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because \(\mathcal{N}(0,I)\) factorises across coordinates, so the divergence separates into
+  one independent term per latent dimension.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  Write the diffusion forward process and say which construction from this essay it is.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon\) with
+  \(\varepsilon \sim \mathcal{N}(0,I)\) &mdash; reparameterization of a Gaussian, a scaled signal
+  plus scaled standard noise.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.3</span></span>
+  Why does diffusion's training objective depend on the sample being a formula rather than a
+  black-box draw?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the same \(\varepsilon\) can then serve as a known regression target, which turns the
+  bound into a supervised denoising problem.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.4</span></span>
+  Why is a Gaussian a reasonable prior but a poor model for images?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It is the maximum-entropy choice given a mean and variance and is closed under the needed
+  operations, but it is not what image pixels look like; a fixed-variance Gaussian decoder is
+  usually the weakest part of a VAE.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from Blitzstein &amp; Hwang, <i>Introduction to Probability</i>, chapter 5
+(&sect;5.1&ndash;&sect;5.7). Typeset with KaTeX. Source: <i>viz/prob-5.body.html</i>,
+assembled by <i>build/build-essay.js</i>.</p>
+
+</body></html>

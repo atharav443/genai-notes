@@ -27,7 +27,14 @@ const ACCENTS = {
   'VAE.html': 'teal',
   'Diffusion-Curious.html': 'orange',
   'Diffusion.html': 'orange',
-  'Foundations-Curious.html': 'slate'
+  'Foundations-Curious.html': 'slate',
+  'Prob1-Curious.html': 'blue',
+  'Prob2-Curious.html': 'cyan',
+  'Prob3-Curious.html': 'emerald',
+  'Prob4-Curious.html': 'lime',
+  'Prob5-Curious.html': 'fuchsia',
+  'Prob6-Curious.html': 'amber',
+  'Prob7-Curious.html': 'stone'
 };
 
 function accentFor(name) {

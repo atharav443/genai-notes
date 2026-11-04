@@ -1,0 +1,32 @@
+1.1	For a continuous random variable, what is \(P(X = x)\)?	Zero, for every \(x\): probability lives in intervals, not points.
+1.2	A density has height 3 at some point. Is the probability of that point 3?	No. The density is a rate of accumulation; only its integral over an interval is a probability.
+1.3	What two conditions must a density satisfy?	\(f(x) \ge 0\) everywhere, and \(\int_{-\infty}^{\infty} f(x)\,dx = 1\).
+2.1	How do the CDF and the density relate?	\(F(x) = \int_{-\infty}^{x} f(u)\,du\) and \(f(x) = F'(x)\) — the density is the slope of the CDF.
+2.2	With \(f(x) = 2x\) on \([0,1]\), compute \(P(0.3 < X < 0.6)\).	\(0.6^2 - 0.3^2 = 0.36 - 0.09 = 0.27\).
+2.3	Can a density exceed 1? Give a case.	Yes. \(\mathrm{Unif}(0, 0.5)\) has density 2 on its support, which integrates to 1 over a width of one half.
+2.4	Why is \(P(a \le X \le b) = P(a < X < b)\) for a continuous variable?	Because the endpoints are single points and each carries probability zero, so including or excluding them changes nothing.
+3.1	What are the mean and variance of \(\mathrm{Unif}(a,b)\)?	Mean \((a+b)/2\), variance \((b-a)^2/12\).
+3.2	Why can the uniform distribution on \([0,1]\) not be justified by the naive definition?	Because the interval is uncountable, so there is no finite sample space to count; only the axioms of countable additivity can assign it probabilities.
+4.1	Write the standardisation formula and say what it buys you.	\(z = (x-\mu)/\sigma\); it converts any normal into the standard normal, so one table serves every normal distribution.
+4.2	\(X \sim \mathcal{N}(2, 0.5^2)\). Standardise \(x = 2.6\).	\(z = (2.6 - 2)/0.5 = 1.2\).
+4.3	What fraction of a normal distribution lies within one, two and three standard deviations?	\(68.27\%\), \(95.45\%\) and \(99.73\%\).
+4.4	Given \(Z \sim \mathcal{N}(0,1)\), how do you build a \(\mathcal{N}(\mu, \sigma^2)\) variable?	\(X = \mu + \sigma Z\) — the location-scale construction.
+5.1	Write the exponential density and state its mean and variance in terms of \(\lambda\).	\(f(x) = \lambda e^{-\lambda x}\) for \(x \ge 0\); mean \(1/\lambda\), variance \(1/\lambda^2\).
+5.2	State memorylessness as an equation.	\(P(X > s + t \mid X > s) = P(X > t)\) for all \(s, t \ge 0\).
+5.3	With \(\lambda = 0.5\), what is \(P(X > 3)\), and what is \(P(X > 7 \mid X > 4)\)?	Both are \(e^{-1.5} \approx 0.223\), which is the point of memorylessness.
+5.4	Which discrete distribution is the exponential's counterpart, and what is the shared property?	The Geometric; both are memoryless, with \(P(X>n) = (1-p)^n\) and \(P(X>t) = e^{-\lambda t}\).
+6.1	For i.i.d. continuous \(X, Y\), what is \(P(X < Y)\) and why?	\(1/2\), by symmetry, with \(P(X = Y) = 0\) so the two strict orderings exhaust the probability.
+6.2	Why is the probability of a tie zero, and when does that stop being true?	Single points carry probability zero for a continuous variable; discretising or rounding gives ties positive probability.
+6.3	Three i.i.d. continuous draws. What is the probability that \(X_1\) is the smallest?	\(1/3\) — all six orderings are equally likely.
+7.1	State the universality of the uniform, and give the one-line proof.	If \(U \sim \mathrm{Unif}(0,1)\) then \(F^{-1}(U)\) has CDF \(F\), because \(P(F^{-1}(U) \le x) = P(U \le F(x)) = F(x)\).
+7.2	What is the inverse-CDF formula for the exponential distribution with rate \(\lambda\)?	\(X = -\ln(U)/\lambda\), using that \(1-U\) is also uniform.
+7.3	\(\lambda = 2\), \(U = 0.3\). What is the sample, and how do you check it?	\(-\ln(0.3)/2 \approx 0.602\); feeding it back gives \(F(0.602) = 1 - e^{-1.204} = 0.7 = 1-U\).
+7.4	How does inverse-CDF sampling produce a token from a language model?	Draw \(U\) uniformly, walk the cumulative probabilities of the softmax output until you pass \(U\), and emit that token — the same construction with a finite support.
+8.1	If \(\varepsilon \sim \mathcal{N}(0,1)\) and \(z = \mu + \sigma\varepsilon\), what is the distribution of \(z\)?	\(\mathcal{N}(\mu, \sigma^2)\) — the location-scale family.
+8.2	\(\mu = 1\), \(\sigma = 0.5\), \(\varepsilon = -1.2\). What is \(z\)?	\(1 + 0.5(-1.2) = 0.4\).
+8.3	Why does the reparameterized form admit gradients when a direct draw does not?	Because \(z\) becomes an ordinary differentiable expression in \(\mu\) and \(\sigma\), with the randomness in an independent \(\varepsilon\) outside the parameters.
+8.4	Which kind of distribution resists reparameterization, and what does that force you to do?	Discrete ones such as the categorical; you must use a relaxation (or the score-function estimator) instead of an exact differentiable transform.
+9.1	Why is the isotropic Gaussian prior what makes the VAE's KL term a sum over coordinates?	Because \(\mathcal{N}(0,I)\) factorises across coordinates, so the divergence separates into one independent term per latent dimension.
+9.2	Write the diffusion forward process and say which construction from this essay it is.	\(x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\varepsilon\) with \(\varepsilon \sim \mathcal{N}(0,I)\) — reparameterization of a Gaussian, a scaled signal plus scaled standard noise.
+9.3	Why does diffusion's training objective depend on the sample being a formula rather than a black-box draw?	Because the same \(\varepsilon\) can then serve as a known regression target, which turns the bound into a supervised denoising problem.
+9.4	Why is a Gaussian a reasonable prior but a poor model for images?	It is the maximum-entropy choice given a mean and variance and is closed under the needed operations, but it is not what image pixels look like; a fixed-variance Gaussian decoder is usually the weakest part of a VAE.

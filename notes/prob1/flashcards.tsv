@@ -1,0 +1,36 @@
+1.1	A bag holds 6 white and 4 black pebbles, all equally likely. What is the probability that a single draw is white, and which part of that sentence did the work?	\(6/10\). The work was done by “equally likely”, which let the count stand in for the weights.
+1.2	In Pebble World, what exactly is a probability, and what two rules constrain it?	A weight assigned to each outcome, with the event's probability being the total weight of its outcomes. Weights are non-negative and sum to one over the whole sample space.
+1.3	If \(A\) and \(B\) share no outcomes, why is \(P(A \cup B) = P(A) + P(B)\)?	Because the pebbles in \(A\) and in \(B\) are disjoint collections, so summing weights over their union is summing over each separately and adding the two totals.
+2.1	Why does treating the eleven possible sums of two dice as equally likely give the wrong answer for \(P(\text{sum} = 7)\)?	Because they are not equally likely: seven arises from six of the 36 ordered pairs and two from one, so the eleven sums cannot carry equal weight.
+2.2	What property must a sample space have before you are allowed to compute a probability by counting outcomes?	Its outcomes must be equally likely — symmetric, in the sense that the experiment gives you no way to tell them apart.
+2.3	For two children, \(P(\text{at least one girl}) = 3/4\) under \(\{GG,GB,BG,BB\}\). What goes wrong with the sample space \(\{\)same, different\(\}\)?	“Different” covers two outcomes while “same” covers two as well but only one of each kind of family — the two cells are not equally likely, so counting them as halves is invalid.
+3.1	What are the two preconditions of the naive definition \(P(A) = |A|/|S|\)?	The sample space is finite, and its outcomes are equally likely (justified by symmetry).
+3.2	How many five-card hands are there from a 52-card deck, and how many of them are full houses?	\(\binom{52}{5} = 2{,}598{,}960\) hands; \(13 \times 4 \times 12 \times 6 = 3{,}744\) full houses.
+3.3	A die is loaded so that six has weight \(2/7\) and every other face \(1/7\). What does counting outcomes report for \(P(6)\), and what is the truth?	Counting gives \(1/6 \approx 0.167\); the truth is \(2/7 \approx 0.286\), because the outcomes are no longer equally likely.
+4.1	How many licence plates use three letters followed by three digits?	\(26^3 \times 10^3 = 17{,}576{,}000\).
+4.2	Why does a ten-element set have \(2^{10}\) subsets?	Each element is independently in or out, so a subset is a sequence of ten binary choices.
+4.3	How many three-digit numbers have distinct digits and no leading zero?	\(9 \times 9 \times 8 = 648\): nine hundreds digits, then nine tens digits, then eight units digits.
+5.1	How many distinct arrangements of the letters of MISSISSIPPI are there?	\(11!/(4!\,4!\,2!) = 34{,}650\).
+5.2	Why is it legitimate to count letters as if they were distinct and then divide by \(4!\) for the repeated I's?	Because each visible arrangement is produced by exactly \(4!\) permutations of the four identical I's, so the overcount is uniform and division removes it exactly.
+5.3	Three of ten runners get gold, silver and bronze. How many podiums?	\(10 \times 9 \times 8 = 720\).
+5.4	What does \(\frac{n!}{(n-k)!}\) count, in one phrase?	Ordered selections of \(k\) items from \(n\) — permutations of length \(k\).
+6.1	How many committees of three can be chosen from ten people?	\(\binom{10}{3} = 120\).
+6.2	Why does \(\binom{n}{k}\) divide \(n!/(n-k)!\) by \(k!\)?	Because the ordered count lists each \(k\)-element subset once for each of its \(k!\) orderings, and a subset has no order.
+6.3	With 23 people, \(P(\text{a shared birthday}) \approx 0.507\). Which count explains why the answer is so high, and how many is it?	The number of pairs, \(\binom{23}{2} = 253\), not the number of people.
+6.4	Why is the birthday problem easier to compute through the complement?	“At least one match” is a union of many overlapping events, while “no match” is a sequence of ordered choices whose options shrink by one each time.
+7.1	Picking 3 things from 5 without order, with repeats allowed: how many ways?	\(\binom{5+3-1}{3} = \binom{7}{3} = 35\).
+7.2	Which cell of the sampling table gives the number of five-card poker hands?	Order irrelevant, without replacement: \(\binom{52}{5} = 2{,}598{,}960\).
+7.3	Why does unordered sampling with replacement give \(\binom{n+k-1}{k}\)?	It is the stars-and-bars count: arrange \(k\) identical items and \(n-1\) dividers in a line and choose the \(k\) positions occupied by the items.
+8.1	What makes a “story proof” valid?	Both sides must count the same set of objects, by two genuinely different procedures, so that equality follows from the object rather than from algebra.
+8.2	Verify \(\sum_j \binom{3}{j}\binom{2}{2-j} = \binom{5}{2}\) numerically.	\(1 \cdot 1 + 3 \cdot 2 + 3 \cdot 1 = 10\), and \(\binom{5}{2} = 10\).
+8.3	Prove \(\binom{n}{k} = \binom{n-1}{k} + \binom{n-1}{k-1}\) by cases.	Fix one element: committees excluding it are counted by \(\binom{n-1}{k}\), committees including it by \(\binom{n-1}{k-1}\).
+9.1	50 take maths, 40 physics, 20 both. How many take at least one?	\(50 + 40 - 20 = 70\).
+9.2	In the three-set formula, why does the triple intersection term carry a plus sign?	It was added three times and subtracted three times, so it is currently counted zero times and must be added back once.
+9.3	Three letters go into three random envelopes. What is the probability that none is correct?	\(1 - 1 + \tfrac12 - \tfrac16 = \tfrac13\), matching two derangements out of six orderings.
+10.1	State the three axioms of probability.	\(P(A) \ge 0\); \(P(S) = 1\); and countable additivity for pairwise disjoint events.
+10.2	Which axiom gives you \(P(A) + P(A^c) = 1\), and how?	Additivity, applied to the disjoint pair \(A\) and \(A^c\), whose union is \(S\) with \(P(S) = 1\) by normalisation.
+10.3	Why can a uniform distribution on \([0,1]\) exist as a probability but not as a count?	Because the axioms allow weights on uncountably many points — each point carries probability zero and additivity over intervals supplies the rest — while the naive definition needs a finite, countable sample space.
+11.1	A model has 50,000 tokens and writes 20. Roughly how many possible outputs, and why does the number matter?	\(50{,}000^{20} \approx 10^{94}\) — far beyond enumeration, so normalising constants and expectations must be estimated by sampling, never by summing.
+11.2	Which counting rule of this essay is the autoregressive factorisation of a language model?	The multiplication rule: a point in the product space is chosen one coordinate at a time, so the joint probability is a product of conditional ones.
+11.3	Why can no generative model compute its likelihood by listing outcomes?	The outcome space is \(|V|^n\), astronomically large, so the naive definition's count of a numerator and a denominator is unavailable; likelihoods must be factorised or bounded instead.
+11.4	What is the recurring failure mode this essay warns about, in one sentence?	Counting a sample space whose outcomes are not actually symmetric, and treating the count as though they were.

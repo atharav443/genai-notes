@@ -1,0 +1,785 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random variables, and the six distributions worth knowing by name</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/Prob3-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/prob-3.body.html</code>.</div>
+
+<h1>Random variables,<br>and the six distributions<br>worth knowing by name</h1>
+<h1 class="sub-title">A random variable is a function, a distribution is a story, and telling
+the story correctly is how you recognise which one you are looking at — including the one a
+language model emits fifty thousand numbers at a time</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question and its
+answer. They are not decoration. They are the essay testing you &mdash; and if you take them
+seriously, you will remember this material for years instead of days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong is useful;
+the effort of a failed recall is what makes the next one stick. The cards here are
+deliberately small: one fact, one step, one number each.</p>
+
+<p>This is the third of seven essays on probability. It needs the first two — sample spaces,
+counting, and conditioning — and it is the last one that stays discrete. Read it before the
+essay on expectation, and both before anything in the generative-AI series, where the output of
+every model is a distribution of exactly the kind named here.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; A random variable is a function</div>
+
+<h2>1 &middot; A function wearing a number's clothes</h2>
+
+<p>You roll two dice and add them. Call the total \(X\). What is \(X\)?</p>
+
+<p>&ldquo;Seven&rdquo; is one answer, and it is the answer to a different question. \(X\) is not
+a number: it is the rule that takes an outcome and returns a number. Applied to the outcome
+\((3,4)\) it returns 7. Applied to \((5,5)\) it returns 10. The randomness lives in the outcome;
+\(X\) itself is completely deterministic.</p>
+
+<div class="mathblock">
+\[ X : S \to \mathbb{R} \]
+</div>
+
+<p>That is the entire definition, and it is worth being fussy about because two of the most
+useful moves in probability are consequences of it. The first: several random variables can live
+on one sample space. On the same two dice, let \(X\) be the sum and \(Y\) the maximum. Then
+\(X\big((3,4)\big) = 7\) and \(Y\big((3,4)\big) = 4\). Nothing changed about the dice; we
+looked at the outcome through two different lenses. This is exactly how a dataset works — one
+underlying thing, many recorded variables.</p>
+
+<p>The second: a random variable does not have to be numeric in origin. Toss a coin and let
+\(X = 1\) for heads, \(0\) for tails. \(X\) is a function from \(\{H, T\}\) to \(\{0,1\}\), and
+it will turn out to be the single most useful random variable in the subject.</p>
+
+<p>Because \(X\) is a function, &ldquo;\(X = 7\)&rdquo; is shorthand for an event — the set of
+outcomes where the function takes the value 7. Saying \(P(X = 7) = 1/6\) is saying that six of
+the 36 outcomes land in that set. Nothing new was introduced. A random variable is a way of
+naming events compactly.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  Define a random variable, precisely.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A function from the sample space to the real numbers: \(X : S \to \mathbb{R}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  Two dice are rolled. Give two different random variables on the same sample space.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(X\) = the sum, \(Y\) = the maximum. Both are functions on the 36 ordered pairs; for the
+  outcome \((3,4)\), \(X = 7\) and \(Y = 4\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  Where does the randomness in a random variable actually sit?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  In the outcome, not in the variable. The function is deterministic; which outcome occurred is
+  what was uncertain.</p>
+</div>
+
+<h2>2 &middot; The PMF, and the CDF that never lies</h2>
+
+<p>Toss two fair coins and count the heads. Three possible counts, and they are not equally
+likely. How do you write the whole distribution down in one object?</p>
+
+<p>Two standard answers, and they are two views of the same information. The <i>probability mass
+function</i> gives the weight of each value directly. The <i>cumulative distribution function</i>
+gives the total weight at or below each value.</p>
+
+<div class="mathblock">
+\[ p_X(x) = P(X = x) \qquad\qquad F_X(x) = P(X \le x) = \sum_{y \le x} p_X(y) \]
+</div>
+
+<table>
+<tr><th>\(x\)</th><th>outcomes</th><th>PMF \(p(x)\)</th><th>CDF \(F(x)\)</th></tr>
+<tr><td>0</td><td>TT</td><td>1/4</td><td>1/4</td></tr>
+<tr><td>1</td><td>HT, TH</td><td>1/2</td><td>3/4</td></tr>
+<tr><td>2</td><td>HH</td><td>1/4</td><td>1</td></tr>
+</table>
+
+<p>Going from PMF to CDF is running a total. Going back is subtracting neighbouring values:
+\(p(x) = F(x) - F(x^-)\), the jump at \(x\). The diagrams are complementary — a PMF is a set of
+spikes, a CDF is a staircase, and the height of each step is the spike.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  PMF (spikes)                    CDF (staircase)
+
+  p                               F
+  1/2 |       *                   1  |           +----
+      |       |                      |           |
+  1/4 |  *    |    *             3/4 |       +---+
+      |  |    |    |                |       |
+      +--+----+----+-- x         1/4 |   +---+
+        0    1    2                 |   |
+                                    +---+---+---+-- x
+                                     0   1   2
+
+  each step height in F equals the spike height in p
+</pre></div><div class="cap"><b>Two views of one distribution.</b> The CDF is a running
+total, which is why it is nondecreasing and why it ends at exactly 1.</div></div>
+
+<p>The CDF has three properties, and they are worth memorising as a checklist because they are
+what makes it a safer object than the PMF: it is <i>nondecreasing</i>, it is <i>right-continuous</i>
+(it jumps <i>up</i> at a value, and the value itself belongs to the step above), and its limits
+are \(0\) at \(-\infty\) and \(1\) at \(+\infty\). The CDF also survives the move to continuous
+variables in the fifth essay, where the PMF does not &mdash; there, the staircase simply becomes
+a smooth ramp.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  Define the PMF and the CDF of a discrete random variable, and say how they relate.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(p(x) = P(X = x)\) and \(F(x) = P(X \le x)\); the CDF is the running sum of the PMF.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  Two fair coins, \(X\) = number of heads. What are \(p(1)\) and \(F(1)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(p(1) = 1/2\) (two of four outcomes) and \(F(1) = 3/4\) (everything up to and including 1).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  Name the three properties of a CDF.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Nondecreasing, right-continuous, with limits 0 at \(-\infty\) and 1 at \(+\infty\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.4</span></span>
+  Given a CDF, how do you recover the PMF?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Take the jump at each value: \(p(x) = F(x) - F(x^-)\), where \(F(x^-)\) is the limit from the
+  left.</p>
+</div>
+
+<h2>3 &middot; i.i.d.: three letters that assume a lot</h2>
+
+<p>A minibatch of 32 images. A sequence of coin tosses. The noise added at each diffusion step.
+All three are called i.i.d., and the abbreviation is doing two jobs at once.</p>
+
+<p><i>Independent</i> means the joint PMF factors: \(p(x_1, \dots, x_n) = \prod_i p(x_i)\). No
+one draw tells you anything about another. <i>Identically distributed</i> means they all come
+from the same PMF. Together: independent and identically distributed.</p>
+
+<p>The independence half is the one that gets quietly dropped, and it is the half that earns its
+keep. Individually the draws are exchangeable copies; jointly they factorise, which is what
+turns a product into a sum after you take logarithms, and a sum is what a training loop can
+average. Without it, the likelihood of a dataset is one giant joint distribution and nothing
+decomposes.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  What does i.i.d. commit you to, in two parts?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Independence &mdash; the joint distribution factorises into a product &mdash; and identical
+  distribution, the same PMF for every draw.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  Why does independence matter so much for a training loop?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It factorises the joint likelihood into a product, so the log-likelihood is a sum that can be
+  averaged over a minibatch.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part II &mdash; Five stories with names</div>
+
+<h2>4 &middot; Bernoulli: one yes-or-no question</h2>
+
+<p>One trial, two outcomes. \(X = 1\) with probability \(p\), \(0\) with probability
+\(1 - p\). That is the whole distribution, and it is the atom out of which everything else in
+this essay is assembled.</p>
+
+<div class="mathblock">
+\[ p_X(1) = p, \quad p_X(0) = 1-p \qquad\qquad \mathbb{E}[X] = p, \quad \mathrm{Var}(X) = p(1-p) \]
+</div>
+
+<p>Its most important special case is the <i>indicator</i> of an event, written \(1_A\): the
+function that is 1 when \(A\) happens and 0 otherwise. Indicators are useful because of one
+identity, sometimes called the fundamental bridge,</p>
+
+<div class="mathblock">
+\[ P(A) = \mathbb{E}[1_A] \]
+</div>
+
+<p>which is obvious once stated &mdash; the average of a 0/1 variable is the fraction of ones
+&mdash; and which converts probability questions into addition questions. Every hard expectation
+computation in the next essay starts by writing the thing you want as a sum of indicators.</p>
+
+<p>With \(p = 0.3\): the mean is 0.3 and the variance is \(0.3 \times 0.7 = 0.21\). A variance
+of 0.21 for a variable that only takes values 0 and 1 sounds large, and it is: the maximum
+possible variance of a Bernoulli is \(1/4\), attained at \(p = 1/2\).</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  What are the mean and variance of a Bernoulli(\(p\)) variable, and where is the variance
+  largest?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Mean \(p\), variance \(p(1-p)\), maximised at \(p = 1/2\) where it is \(1/4\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  State the fundamental bridge and explain in one line why it holds.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(A) = \mathbb{E}[1_A]\): the average of an indicator is the fraction of trials on which it
+  is 1.</p>
+</div>
+
+<h2>5 &middot; Binomial: n trials, count the successes</h2>
+
+<p>A free-throw shooter hits 30% of the time. She takes ten shots. What is the chance she makes
+exactly three?</p>
+
+<p>The trouble is that &ldquo;exactly three&rdquo; is not one sequence of events but many, and
+they must not be double-counted. Enumerate by pattern: any one specific pattern — say
+<code>hit, hit, hit, miss, miss, miss, miss, miss, miss, miss</code> — has probability
+\(0.3^3 \times 0.7^7\), because the shots are independent. Every pattern with three hits has
+that same probability. So the answer is that number times the number of patterns.</p>
+
+<div class="mathblock">
+\[ p(k) = \binom{n}{k} p^k (1-p)^{n-k} \]
+</div>
+
+<p>The binomial coefficient is there for exactly one reason: it counts <i>which</i> \(k\) of the
+\(n\) trials succeeded. The \(p^k(1-p)^{n-k}\) is the weight of any one of those patterns, and
+because the trials are independent that weight does not depend on which pattern you picked. This
+is the multiplication-and-counting habit from the first essay, assembled into a distribution.</p>
+
+<p>For \(n = 10\), \(p = 0.3\), \(k = 3\):</p>
+
+<div class="mathblock">
+\[ \binom{10}{3}(0.3)^3(0.7)^7 = 120 \times 0.027 \times 0.08235 \approx 0.267 \]
+</div>
+
+<p>The mean is \(np = 3\) and the variance is \(np(1-p) = 2.1\). Note that the mean is not
+&ldquo;the most likely value&rdquo; by definition — here they coincide, but for \(n = 10\),
+\(p = 0.5\) they do not, and confusing the two is a common slip.</p>
+
+<h3>Why the probabilities sum to one, which is a story proof</h3>
+
+<p>\(\sum_{k=0}^{n} \binom{n}{k} p^k (1-p)^{n-k} = \big(p + (1-p)\big)^n = 1\). The left side
+counts: it is the total probability of everything that can happen, and it must be 1 by the
+axioms. The right side is the binomial theorem. So the binomial theorem is the statement that
+the Binomial distribution is a distribution &mdash; one identity, proved two ways, and the two
+ways are &ldquo;because probabilities sum to one&rdquo; and &ldquo;because \((a+b)^n\) expands
+like that&rdquo;.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Why does the Binomial PMF contain the factor \(\binom{n}{k}\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It counts which \(k\) of the \(n\) trials succeeded; every such pattern has the same
+  probability \(p^k(1-p)^{n-k}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  \(n = 10\), \(p = 0.3\). What is \(P(X = 3)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\binom{10}{3}(0.3)^3(0.7)^7 = 120 \times 0.027 \times 0.08235 \approx 0.267\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  What are the mean and variance of \(\text{Bin}(10, 0.3)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(np = 3\) and \(np(1-p) = 2.1\).</p>
+</div>
+
+<h2>6 &middot; Hypergeometric: the same count, without replacement</h2>
+
+<p>Twenty elk live in a reserve and five of them have been tagged. You catch four. What is the
+chance exactly two are tagged?</p>
+
+<p>The algebra is similar to the Binomial and the model is not, and the difference is the whole
+point of the section. A Binomial requires the trials to be independent, which requires the
+chance of success to be the same on every draw. Catching an elk and not putting it back changes
+the composition of the herd, so the draws are dependent. The Binomial is simply the wrong
+story here.</p>
+
+<div class="mathblock">
+\[ p(k) = \frac{\binom{5}{k}\binom{15}{4-k}}{\binom{20}{4}} \]
+</div>
+
+<p>The shape of that formula is worth reading aloud: choose which tagged animals you caught, then
+which untagged ones, and divide by every possible catch. For \(k = 2\):</p>
+
+<div class="mathblock">
+\[ \frac{\binom{5}{2}\binom{15}{2}}{\binom{20}{4}} = \frac{10 \times 105}{4845} = \frac{1050}{4845} \approx 0.217 \]
+</div>
+
+<p>Compare the Binomial story that ignores the tagging, \(\text{Bin}(4, 0.25)\):
+\(\binom{4}{2}(0.25)^2(0.75)^2 = 6 \times 0.0625 \times 0.5625 \approx 0.211\). Close, and
+deliberately so. When the catch is a small fraction of the population, removing four elk out of
+twenty barely shifts the proportions, and the two models converge.</p>
+
+<p>That gives a working rule rather than a formula to memorise: <i>if you are sampling less than
+about a tenth of the population, sampling without replacement is close enough to sampling with
+replacement that the Binomial will do.</i> If you are sampling half of it, it will not.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  Write the Hypergeometric PMF for drawing \(k\) successes in \(n\) draws from a population of
+  \(N\) containing \(K\) successes.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\binom{K}{k}\binom{N-K}{n-k} \big/ \binom{N}{n}\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  5 tagged of 20 elk, catch 4. What is \(P(\text{exactly two tagged})\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(10 \times 105 / 4845 \approx 0.217\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  When may you replace a Hypergeometric with a Binomial, and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  When the sample is a small fraction of the population &mdash; roughly under a tenth &mdash; so
+  that removing items barely changes the success proportion and dependence is negligible.</p>
+</div>
+
+<h2>7 &middot; Geometric and Negative Binomial: waiting for something</h2>
+
+<p>A coin comes up heads with probability \(p\). How many tosses until the first head?</p>
+
+<p>There is a clean derivation and it is worth having, because it is the template for every
+&ldquo;waiting time&rdquo; argument. To need exactly \(k\) tosses, the first \(k-1\) must all fail
+and the \(k\)-th must succeed. Those \(k\) events are independent, so multiply.</p>
+
+<div class="mathblock">
+\[ p(k) = (1-p)^{k-1} p, \qquad k = 1, 2, 3, \dots \qquad \mathbb{E}[X] = \frac{1}{p}, \quad \mathrm{Var}(X) = \frac{1-p}{p^2} \]
+</div>
+
+<p>The most useful fact about it is not the PMF but the tail, and the tail has a one-line
+derivation: &ldquo;more than \(n\) tosses&rdquo; happens exactly when the first \(n\) all fail.</p>
+
+<div class="mathblock">
+\[ P(X > n) = (1-p)^{n} \]
+</div>
+
+<p>For \(p = 0.2\): \(P(X = 3) = 0.8^2 \times 0.2 = 0.128\), and \(P(X > 5) = 0.8^5 \approx
+0.328\). The mean is \(1/0.2 = 5\) tosses, which is a good sanity check — a one-in-five event
+taking five tries on average is what &ldquo;on average&rdquo; ought to mean.</p>
+
+<p>The generalisation is the Negative Binomial: how many trials until the \(r\)-th success? The
+last trial must be a success, and the preceding \(k-1\) must contain exactly \(r-1\) successes.</p>
+
+<div class="mathblock">
+\[ p(k) = \binom{k-1}{r-1} p^{r} (1-p)^{k-r}, \qquad k = r, r+1, \dots \]
+</div>
+
+<p>For \(p = 1/2\), \(r = 3\), \(k = 5\): \(\binom{4}{2}(1/2)^3(1/2)^2 = 6/32 = 0.1875\).</p>
+
+<div class="aside">
+<span class="who">Where the analogy misleads</span>
+<b>&ldquo;Waiting for the first head&rdquo; is not &ldquo;waiting for two heads in a row&rdquo;.</b>
+The geometric distribution applies when the trials are independent and each has the same chance
+of success, so the state you are in is just &ldquo;how many failures so far&rdquo;. For two heads
+in a row the state includes whether the last toss was a head, the memoryless structure is gone,
+and the answer is not geometric &mdash; the previous essay computed it as six tosses by first-step
+analysis. Check the independence before reaching for the formula.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  Write the Geometric PMF and derive it in one sentence.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((1-p)^{k-1}p\): the first \(k-1\) trials must fail and the \(k\)-th must succeed, and by
+  independence the probabilities multiply.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  For a Geometric variable, what is \(P(X > n)\) and why?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((1-p)^n\): exceeding \(n\) means the first \(n\) trials all failed.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  With \(p = 0.2\), compute \(P(X = 3)\) and \(P(X > 5)\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(0.8^2 \times 0.2 = 0.128\) and \(0.8^5 \approx 0.328\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  Why does the Negative Binomial carry \(\binom{k-1}{r-1}\) rather than \(\binom{k}{r}\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The last trial is forced to be the \(r\)-th success, so the remaining \(r-1\) successes are
+  placed among the first \(k-1\) trials.</p>
+</div>
+
+<h2>8 &middot; Poisson: many chances, each unlikely</h2>
+
+<p>A call centre gets three calls an hour on average. What is the chance of exactly five?</p>
+
+<p>The honest model is a huge number of tiny independent chances &mdash; every instant, any one
+of many potential callers might dial &mdash; and the Binomial cannot be evaluated with \(n\) in
+the millions and \(p\) in the millionths. The Poisson is what the Binomial becomes in that
+limit, and that is its justification.</p>
+
+<div class="mathblock">
+\[ p(k) = e^{-\lambda}\,\frac{\lambda^{k}}{k!}, \qquad k = 0,1,2,\dots \qquad \mathbb{E}[X] = \mathrm{Var}(X) = \lambda \]
+</div>
+
+<p>The derivation is worth doing once because it explains the shape. Take
+\(\text{Bin}(n, \lambda/n)\) and let \(n \to \infty\), holding the mean \(\lambda\) fixed.</p>
+
+<div class="mathblock">
+\[ \binom{n}{k}\left(\frac{\lambda}{n}\right)^{k}\left(1-\frac{\lambda}{n}\right)^{n-k}
+= \underbrace{\binom{n}{k}\frac{\lambda^k}{n^k}}_{\to \lambda^k/k!}\;
+\underbrace{\left(1-\frac{\lambda}{n}\right)^{n}}_{\to e^{-\lambda}}\;
+\underbrace{\left(1-\frac{\lambda}{n}\right)^{-k}}_{\to 1} \]
+</div>
+
+<p>Three pieces, three limits. The first works because \(n(n-1)\cdots(n-k+1)/n^k \to 1\) for
+fixed \(k\). The second is the standard limit defining \(e^{-\lambda}\). The third is 1 because
+the exponent is fixed and the base tends to 1. Multiply them and the \(e^{-\lambda}\lambda^k/k!\)
+falls out.</p>
+
+<p>For \(\lambda = 2\): \(P(X = 3) = e^{-2} \cdot 8/6 \approx 0.1353 \times 1.3333 \approx
+0.180\). Check against the Binomial it came from, \(\text{Bin}(100, 0.02)\):
+\(\binom{100}{3}(0.02)^3(0.98)^{97} = 161{,}700 \times 8\times 10^{-6} \times 0.1409 \approx
+0.182\). Two models, two answers, agreeing to two decimal places.</p>
+
+<p>That the mean and variance are both \(\lambda\) is the Poisson's signature and its weakness:
+real count data almost always has variance larger than its mean, which is called
+overdispersion and which is the reason the Poisson is a starting point rather than a destination.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  Write the Poisson PMF and give its mean and variance.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(p(k) = e^{-\lambda}\lambda^k/k!\), with mean and variance both equal to \(\lambda\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  What is the Poisson's generative story?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The limit of \(\text{Bin}(n, \lambda/n)\) as \(n \to \infty\) with the mean held fixed &mdash;
+  many independent chances, each individually very unlikely.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  For \(\lambda = 2\), what is \(P(X = 3)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(e^{-2} \cdot 8/6 \approx 0.180\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  Which single limit supplies the \(e^{-\lambda}\) in the Poisson PMF?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((1 - \lambda/n)^n \to e^{-\lambda}\), from the \((1-p)^{n-k}\) factor of the Binomial.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part III &mdash; One table, and the distribution a language model outputs</div>
+
+<h2>9 &middot; The six, on one page</h2>
+
+<p>The point of naming distributions is not to memorise formulas. It is that a story you can tell
+in one sentence identifies the distribution, and the distribution gives you the formula, the
+mean and the variance for free. Tell the story wrong and no amount of algebra will save you.</p>
+
+<table>
+<tr><th>distribution</th><th>story, in one line</th><th>mean</th><th>variance</th><th>a generative-AI sighting</th></tr>
+<tr><td>Bernoulli(\(p\))</td><td>one trial, two outcomes</td><td>\(p\)</td><td>\(p(1-p)\)</td><td>a dropout mask; a single Bernoulli sample is one bit</td></tr>
+<tr><td>Binomial(\(n,p\))</td><td>\(n\) independent trials, count successes</td><td>\(np\)</td><td>\(np(1-p)\)</td><td>counting successes across a fixed batch of \(n\)</td></tr>
+<tr><td>Hypergeometric</td><td>draw \(n\) without replacement, count successes</td><td>\(nK/N\)</td><td>&mdash;</td><td>sampling a batch from a fixed dataset, without repeats</td></tr>
+<tr><td>Geometric(\(p\))</td><td>trials until the first success</td><td>\(1/p\)</td><td>\((1-p)/p^2\)</td><td>attempts until a rejection sampler accepts</td></tr>
+<tr><td>Neg. Binomial(\(r,p\))</td><td>trials until the \(r\)-th success</td><td>\(r/p\)</td><td>\(r(1-p)/p^2\)</td><td>attempts until \(r\) valid outputs pass a constraint</td></tr>
+<tr><td>Poisson(\(\lambda\))</td><td>rare events in a fixed interval</td><td>\(\lambda\)</td><td>\(\lambda\)</td><td>counted events; a rate model, not a token model</td></tr>
+</table>
+
+<p>Two of these are used constantly in generative modelling and four are background. That is
+normal. The habit worth building is the first move of the table: before writing any formula,
+say the story out loud. &ldquo;Independent trials, count successes&rdquo; gets you the Binomial.
+&ldquo;Draw without replacement&rdquo; gets you the Hypergeometric. &ldquo;Until the first
+success&rdquo; gets you the Geometric.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  Which distribution is &ldquo;trials until the \(r\)-th success&rdquo;, and what is its mean?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The Negative Binomial, with mean \(r/p\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  Two distributions in the table have equal mean and variance. Which, and what does that
+  symmetry cost you in practice?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The Poisson, with both equal to \(\lambda\). Real count data is usually overdispersed
+  (variance above the mean), so the Poisson understates the spread.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.3</span></span>
+  What is the one-sentence story that identifies the Hypergeometric rather than the Binomial?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Drawing without replacement &mdash; the success probability changes after each draw, so the
+  trials are not independent.</p>
+</div>
+
+<h2>10 &middot; The discrete uniform, and the categorical underneath the softmax</h2>
+
+<p>A fair die is the simplest distribution in the world: six values, each with weight \(1/6\).
+The discrete uniform. Scale it to a vocabulary of 50,000 tokens and give each a different weight,
+and you have the distribution a language model emits at every step.</p>
+
+<div class="mathblock">
+\[ \mathrm{Categorical}\big(x; p_1,\dots,p_m\big) = p_x, \qquad \sum_{i=1}^{m} p_i = 1, \quad p_i \ge 0 \]
+</div>
+
+<p>The categorical is the general form of a single draw from a finite set of labels. The uniform
+is the special case where every \(p_i = 1/m\). This is not a new object mathematically — it is
+the PMF of a random variable whose values are not numbers but labels — but it is the most
+important distribution in this essay, because every token a model ever produces is one draw
+from one.</p>
+
+<h3>Temperature, in numbers</h3>
+
+<p>A model produces three logits: \(2, 1, 0\). Softmax exponentiates and renormalises, which
+gives the categorical probabilities. Dividing the logits by a temperature \(T\) before the
+softmax reshapes the distribution without changing its support.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  logits z = (2, 1, 0)      exp(z) = (7.389, 2.718, 1.000)   sum = 11.107
+
+  T = 1.0   z/T = (2,   1,   0  )   p = (0.665, 0.245, 0.090)  as trained
+  T = 0.5   z/T = (4,   2,   0  )   p = (0.867, 0.117, 0.016)  sharper
+  T = 2.0   z/T = (1,  0.5,  0  )   p = (0.506, 0.307, 0.186)  flatter
+
+  T -> 0 approaches argmax;   T -> infinity approaches uniform (1/3 each)
+</pre></div><div class="cap"><b>Temperature is a rescaling of the log-odds.</b> Every
+probability changes, the ordering of the three never does, and the mass still sums to 1.</div></div>
+
+<p>Check one row. At \(T = 0.5\) the rescaled logits are \(4, 2, 0\); exponentiating gives
+\(54.598\), \(7.389\), \(1.000\); the total is \(62.987\); and \(54.598/62.987 = 0.867\). Same
+procedure as the untouched row, applied to halved inputs.</p>
+
+<h3>Top-\(k\) and top-\(p\) are surgeries on this PMF</h3>
+
+<p>Top-\(k\) keeps the \(k\) largest probabilities, sets the rest to zero, and <i>renormalises</i>.
+With \(k = 2\) at \(T = 1\) the kept weights are \(0.665\) and \(0.245\), summing to \(0.910\),
+so the renormalised pair is \(0.731\) and \(0.269\). Top-\(p\), or nucleus sampling, keeps the
+smallest set of tokens whose cumulative probability exceeds \(p\). At \(p = 0.9\) the cumulative
+totals run \(0.665\), \(0.910\), so two tokens are kept and the outcome is identical here.</p>
+
+<p>Both moves are the same two operations: truncate the support, then divide by the new total.
+The second step is not optional. Forget it and your sampler is drawing from a measure that no
+longer sums to one — which is exactly the conditional-probability normalisation from the previous
+essay, applied to a set of tokens rather than a set of people.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.1</span></span>
+  How does the categorical distribution relate to the discrete uniform?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The uniform is the special case where every label has probability \(1/m\); the categorical
+  allows arbitrary weights summing to one.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.2</span></span>
+  Logits \((2, 1, 0)\). What is the categorical distribution at \(T = 0.5\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Rescale to \((4, 2, 0)\), exponentiate to \((54.598, 7.389, 1)\), normalise to
+  \((0.867, 0.117, 0.016)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.3</span></span>
+  What two operations does top-\(k\) sampling perform, and which one is easy to forget?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Truncate to the \(k\) largest weights, then renormalise to sum to one &mdash; the
+  renormalisation is the step that is easy to forget.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part IV &mdash; Where this lands in generative AI</div>
+
+<h2>11 &middot; The model's last layer is a categorical PMF</h2>
+
+<p>A language model processes a context and produces one vector of logits, one per vocabulary
+entry. Softmax turns that vector into a categorical distribution over the next token, and
+generation is a draw from it — then the token is appended to the context and the whole thing
+repeats.</p>
+
+<div class="mathblock">
+\[ p_\theta(x_t \mid x_{<t}) = \mathrm{softmax}\big(W h_t\big) \in \Delta^{|V|-1} \]
+</div>
+
+<p>Everything in this essay is doing work in that line. The output is a PMF, so it is a random
+variable and not a number. The vocabulary is the support, so its size is the size of the sample
+space at each step. And drawing from it is a categorical sample, which is why temperature and
+truncation are not model architecture but <i>surgeries on the PMF</i>, applied after the network
+has finished.</p>
+
+<table>
+<tr><th>from this essay</th><th>where it reappears</th></tr>
+<tr><td>categorical PMF</td><td>the language-model head: \(p_\theta(x_t \mid x_{<t}) = \mathrm{softmax}(W h_t)\) over \(|V|\) tokens; and every classifier's final layer in <i>RLHF-Curious</i>, where the reward model outputs a scalar but the policy outputs a categorical</td></tr>
+<tr><td>Bernoulli and the indicator</td><td>the dropout mask applied inside every layer; the keep/drop decision in stochastic depth; the mask in masked language modelling; and the accept/reject bit in rejection sampling</td></tr>
+<tr><td>the PMF of a sequence via the multiplication rule</td><td><i>RLHF-Curious</i>: the trajectory probability \(\pi_\theta(\tau) = \prod_t \pi_\theta(a_t \mid s_t)\) is a product of categoricals, and the ratio \(\pi_\theta/\pi_{\text{old}}\) in PPO is a ratio of two such products</td></tr>
+<tr><td>i.i.d. draws</td><td>the assumption behind every minibatch gradient in <i>VAE-Curious</i>: the ELBO's Monte Carlo estimate with \(M\) samples uses \(z^{(m)} \sim q(z \mid x)\) drawn independently</td></tr>
+<tr><td>Binomial counts</td><td>the \(M\)-sample average inside the importance-weighted bound, \(\frac1M\sum_m p(x, z^{(m)})/q(z^{(m)} \mid x)\), is an average of \(M\) terms whose numerator counts likelihood mass</td></tr>
+<tr><td>Hypergeometric</td><td>sampling a batch without replacement from a fixed dataset &mdash; the reason an epoch's batches are not independent draws</td></tr>
+<tr><td>Geometric waiting times</td><td>constrained decoding and rejection sampling: the expected number of attempts until a valid output is \(1/p_{\text{valid}}\)</td></tr>
+</table>
+
+<p>One genuinely honest note about scope. Of the six distributions in the table of section 9,
+the Poisson appears nowhere in the four algorithm essays. It is included because it is the
+canonical rare-event model and because every serious treatment of probability contains it — not
+because a diffusion model needs it. Saying so is better than manufacturing a connection.</p>
+
+<p>The habit to carry forward is the one this whole essay is built on: a distribution is a
+<i>story about how the data came to be</i>, and the formula is a summary of the story. When a
+generative model's loss looks arbitrary, ask what distribution it is the negative log-likelihood
+of. A Gaussian, a Bernoulli, or a categorical — those three cover almost all of it, and each
+corresponds to one sentence about how the output was produced.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.1</span></span>
+  What distribution does a language model's final softmax define, and over what support?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A categorical distribution over the vocabulary: one probability per token, summing to one
+  across \(|V|\) entries.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.2</span></span>
+  Why is temperature not a change to the model, but a change to the distribution?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It divides the logits by \(T\) after the network has produced them and before the softmax, so
+  the weights are unchanged and only the shape of the categorical PMF moves.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.3</span></span>
+  A trajectory probability in RLHF is a product of categoricals. Which rule from essay one made
+  that a product?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The multiplication rule: the joint probability of a sequence of actions is the product of the
+  conditional probabilities along the tree.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.4</span></span>
+  Why is a negative log-likelihood loss usually a Gaussian, Bernoulli or categorical loss in
+  disguise?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because each is \(-\log p(y \mid x)\) for one of those three output distributions: squared
+  error for a Gaussian, binary cross-entropy for a Bernoulli, softmax cross-entropy for a
+  categorical.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from Blitzstein &amp; Hwang, <i>Introduction to Probability</i>, chapter 3.
+Typeset with KaTeX. Source: <i>viz/prob-3.body.html</i>, assembled by
+<i>build/build-essay.js</i>.</p>
+
+</body></html>

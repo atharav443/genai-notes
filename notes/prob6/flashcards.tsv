@@ -1,0 +1,34 @@
+1.1	What does a joint distribution record that the two marginals do not?	How the two variables co-occur — the weight of each combination, and hence any dependence between them.
+1.2	Given a joint PMF table, how do you obtain the marginal of one variable?	Sum over the other variable: add up the row or column entries.
+1.3	Do the two marginals determine the joint distribution?	No. Many different joints share the same margins; only if the variables are independent is the joint the product of the marginals.
+2.1	Write the formula for a marginal density from a joint density.	\(f_X(x) = \int f_{X,Y}(x,y)\,dy\) — integrate the other variable out.
+2.2	A uniform point on the triangle \(0 \le y \le x \le 1\). What is \(f_X(x)\)?	\(\int_0^x 2\,dy = 2x\) for \(0 < x < 1\).
+2.3	Same triangle: what is \(f_Y(y)\), and why are the limits different?	\(\int_y^1 2\,dx = 2(1-y)\); for a fixed \(y\) the triangle extends in \(x\) from \(y\) up to 1.
+3.1	Write the conditional density formula and say which quantity must be positive.	\(f_{X \mid Y}(x \mid y) = f_{X,Y}(x,y)/f_Y(y)\), requiring \(f_Y(y) > 0\).
+3.2	For the uniform triangle, what is the conditional density of \(X\) given \(Y = 0.5\)?	Uniform on \((0.5, 1)\), i.e. \(f = 2\) there and 0 elsewhere.
+3.3	Conditioning on a slice keeps the joint's height but shortens the support. What must the rescaling therefore do?	Raise the height, by dividing by the marginal weight of the slice, so the result integrates to one.
+4.1	Give both forms of the covariance and say which you compute with.	\(\mathbb{E}[(X-\mathbb{E}X)(Y-\mathbb{E}Y)]\) for the definition, \(\mathbb{E}[XY] - \mathbb{E}X\,\mathbb{E}Y\) for computation.
+4.2	Why is covariance divided by the two standard deviations to get correlation?	Because covariance carries units and scales with each variable's spread; dividing normalises it to a dimensionless number in \([-1,1]\).
+4.3	On the uniform triangle, \(\mathrm{Cov} = 1/36\) and both variances are \(1/18\). What is \(\rho\)?	\(\rho = (1/36)/(1/18) = 1/2\).
+5.1	Which three operations leave the multivariate normal closed?	Taking marginals, taking conditionals, and applying affine maps.
+5.2	Write the conditional mean for a bivariate normal with correlation \(\rho\).	\(\mathbb{E}[X_1 \mid X_2 = x_2] = \mu_1 + \rho(\sigma_1/\sigma_2)(x_2 - \mu_2)\).
+5.3	\(\rho = 0.8\), unit variances, and you observe \(X_2 = 1\). What is your guess for \(X_1\), and what is the conditional variance?	Guess \(0.8\); conditional variance \(1 - 0.64 = 0.36\) (standard deviation \(0.6\)).
+6.1	With \(X\) uniform on \(\{-1,0,1\}\) and \(Y = X^2\), compute the covariance.	Zero: \(\mathbb{E}[X] = 0\) and \(\mathbb{E}[XY] = \mathbb{E}[X^3] = 0\) by symmetry, yet the two are perfectly dependent.
+6.2	Which implication holds between independence and zero correlation?	Independence implies zero correlation; zero correlation does not imply independence.
+6.3	What kind of association does correlation actually measure?	Linear association — the tendency of the two deviations to share a sign — and nothing about curved or otherwise symmetric relationships.
+6.4	A model uses a factorised latent \(q(z) = \prod_i q_i(z_i)\). What has it asserted, and what can it not represent?	That the latent coordinates are independent; it cannot represent a posterior whose coordinates are correlated, however much data it sees.
+7.1	\(X \sim \mathrm{Unif}(0,1)\) and \(Y = 2X\). What is the density of \(Y\)?	\(f_Y(y) = \tfrac12\) on \((0,2)\): the support doubled and the density halved.
+7.2	What does the Jacobian determinant represent, geometrically?	The local scaling of area (or volume) at a point under the map, so that density times area is conserved.
+7.3	Sum of two independent \(\mathrm{Unif}(0,1)\) variables: what is the density, and how do you check it?	\(z\) on \([0,1]\) and \(2-z\) on \([1,2]\) — a triangle with area \(\tfrac12 + \tfrac12 = 1\).
+7.4	Write the convolution formula for the density of a sum of independent variables.	\(f_{X+Y}(z) = \int f_X(x)f_Y(z-x)\,dx\), the overlap integral of the two densities.
+8.1	What is the difference between \(\mathbb{E}[X \mid A]\) and \(\mathbb{E}[X \mid Y]\)?	The first is a number (conditioning on an event); the second is a random variable, a function of \(Y\).
+8.2	For the uniform triangle, what is \(\mathbb{E}[X \mid Y = y]\)?	\((1+y)/2\), the midpoint of the slice \((y,1)\).
+8.3	The conditional mean above is \(\mathbb{E}[X \mid Y] = (1+Y)/2\) and \(\mathbb{E}[Y] = 1/3\). What is the average of the conditional mean?	\((1 + 1/3)/2 = 2/3\), which equals \(\mathbb{E}[X]\).
+9.1	State the tower property and describe what it computes in words.	\(\mathbb{E}[\mathbb{E}[X \mid Y]] = \mathbb{E}[X]\): average the within-group averages, weighted by group size, and you recover the overall average.
+9.2	State the “taking out what is known” rule and explain why it holds.	\(\mathbb{E}[g(Y)X \mid Y] = g(Y)\mathbb{E}[X \mid Y]\); given \(Y\), \(g(Y)\) is a constant and constants factor out.
+9.3	Write the law of total variance and name its two terms.	\(\mathrm{Var}(X) = \mathbb{E}[\mathrm{Var}(X \mid Y)] + \mathrm{Var}(\mathbb{E}[X \mid Y])\): average within-group variance plus the variance of the group means.
+9.4	The tower property is an equality. What extra ingredient is needed to get a bound?	Jensen's inequality, to relate the expectation of a log to the log of an expectation.
+10.1	Which two results from this essay combine to produce the ELBO?	Marginalising out \(z\) to write \(\log p(x) = \log \mathbb{E}_q[p(x,z)/q]\), then Jensen's inequality on the concave logarithm.
+10.2	What is the gap between \(\log p(x)\) and the ELBO, exactly?	\(\mathrm{KL}\big(q(z\mid x)\,\|\,p(z\mid x)\big)\), which is zero only when the approximate posterior equals the true one.
+10.3	Why does the reparameterization change of variables make a gradient legal?	It moves the parameter dependence out of the sampling distribution and into the integrand, so the distribution no longer moves with the parameters and linearity lets the gradient go inside.
+10.4	Why does \(q(x_t \mid x_0)\) have a closed form after \(t\) diffusion steps?	Because the steps add independent Gaussian noise, and the convolution of Gaussians is Gaussian — the sum is normal with means and variances that accumulate.

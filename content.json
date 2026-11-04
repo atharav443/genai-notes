@@ -1,18 +1,18 @@
 {
   "site": {
     "title": "Generative AI — Cheat Sheets",
-    "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes (104 pages), plus a primer on the mathematics they all share. Each algorithm ships twice: as a self-contained interactive cheat sheet with an undergraduate-level PDF, and as an essay in the mnemonic medium with recall cards and a review deck.",
+    "tagline": "Four algorithms from my handwritten <em>GenAI-IITM.pdf</em> notes (104 pages), a primer on the mathematics they all share, and a seven-essay course on probability that starts from counting. Each algorithm ships twice: as a self-contained interactive cheat sheet with an undergraduate-level PDF, and as an essay in the mnemonic medium with recall cards and a review deck.",
     "footer": "Every page is fully self-contained — no CDN, no network, works offline. Notation follows the source notes; the interactive demos are illustrative.",
     "hero": {
       "eyebrow": "IIT Madras · Mathematical Foundations of Generative AI",
-      "title": "Four algorithms,<br>written twice each.",
-      "lede": "Generative adversarial networks, variational autoencoders, diffusion and RLHF — pulled from 104 pages of handwritten lecture notes. Every topic ships twice: once as a self-contained interactive cheat sheet you can read in ten minutes, and once as a long-form essay in the mnemonic medium, where small recall cards inside the prose turn reading into remembering. New to the maths? Start with the foundations essay: expectations, KL, Jensen, Gaussians, Bayes and the two gradient tricks, each tied to where it reappears.",
+      "title": "Four algorithms,<br>written twice each.<br>Seven essays beforehand.",
+      "lede": "Generative adversarial networks, variational autoencoders, diffusion and RLHF — pulled from 104 pages of handwritten lecture notes. Every topic ships twice: once as a self-contained interactive cheat sheet you can read in ten minutes, and once as a long-form essay in the mnemonic medium, where small recall cards inside the prose turn reading into remembering. New to the maths, or never studied probability at all? Start at the top: seven essays on probability from first principles, then the foundations primer on expectations, KL, Jensen, Gaussians and Bayes.",
       "primary": {
-        "label": "Start with the foundations",
-        "href": "html/Foundations-Curious.html"
+        "label": "Start with probability, from first principles",
+        "href": "html/Prob1-Curious.html"
       },
       "secondary": {
-        "label": "Browse the cheat sheets",
+        "label": "Skip to the cheat sheets",
         "href": "#cheatsheets"
       }
     },
@@ -28,10 +28,141 @@
       "cheatsheet": {
         "title": "Interactive cheat sheets",
         "sub": "One page per topic with a live visualiser, plus an undergraduate-level PDF."
+      },
+      "probability": {
+        "title": "Probability, from first principles",
+        "sub": "Seven essays in the mnemonic medium covering the ground every other page here assumes: counting, conditioning, distributions, expectation, densities, joint distributions, and the limit theorems. One chapter of Blitzstein &amp; Hwang per essay, each with recall cards and a review deck."
       }
-    }
+    },
+    "eyebrow": "IIT Madras · Mathematical Foundations of Generative AI"
   },
   "topics": [
+    {
+      "id": "prob1-curious",
+      "status": "ready",
+      "tag": "Probability · I",
+      "tagColor": "#1d4ed8",
+      "title": "Counting, and what a probability is",
+      "blurb": "Pebbles, sample spaces, trees, permutations, combinations, story proofs and the sieve. Chapter 1 of Blitzstein &amp; Hwang. 4 parts, 36 recall cards.",
+      "html": "html/Prob1-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/prob1/flashcards.tsv"
+        }
+      ],
+      "kind": "probability",
+      "cards": 36
+    },
+    {
+      "id": "prob2-curious",
+      "status": "ready",
+      "tag": "Probability · II",
+      "tagColor": "#0e7490",
+      "title": "Conditional probability, Bayes, and being fooled by base rates",
+      "blurb": "Shrinking the sample space → total probability → Bayes in odds form → a rare disease in full → independence, mutual and conditional → four classic traps. Chapter 2. 36 cards.",
+      "html": "html/Prob2-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/prob2/flashcards.tsv"
+        }
+      ],
+      "kind": "probability",
+      "cards": 36
+    },
+    {
+      "id": "prob3-curious",
+      "status": "ready",
+      "tag": "Probability · III",
+      "tagColor": "#047857",
+      "title": "Random variables, and the six distributions worth knowing by name",
+      "blurb": "A random variable is a function → PMF and CDF → Bernoulli, Binomial, Hypergeometric, Geometric, Poisson → the categorical a language model actually emits. Chapter 3. 35 cards.",
+      "html": "html/Prob3-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/prob3/flashcards.tsv"
+        }
+      ],
+      "kind": "probability",
+      "cards": 35
+    },
+    {
+      "id": "prob4-curious",
+      "status": "ready",
+      "tag": "Probability · IV",
+      "tagColor": "#4d7c0f",
+      "title": "Expectation, variance, and the bridge between them",
+      "blurb": "Linearity without independence → indicators and the fundamental bridge → LOTUS → variance → moments and MGFs → the square-root tax → baselines as free variance reduction. Chapters 4 and 6. 37 cards.",
+      "html": "html/Prob4-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/prob4/flashcards.tsv"
+        }
+      ],
+      "kind": "probability",
+      "cards": 37
+    },
+    {
+      "id": "prob5-curious",
+      "status": "ready",
+      "tag": "Probability · V",
+      "tagColor": "#a21caf",
+      "title": "Densities, bell curves, and the noise we add on purpose",
+      "blurb": "A density is not a probability → the normal, and why there is only one → memorylessness → universality of the uniform → reparameterization, written as μ + σε. Chapter 5. 32 cards.",
+      "html": "html/Prob5-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/prob5/flashcards.tsv"
+        }
+      ],
+      "kind": "probability",
+      "cards": 32
+    },
+    {
+      "id": "prob6-curious",
+      "status": "ready",
+      "tag": "Probability · VI",
+      "tagColor": "#b45309",
+      "title": "Joint distributions, the Jacobian, and conditioning on a variable",
+      "blurb": "Marginals, conditionals and slices → covariance, and uncorrelated-but-dependent → the multivariate normal → change of variables → the tower property that produces the ELBO. Chapters 7–9. 34 cards.",
+      "html": "html/Prob6-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/prob6/flashcards.tsv"
+        }
+      ],
+      "kind": "probability",
+      "cards": 34
+    },
+    {
+      "id": "prob7-curious",
+      "status": "ready",
+      "tag": "Probability · VII",
+      "tagColor": "#57534e",
+      "title": "Bounds, the law of large numbers, and the bell curve",
+      "blurb": "Markov, Chebyshev, Cauchy–Schwarz → Jensen, and why KL cannot be negative → LLN and CLT → error bars and the fourfold tax → MCMC when you cannot even sample. Chapter 10. 34 cards.",
+      "html": "html/Prob7-Curious.html",
+      "cta": "Read the essay",
+      "extras": [
+        {
+          "label": "flashcards.tsv",
+          "href": "notes/prob7/flashcards.tsv"
+        }
+      ],
+      "kind": "probability",
+      "cards": 34
+    },
     {
       "id": "foundations-curious",
       "status": "ready",

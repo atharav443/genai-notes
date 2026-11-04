@@ -1,0 +1,766 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Joint distributions, the Jacobian, and conditioning on a variable</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/Prob6-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/prob-6.body.html</code>.</div>
+
+<h1>Joint distributions,<br>the Jacobian,<br>and conditioning on a variable</h1>
+<h1 class="sub-title">Two variables at once, what one of them tells you about the other, what a
+curve does to a density, and the tower property that turns an inequality into the bound every
+variational model is trained on</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question and its
+answer. They are not decoration. They are the essay testing you &mdash; and if you take them
+seriously, you will remember this material for years instead of days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong is useful;
+the effort of a failed recall is what makes the next one stick. The cards here are
+deliberately small: one fact, one step, one number each.</p>
+
+<p>This is the sixth of seven essays on probability. It needs the third, fourth and fifth, and
+it is the one that makes the variational autoencoder legible: a latent variable model is a joint
+distribution, the encoder is a conditional, the decoder is a conditional, and the bound they are
+trained with is the tower property of conditional expectation with Jensen's inequality bolted
+on.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; Two variables at once</div>
+
+<h2>1 &middot; A table of two variables</h2>
+
+<p>Somebody records the weather and whether you carry an umbrella, on a hundred mornings. Two
+variables, and neither alone tells the story: the interesting quantity is how often each
+combination happens.</p>
+
+<p>That is the <i>joint distribution</i>. For two discrete variables it is a table, and the table
+is the distribution.</p>
+
+<table>
+<tr><th></th><th>umbrella</th><th>no umbrella</th><th>row total</th></tr>
+<tr><td><b>rain</b></td><td>0.28</td><td>0.02</td><td>0.30</td></tr>
+<tr><td><b>sun</b></td><td>0.12</td><td>0.58</td><td>0.70</td></tr>
+<tr><td><b>column total</b></td><td>0.40</td><td>0.60</td><td>1.00</td></tr>
+</table>
+
+<p>The row and column totals are the <i>marginals</i> &mdash; the distributions of each variable
+on its own, obtained by summing out the other. The joint contains strictly more information:
+knowing both marginals &mdash; 30% rain, 40% umbrellas &mdash; does not tell you whether umbrellas
+and rain are related. You could build a table with those same margins in which rain and umbrellas
+are independent (0.12 each cell for the rain row), or one in which nobody carries an umbrella in
+the sun. Same edges, different interior.</p>
+
+<p>That asymmetry is the theme of this essay. The joint determines the marginals, always, by
+summing. The marginals almost never determine the joint.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  What does a joint distribution record that the two marginals do not?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  How the two variables co-occur &mdash; the weight of each combination, and hence any dependence
+  between them.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  Given a joint PMF table, how do you obtain the marginal of one variable?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Sum over the other variable: add up the row or column entries.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  Do the two marginals determine the joint distribution?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  No. Many different joints share the same margins; only if the variables are independent is the
+  joint the product of the marginals.</p>
+</div>
+
+<h2>2 &middot; Marginalising: integrating a variable away</h2>
+
+<p>A point is chosen uniformly from the triangle with corners \((0,0)\), \((1,0)\), \((1,1)\).
+What is the distribution of its \(x\)-coordinate alone?</p>
+
+<p>The triangle has area \(1/2\), so the joint density is \(2\) on the triangle and zero
+elsewhere &mdash; constant, because the point is uniform. The marginal is now an integral rather
+than a sum, but the instruction is identical: average out the variable you do not care about.</p>
+
+<div class="mathblock">
+\[ f_X(x) = \int_{-\infty}^{\infty} f_{X,Y}(x,y)\,dy \]
+</div>
+
+<p>Here the triangle is described by \(0 \le y \le x \le 1\), so for a fixed \(x\) the inner
+variable runs from 0 to \(x\):</p>
+
+<div class="mathblock">
+\[ f_X(x) = \int_0^{x} 2\,dy = 2x \qquad (0 < x < 1) \]
+</div>
+
+<p>which is the density from the previous essay, arrived at from a completely different
+direction. Do the same for \(y\) and the limits swap: \(x\) runs from \(y\) to 1,</p>
+
+<div class="mathblock">
+\[ f_Y(y) = \int_y^{1} 2\,dx = 2(1-y) \qquad (0 < y < 1) \]
+</div>
+
+<p>So \(X\) crowds toward 1 and \(Y\) crowds toward 0. Both facts are visible in the triangle if
+you look at it &mdash; most of its width is at large \(x\), most of its height at small \(y\)
+&mdash; and the integrals are just the picture done carefully. This is worth internalising: the
+marginal is not an abstraction, it is the shape of the shadow the joint casts on one axis.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  Write the formula for a marginal density from a joint density.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f_X(x) = \int f_{X,Y}(x,y)\,dy\) &mdash; integrate the other variable out.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  A uniform point on the triangle \(0 \le y \le x \le 1\). What is \(f_X(x)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\int_0^x 2\,dy = 2x\) for \(0 < x < 1\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  Same triangle: what is \(f_Y(y)\), and why are the limits different?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\int_y^1 2\,dx = 2(1-y)\); for a fixed \(y\) the triangle extends in \(x\) from \(y\) up to 1.</p>
+</div>
+
+<h2>3 &middot; Conditional densities, and the slice</h2>
+
+<p>You are told the point's \(y\)-coordinate is \(0.5\). What is the distribution of \(x\)
+now?</p>
+
+<p>The joint told you where the point can be. Learning \(y = 0.5\) cuts a horizontal line
+through the triangle, and the point must lie on the segment of that line inside the triangle.
+That is the same &ldquo;delete the impossible outcomes and renormalise&rdquo; move as the second
+essay, with an integral where the sum used to be.</p>
+
+<div class="mathblock">
+\[ f_{X \mid Y}(x \mid y) = \frac{f_{X,Y}(x,y)}{f_Y(y)}, \qquad f_Y(y) > 0 \]
+</div>
+
+<p>At \(y = 0.5\): \(f_Y(0.5) = 2(1 - 0.5) = 1\), and \(f_{X,Y}(x, 0.5) = 2\) for
+\(x \in (0.5, 1)\). So</p>
+
+<div class="mathblock">
+\[ f_{X \mid Y}(x \mid 0.5) = \frac{2}{1} = 2 \quad\text{on } (0.5, 1) \]
+</div>
+
+<p>which is uniform on a segment of length \(1/2\), and \(2 \times 0.5 = 1\). The slice kept the
+same height and got shorter, so the renormalisation had to raise it. In general, a conditional
+density is the joint restricted to a slice, rescaled to integrate to one &mdash; and the rescaling
+factor is exactly \(1/f_Y(y)\).</p>
+
+<p>The denominator can be zero, and that is not a technicality to skip. Conditioning on an event
+of probability zero is undefined by this formula, and the whole of the next section is about what
+you can say instead.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  Write the conditional density formula and say which quantity must be positive.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f_{X \mid Y}(x \mid y) = f_{X,Y}(x,y)/f_Y(y)\), requiring \(f_Y(y) > 0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  For the uniform triangle, what is the conditional density of \(X\) given \(Y = 0.5\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Uniform on \((0.5, 1)\), i.e. \(f = 2\) there and 0 elsewhere.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
+  Conditioning on a slice keeps the joint's height but shortens the support. What must the
+  rescaling therefore do?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Raise the height, by dividing by the marginal weight of the slice, so the result integrates
+  to one.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part II &mdash; Dependence, and what it does not tell you</div>
+
+<h2>4 &middot; Covariance, correlation, and a number you can compute</h2>
+
+<p>Two variables can be related in every possible way, and the simplest relation to measure is
+whether they move together. Covariance asks exactly that: when \(X\) is above its mean, is \(Y\)
+above its mean too?</p>
+
+<div class="mathblock">
+\[ \mathrm{Cov}(X,Y) = \mathbb{E}\big[(X - \mathbb{E}X)(Y - \mathbb{E}Y)\big] = \mathbb{E}[XY] - \mathbb{E}[X]\,\mathbb{E}[Y] \]
+</div>
+
+<p>The second form is the one you compute with, and its sign is the answer to the question:
+positive means they rise together, negative means one rises as the other falls, zero means no
+<i>linear</i> tendency.</p>
+
+<p>For the uniform triangle, all four pieces are integrals. The two means are
+\(\mathbb{E}[X] = \int_0^1 x \cdot 2x\,dx = 2/3\) and
+\(\mathbb{E}[Y] = \int_0^1 y \cdot 2(1-y)\,dy = 1/3\). The cross term is</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[XY] = \int_0^1\!\!\int_0^{x} 2xy\;dy\,dx = \int_0^1 x^3\,dx = \frac14 \]
+</div>
+
+<p>so \(\mathrm{Cov}(X,Y) = \tfrac14 - \tfrac23 \cdot \tfrac13 = \tfrac14 - \tfrac29 = \tfrac{1}{36}
+\approx 0.0278\).</p>
+
+<p>Covariance has units &mdash; square centimetres if the variables are in centimetres &mdash; and
+a magnitude that depends on how spread out each variable is. Dividing by the two standard
+deviations fixes both problems at once:</p>
+
+<div class="mathblock">
+\[ \rho = \frac{\mathrm{Cov}(X,Y)}{\sigma_X \sigma_Y} \in [-1, 1] \]
+</div>
+
+<p>Here both variances turn out to be \(1/18\), so \(\sigma_X = \sigma_Y = 1/\sqrt{18}\), and
+\(\rho = (1/36) / (1/18) = 1/2\). A moderate positive association, which matches the picture:
+the triangle leans.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  Give both forms of the covariance and say which you compute with.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[(X-\mathbb{E}X)(Y-\mathbb{E}Y)]\) for the definition, \(\mathbb{E}[XY] -
+  \mathbb{E}X\,\mathbb{E}Y\) for computation.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  Why is covariance divided by the two standard deviations to get correlation?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because covariance carries units and scales with each variable's spread; dividing normalises it
+  to a dimensionless number in \([-1,1]\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  On the uniform triangle, \(\mathrm{Cov} = 1/36\) and both variances are \(1/18\). What is
+  \(\rho\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\rho = (1/36)/(1/18) = 1/2\).</p>
+</div>
+
+<h2>5 &middot; The multivariate normal, and why it is closed under everything</h2>
+
+<p>Assemble \(d\) correlated normals into one vector and you have the multivariate normal: a
+mean vector \(\mu\) and a covariance matrix \(\Sigma\), and nothing else.</p>
+
+<div class="mathblock">
+\[ f(\mathbf{x}) = (2\pi)^{-d/2}\,|\Sigma|^{-1/2} \exp\!\left(-\tfrac12 (\mathbf{x}-\mu)^{\top}\Sigma^{-1}(\mathbf{x}-\mu)\right) \]
+</div>
+
+<p>The single most useful fact about it is that it is closed under the three operations this
+essay is about. Its marginals are normal. Its conditionals are normal. Affine maps of it are
+normal. Nowhere else do all three hold simultaneously, and that is why Gaussian models are the
+ones that can be solved on paper.</p>
+
+<p>In two dimensions with unit variances and correlation \(\rho\), conditioning gives the
+regression line and the shrinkage:</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X_1 \mid X_2 = x_2] = \mu_1 + \rho\,\frac{\sigma_1}{\sigma_2}\,(x_2 - \mu_2), \qquad \mathrm{Var}(X_1 \mid X_2 = x_2) = \sigma_1^2\,(1 - \rho^2) \]
+</div>
+
+<p>With \(\mu = (0,0)\), \(\sigma_1 = \sigma_2 = 1\) and \(\rho = 0.8\), observing
+\(X_2 = 1\) moves your guess for \(X_1\) to \(0.8\), and the uncertainty shrinks from 1 to
+\(\sqrt{1 - 0.64} = 0.6\). Observe something surprising and the conditional mean moves toward it,
+but only by \(\rho\) of the way; the residual variance is what remains after that.</p>
+
+<p>Read the two formulas as the whole idea of conditioning in continuous settings. The mean
+becomes a function of what you observed, and the variance drops by a factor you can name. Every
+Gaussian filter, every Kalman step, and every closed-form posterior in a Gaussian model is these
+two lines.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  Which three operations leave the multivariate normal closed?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Taking marginals, taking conditionals, and applying affine maps.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  Write the conditional mean for a bivariate normal with correlation \(\rho\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[X_1 \mid X_2 = x_2] = \mu_1 + \rho(\sigma_1/\sigma_2)(x_2 - \mu_2)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  \(\rho = 0.8\), unit variances, and you observe \(X_2 = 1\). What is your guess for \(X_1\),
+  and what is the conditional variance?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Guess \(0.8\); conditional variance \(1 - 0.64 = 0.36\) (standard deviation \(0.6\)).</p>
+</div>
+
+<h2>6 &middot; Uncorrelated, and still dependent</h2>
+
+<p>Let \(X\) be \(-1\), \(0\) or \(1\) with equal probability, and let \(Y = X^2\). Knowing \(X\)
+tells you \(Y\) exactly, so these two are as dependent as two variables can be.</p>
+
+<p>Now compute the covariance. \(\mathbb{E}[X] = 0\), \(\mathbb{E}[XY] = \mathbb{E}[X^3] = 0\) by
+symmetry, so \(\mathrm{Cov}(X,Y) = 0 - 0 = 0\). Uncorrelated, and utterly dependent.</p>
+
+<div class="mathblock">
+\[ \text{independent} \Rightarrow \text{uncorrelated} \qquad\text{but}\qquad \text{uncorrelated} \not\Rightarrow \text{independent} \]
+</div>
+
+<p>Only one of those arrows runs. The reason is that covariance measures a specific thing
+&mdash; the tendency of deviations to have the same sign, i.e. linear association &mdash; and
+\(Y = X^2\) has a perfectly symmetric relationship with no linear part at all. A scatter plot
+makes it obvious; a single number cannot.</p>
+
+<p>So correlation is a first look and never a verdict. When someone says two quantities are
+uncorrelated and leaves it there, ask what they would expect to see in the scatter plot. And when
+a latent-variable model asserts that its coordinates are independent, note that it is asserting
+something far stronger than zero covariance &mdash; which is exactly why a diagonal covariance
+matrix is a modelling shortcut rather than a proof of independence.</p>
+
+<div class="aside">
+<span class="who">Where the shortcut bites</span>
+<b>A diagonal covariance is a claim of independence, not a consequence of one.</b> If you model
+\(q(z) = \prod_i \mathcal{N}(z_i; \mu_i, \sigma_i^2)\), you have declared the latent coordinates
+independent. If the true posterior has correlated coordinates &mdash; and it usually does &mdash;
+the approximation cannot represent it, no matter how well you train. That gap is a modelling
+error, distinct from the sampling error of a Monte Carlo estimate, and no amount of data removes
+it.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  With \(X\) uniform on \(\{-1,0,1\}\) and \(Y = X^2\), compute the covariance.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Zero: \(\mathbb{E}[X] = 0\) and \(\mathbb{E}[XY] = \mathbb{E}[X^3] = 0\) by symmetry, yet the
+  two are perfectly dependent.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  Which implication holds between independence and zero correlation?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Independence implies zero correlation; zero correlation does not imply independence.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  What kind of association does correlation actually measure?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Linear association &mdash; the tendency of the two deviations to share a sign &mdash; and
+  nothing about curved or otherwise symmetric relationships.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.4</span></span>
+  A model uses a factorised latent \(q(z) = \prod_i q_i(z_i)\). What has it asserted, and what
+  can it not represent?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  That the latent coordinates are independent; it cannot represent a posterior whose coordinates
+  are correlated, however much data it sees.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part III &mdash; Pushing a variable through a function</div>
+
+<h2>7 &middot; Change of variables, and the Jacobian</h2>
+
+<p>You know the distribution of \(X\). What is the distribution of \(2X\)? Of \(\ln X\)? Of the
+area of a square whose side is \(X\)?</p>
+
+<p>A density is a rate per unit of its own variable, so when you change the variable you must
+also change the units. Stretch the axis by a factor of two and the same probability is spread
+over twice the width, so the density halves. That factor is the whole content of the
+change-of-variables formula.</p>
+
+<div class="mathblock">
+\[ Y = g(X), \; g \text{ monotone} \qquad\Longrightarrow\qquad f_Y(y) = f_X\big(g^{-1}(y)\big)\,\left|\frac{d}{dy}\,g^{-1}(y)\right| \]
+</div>
+
+<p>Take \(X \sim \mathrm{Unif}(0,1)\) and \(Y = 2X\). Then \(g^{-1}(y) = y/2\), whose derivative
+is \(1/2\), so \(f_Y(y) = 1 \times \tfrac12 = \tfrac12\) on \((0,2)\). Density halved, support
+doubled, total still one.</p>
+
+<p>In two dimensions the derivative becomes a determinant, because a nonlinear map stretches
+area by a factor that varies from point to point:</p>
+
+<div class="mathblock">
+\[ f_{U,V}(u,v) = f_{X,Y}\big(x(u,v), y(u,v)\big)\,\big|\det J\big|, \qquad J = \frac{\partial(x,y)}{\partial(u,v)} \]
+</div>
+
+<p>The Jacobian determinant is the local area-scaling factor &mdash; how much a tiny square is
+inflated or deflated by the map. It appears in the denominator when you push forward and in the
+numerator when you pull back, which is the only thing to remember about which way up it goes:
+<i>density times area is conserved.</i></p>
+
+<h3>Convolutions, and the sum of two uniforms</h3>
+
+<p>The sum of two independent variables is a change of variables in disguise, and it has its own
+formula:</p>
+
+<div class="mathblock">
+\[ f_{X+Y}(z) = \int f_X(x)\,f_Y(z - x)\,dx \]
+</div>
+
+<p>Two independent uniforms on \((0,1)\): the integrand is 1 wherever both arguments are in
+\((0,1)\), and the length of that overlap depends on \(z\). For \(0 \le z \le 1\) the overlap is
+\((0,z)\), length \(z\). For \(1 \le z \le 2\) it is \((z-1, 1)\), length \(2-z\). So</p>
+
+<div class="mathblock">
+\[ f_{X+Y}(z) = \begin{cases} z & 0 \le z \le 1 \\ 2 - z & 1 \le z \le 2 \end{cases} \]
+</div>
+
+<p>a triangle: zero at both ends, one in the middle. Check the area:
+\(\tfrac12 \cdot 1 \cdot 1 + \tfrac12 \cdot 1 \cdot 1 = 1\). The corners are rounded off compared
+with the flat density you started from, and that rounding is the first hint of the central limit
+theorem &mdash; add more uniforms and the shape relaxes toward a bell.</p>
+
+<p class="beyond-note">Beyond the book &mdash; not in &sect;8.1&ndash;&sect;8.2.</p>
+<p>The same Jacobian formula is the density of a normalizing flow. Let \(f\) be an invertible,
+differentiable map from a simple \(z\) to a complicated \(x\). Then
+\(\log p_X(x) = \log p_Z(f^{-1}(x)) + \log|\det \partial f^{-1}/\partial x|\). Everything a flow
+does is choosing \(f\) so that the determinant is cheap: triangular Jacobians make it the sum of
+the diagonal's logs, which is why coupling layers are built to be triangular by construction.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  \(X \sim \mathrm{Unif}(0,1)\) and \(Y = 2X\). What is the density of \(Y\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f_Y(y) = \tfrac12\) on \((0,2)\): the support doubled and the density halved.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  What does the Jacobian determinant represent, geometrically?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The local scaling of area (or volume) at a point under the map, so that density times area is
+  conserved.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  Sum of two independent \(\mathrm{Unif}(0,1)\) variables: what is the density, and how do you
+  check it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(z\) on \([0,1]\) and \(2-z\) on \([1,2]\) &mdash; a triangle with area
+  \(\tfrac12 + \tfrac12 = 1\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  Write the convolution formula for the density of a sum of independent variables.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(f_{X+Y}(z) = \int f_X(x)f_Y(z-x)\,dx\), the overlap integral of the two densities.</p>
+</div>
+
+<h2>8 &middot; Conditional expectation, given a number and given a variable</h2>
+
+<p>Two questions that sound identical and are not.</p>
+
+<p><i>Given that it rained, how many umbrellas on average?</i> The answer is a number. You
+conditioned on an event, and the conditional expectation is a constant obtained by averaging
+over the shrunken space.</p>
+
+<p><i>Given the weather, how many umbrellas on average?</i> The answer is not a number. It
+depends on the weather, which is itself random, so the answer is a <i>random variable</i> &mdash;
+a function of the thing you conditioned on.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X \mid A] \text{ is a number} \qquad\qquad \mathbb{E}[X \mid Y] \text{ is a function of } Y \]
+</div>
+
+<p>For the uniform triangle, compute the second kind. The conditional density of \(X\) given
+\(Y = y\) is \(1/(1-y)\) on \((y,1)\) &mdash; uniform on that slice &mdash; so its mean is the
+midpoint of the slice:</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X \mid Y = y] = \frac{1 + y}{2} \qquad\Longrightarrow\qquad \mathbb{E}[X \mid Y] = \frac{1 + Y}{2} \]
+</div>
+
+<p>At \(y = 0.5\) this gives \(0.75\), which is the midpoint of \((0.5, 1)\), as it must be.
+Note the object on the right: a formula in \(Y\), so a random variable. Draw \(Y\), plug it in,
+get a number. Average over the draws and you get \(2/3\), which is \(\mathbb{E}[X]\) &mdash; the
+subject of the next section.</p>
+
+<p>The distinction matters because only the second kind can be composed. You cannot ask about
+the variance of a number, you cannot nest an average of a number, and you cannot make a bound
+out of one. Everything interesting is the version conditioned on a random variable.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  What is the difference between \(\mathbb{E}[X \mid A]\) and \(\mathbb{E}[X \mid Y]\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The first is a number (conditioning on an event); the second is a random variable, a function
+  of \(Y\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  For the uniform triangle, what is \(\mathbb{E}[X \mid Y = y]\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((1+y)/2\), the midpoint of the slice \((y,1)\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  The conditional mean above is \(\mathbb{E}[X \mid Y] = (1+Y)/2\) and \(\mathbb{E}[Y] = 1/3\).
+  What is the average of the conditional mean?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((1 + 1/3)/2 = 2/3\), which equals \(\mathbb{E}[X]\).</p>
+</div>
+
+<h2>9 &middot; The tower property</h2>
+
+<p>Averages of averages should be averages, and they are. This is the property that carries most
+of the weight in variational inference, so it is worth stating precisely and seeing why it is
+forced.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}\big[\mathbb{E}[X \mid Y]\big] = \mathbb{E}[X] \]
+</div>
+
+<p>The outer average is over \(Y\). You first average \(X\) inside each group, then average the
+group averages &mdash; and because each group is weighted by its size, that is the same as
+averaging everything at once. The previous section checked it numerically: \(2/3 = 2/3\).</p>
+
+<p>Two companions are used constantly. <i>Taking out what is known</i>: anything that is a
+function of \(Y\) can be pulled outside a conditional expectation given \(Y\), because within a
+group it is a constant.</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[g(Y)X \mid Y] = g(Y)\,\mathbb{E}[X \mid Y] \]
+</div>
+
+<p>And the law of total variance, which splits uncertainty into two parts you can name:</p>
+
+<div class="mathblock">
+\[ \mathrm{Var}(X) = \mathbb{E}\big[\mathrm{Var}(X \mid Y)\big] + \mathrm{Var}\big(\mathbb{E}[X \mid Y]\big) \]
+</div>
+
+<p>Read it as: total uncertainty is the average uncertainty inside groups, plus the uncertainty
+of the group means themselves. The second term vanishes exactly when knowing \(Y\) determines
+the answer, and the first vanishes when \(Y\) tells you nothing about the spread. That
+decomposition is the reason conditional expectations make good predictors &mdash; they capture
+precisely the variation that \(Y\) explains.</p>
+
+<div class="aside">
+<span class="who">Where this is easy to misuse</span>
+<b>The tower property is an equality; anything you derive from it needs a second ingredient.</b>
+Averaging a logarithm is not averaging, so the moment you write
+\(\mathbb{E}[\log(\cdot)]\), the tower property alone will not carry you &mdash; you need
+Jensen's inequality to relate it to the log of the average. That combination, tower then Jensen,
+is the ELBO in the next section, and it is worth noticing that the inequality enters from exactly
+one place.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  State the tower property and describe what it computes in words.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[\mathbb{E}[X \mid Y]] = \mathbb{E}[X]\): average the within-group averages,
+  weighted by group size, and you recover the overall average.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  State the &ldquo;taking out what is known&rdquo; rule and explain why it holds.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[g(Y)X \mid Y] = g(Y)\mathbb{E}[X \mid Y]\); given \(Y\), \(g(Y)\) is a constant
+  and constants factor out.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.3</span></span>
+  Write the law of total variance and name its two terms.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathrm{Var}(X) = \mathbb{E}[\mathrm{Var}(X \mid Y)] + \mathrm{Var}(\mathbb{E}[X \mid Y])\):
+  average within-group variance plus the variance of the group means.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.4</span></span>
+  The tower property is an equality. What extra ingredient is needed to get a <i>bound</i>?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Jensen's inequality, to relate the expectation of a log to the log of an expectation.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part IV &mdash; Where this lands in generative AI</div>
+
+<h2>10 &middot; The bound is conditional expectation plus Jensen</h2>
+
+<p>A latent-variable model says \(p(x, z) = p(z)\,p(x \mid z)\). You want \(\log p(x)\), and
+the honest route is</p>
+
+<div class="mathblock">
+\[ \log p(x) = \log \mathbb{E}_{q}\!\left[\frac{p(x,z)}{q(z \mid x)}\right] \;\ge\; \mathbb{E}_{q}\!\left[\log\frac{p(x,z)}{q(z \mid x)}\right] \]
+</div>
+
+<p>Two moves, both from this essay. The left equality is total probability &mdash; marginalising
+\(z\) out, which is the integral from section 2. The inequality is Jensen applied to the concave
+logarithm. The right-hand side is the ELBO, and it is a conditional expectation under
+\(q(z \mid x)\).</p>
+
+<p>Everything the variational essay does follows from the gap. The gap is exactly
+\(\mathrm{KL}\big(q(z\mid x)\,\|\,p(z \mid x)\big)\), so the bound is tight precisely when the
+approximate posterior equals the true one &mdash; and the true one is unavailable because its
+denominator is the very quantity you were trying to compute.</p>
+
+<table>
+<tr><th>from this essay</th><th>where it reappears</th></tr>
+<tr><td>the joint as the object, marginals by integrating out</td><td><i>VAE-Curious</i>: \(p(x,z) = p(z)p_\theta(x\mid z)\) is the model, and \(p(x) = \int p(x\mid z)p(z)\,dz\) is the marginal you cannot compute</td></tr>
+<tr><td>conditional density \(f_{X\mid Y} = f_{X,Y}/f_Y\)</td><td><i>VAE-Curious</i>: the encoder \(q_\phi(z \mid x)\) and decoder \(p_\theta(x \mid z)\) are exactly conditional densities, and the true posterior \(p(z\mid x)\) is the one the formula cannot reach because \(p(x)\) is intractable</td></tr>
+<tr><td>the tower property</td><td><i>VAE-Curious</i>: \(\log p(x) = \mathrm{ELBO} + \mathrm{KL}\), and the KL is zero when \(q = p(z\mid x)\); the bound's derivation is the tower property followed by Jensen</td></tr>
+<tr><td>change of variables and the Jacobian</td><td><i>Diffusion-Curious</i> and normalizing flows: \(\log p_X(x) = \log p_Z(f^{-1}(x)) + \log|\det \partial f^{-1}/\partial x|\), with triangular Jacobians chosen so the determinant is cheap</td></tr>
+<tr><td>convolutions</td><td><i>Diffusion-Curious</i>: the forward process composes Gaussian noise, and sums of independent Gaussians are Gaussian &mdash; the reason \(q(x_t \mid x_0)\) has a closed form at any \(t\)</td></tr>
+<tr><td>multivariate normal closed under conditioning</td><td><i>VAE-Curious</i>: the closed-form KL between \(q_\phi(z\mid x) = \mathcal{N}(\mu, \sigma^2 I)\) and \(\mathcal{N}(0, I)\), a sum over coordinates</td></tr>
+<tr><td>conditional expectation as a random variable</td><td><i>Diffusion-Curious</i>: \(\mathbb{E}[x_0 \mid x_t]\) is the denoising target (Tweedie's formula), a conditional mean and therefore a function of the noisy sample</td></tr>
+</table>
+
+<p>The reparameterization gradient is the other place a change of variables earns its keep. The
+gradient of an expectation under a parameter-dependent distribution is not the expectation of the
+gradient, because the region being integrated over moves. Writing \(z = \mu + \sigma\varepsilon\)
+moves the dependence out of the distribution and into the integrand, and once the distribution
+being averaged over no longer depends on the parameters, linearity is enough and the gradient
+goes inside. That is a change of variables used to make a derivative legal &mdash; the Jacobian is
+the constant \(\sigma\), and it drops out because the ratio of densities is a constant.</p>
+
+<p>What to carry forward is a single diagnostic. When a generative model's bound looks
+arbitrary, ask two questions: what is the joint, and what did you integrate out to get the
+marginal? Every bound in the series is an answer to those two.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.1</span></span>
+  Which two results from this essay combine to produce the ELBO?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Marginalising out \(z\) to write \(\log p(x) = \log \mathbb{E}_q[p(x,z)/q]\), then Jensen's
+  inequality on the concave logarithm.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.2</span></span>
+  What is the gap between \(\log p(x)\) and the ELBO, exactly?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathrm{KL}\big(q(z\mid x)\,\|\,p(z\mid x)\big)\), which is zero only when the approximate
+  posterior equals the true one.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.3</span></span>
+  Why does the reparameterization change of variables make a gradient legal?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It moves the parameter dependence out of the sampling distribution and into the integrand, so
+  the distribution no longer moves with the parameters and linearity lets the gradient go inside.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.4</span></span>
+  Why does \(q(x_t \mid x_0)\) have a closed form after \(t\) diffusion steps?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the steps add independent Gaussian noise, and the convolution of Gaussians is Gaussian
+  &mdash; the sum is normal with means and variances that accumulate.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from Blitzstein &amp; Hwang, <i>Introduction to Probability</i>, &sect;7.1&ndash;&sect;7.5,
+&sect;8.1&ndash;&sect;8.2 and &sect;9.1&ndash;&sect;9.5. Typeset with KaTeX. Source:
+<i>viz/prob-6.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
+
+</body></html>

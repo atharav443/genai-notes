@@ -1,0 +1,34 @@
+1.1	What does a probability inequality give you that an exact computation would not?	A statement that holds for every distribution satisfying a few weak hypotheses, when the distribution itself is unknown.
+1.2	What do you pay for that?	Tightness — the bound can be far from the truth, sometimes by orders of magnitude.
+2.1	State Markov's inequality, including its hypothesis.	For \(X \ge 0\) and \(a > 0\), \(P(X \ge a) \le \mathbb{E}[X]/a\).
+2.2	A non-negative variable has mean 2. Bound \(P(X \ge 10)\).	\(2/10 = 0.2\).
+2.3	When is Markov exactly tight?	When the variable takes only the values \(a\) and 0, so all its mass sits at the threshold.
+3.1	State Chebyshev's inequality in both forms.	\(P(|X-\mu| \ge a) \le \sigma^2/a^2\), equivalently \(P(|X-\mu| \ge k\sigma) \le 1/k^2\).
+3.2	\(\sigma = 2\), \(a = 6\). What does Chebyshev give, and how does it compare with a normal?	\(4/36 \approx 0.111\), against the normal's \(0.0027\) — loose, but valid for every distribution.
+3.3	Which earlier inequality does Chebyshev follow from, and applied to what?	Markov, applied to the non-negative variable \((X-\mu)^2\).
+4.1	State Cauchy–Schwarz for random variables.	\((\mathbb{E}[XY])^2 \le \mathbb{E}[X^2]\mathbb{E}[Y^2]\).
+4.2	How does it give \(|\rho| \le 1\)?	Applied to the centred variables it reads \(\mathrm{Cov}^2 \le \sigma_X^2\sigma_Y^2\); take square roots and divide.
+4.3	When is the bound attained, and what does that mean for the scatter plot?	Only when one variable is an affine function of the other, so \(|\rho| = 1\) means a perfect straight line.
+5.1	State Jensen's inequality for a convex function, and say what happens for a concave one.	\(\mathbb{E}[g(X)] \ge g(\mathbb{E}[X])\) for convex \(g\); the inequality reverses for concave \(g\).
+5.2	\(X = 1\) or \(4\) with probability \(1/2\), \(g = \log\). Compute both sides.	\(\log 2.5 = 0.9163\) and \(\tfrac12(0 + 1.3863) = 0.6931\); the gap is \(0.2231\).
+5.3	Prove \(\mathrm{KL}(p\,\|\,q) \ge 0\) using Jensen.	\(\mathbb{E}_p[\log(p/q)] \ge \log\mathbb{E}_p[p/q] = \log 1 = 0\), since log is concave.
+5.4	What does the size of Jensen's gap measure?	Variability: zero when the variable is constant, growing as its spread grows.
+6.1	State the weak law of large numbers.	The sample average of i.i.d. variables with finite mean \(\mu\) converges to \(\mu\) in probability: \(P(|\bar{X}_n - \mu| > \epsilon) \to 0\) for every \(\epsilon > 0\).
+6.2	Sketch the proof from Chebyshev.	\(\mathrm{Var}(\bar{X}_n) = \sigma^2/n\), so Chebyshev gives \(P(|\bar{X}_n - \mu| \ge \epsilon) \le \sigma^2/(n\epsilon^2) \to 0\).
+6.3	How does the strong law differ from the weak one?	It asserts almost-sure convergence — the average converges along the whole sequence with probability one, not merely in probability at each fixed \(n\).
+6.4	Give a distribution for which averaging gains nothing.	The Cauchy: the average of \(n\) draws has the same distribution as one draw, for every \(n\).
+7.1	State the central limit theorem.	\((\bar{X}_n - \mu)/(\sigma/\sqrt{n})\) converges in distribution to \(\mathcal{N}(0,1)\) for i.i.d. variables with finite variance.
+7.2	\(\mu = 2\), \(\sigma = 2\), \(n = 100\). Compute \(P(\bar{X}_{100} > 2.4)\) approximately.	Standardise to \((2.4-2)/0.2 = 2\), so \(P(Z > 2) \approx 0.023\).
+7.3	Why is the “\(n \ge 30\)” rule unreliable?	Because the rate of convergence depends on how non-normal the starting distribution is; a skewed or heavy-tailed one may need far more than thirty.
+7.4	Which hypothesis does the central limit theorem need that the law of large numbers does not emphasise?	A finite variance; without it there is no limiting normal, as the Cauchy case shows.
+8.1	What is the standard error of the mean, and how does it differ from \(\sigma\)?	\(\sigma/\sqrt{n}\): the spread of the average, whereas \(\sigma\) is the spread of a single observation.
+8.2	\(\sigma = 2\), \(n = 400\). Give the standard error and the 95% interval half-width.	\(\mathrm{se} = 0.1\), half-width \(\approx 1.96 \times 0.1 = 0.196\).
+8.3	Where does the number 1.96 come from?	It is the standard-normal quantile leaving 2.5% in each tail, inherited through the central limit theorem.
+8.4	You want to halve the width of a confidence interval. How many more samples?	Four times as many, since the width scales as \(1/\sqrt{n}\).
+9.1	Why is direct sampling impossible in a Bayesian posterior, and what replaces it?	The normalising constant \(p(\text{data})\) is an intractable integral; Markov chain Monte Carlo replaces independent draws with a chain whose stationary distribution is the posterior.
+9.2	What cancels in the Metropolis–Hastings acceptance ratio, and why does that matter?	The unnormalised density's normalising constant, which is exactly the quantity that made direct sampling impossible.
+9.3	Name the two honest caveats of any MCMC run.	Burn-in (early states are not from the target) and autocorrelation (samples are dependent, so the effective sample size is smaller than the iteration count).
+10.1	Which inequality makes the ELBO a lower bound rather than a rearrangement?	Jensen's inequality applied to the concave logarithm, which is what forces the KL gap to be non-negative.
+10.2	Why does a minibatch gradient estimate the full-data gradient?	By the law of large numbers: the average over a random minibatch converges to the expectation over the data distribution.
+10.3	Why is diffusion's reverse process not a Markov chain Monte Carlo method?	It is a fixed, learned, finite sequence of Gaussian steps with no accept/reject test and no stationary distribution; its correctness comes from inverting a known forward process.
+10.4	A derivation produces an objective with no inequality anywhere. What should you conclude?	That it is an identity, not a bound — and calling it a bound is an error.
