@@ -100,22 +100,15 @@ gives the total weight at or below each value.</p>
 \(p(x) = F(x) - F(x^-)\), the jump at \(x\). The diagrams are complementary — a PMF is a set of
 spikes, a CDF is a staircase, and the height of each step is the spike.</p>
 
-<div class="fig"><div class="box"><pre class="d">
-  PMF (spikes)                    CDF (staircase)
-
-  p                               F
-  1/2 |       *                   1  |           +----
-      |       |                      |           |
-  1/4 |  *    |    *             3/4 |       +---+
-      |  |    |    |                |       |
-      +--+----+----+-- x         1/4 |   +---+
-        0    1    2                 |   |
-                                    +---+---+---+-- x
-                                     0   1   2
-
-  each step height in F equals the spike height in p
-</pre></div><div class="cap"><b>Two views of one distribution.</b> The CDF is a running
-total, which is why it is nondecreasing and why it ends at exactly 1.</div></div>
+<!--prob-svg:prob3-pmf-cdf:start-->
+<div class="fig probability-figure" id="figure-prob3-pmf-cdf"><div class="box"><svg xmlns="http://www.w3.org/2000/svg" class="prob-diagram" width="360" height="510" viewBox="0 0 360 510" role="img" aria-labelledby="prob3-pmf-cdf-title prob3-pmf-cdf-desc" font-family="system-ui, -apple-system, sans-serif">
+<title id="prob3-pmf-cdf-title">One distribution, two views</title>
+<desc id="prob3-pmf-cdf-desc">For a binomial count of heads in two fair coin flips, the probability masses at zero, one, and two are one quarter, one half, and one quarter. The right-continuous cumulative distribution jumps to one quarter at zero, three quarters at one, and one at two.</desc>
+<rect width="360" height="510" fill="#fff"/>
+<text x="18" y="28" font-size="17" fill="#202b3c" font-weight="650">One distribution, two views</text>
+<text x="18" y="56" font-size="14" fill="#526174" >X = heads in two fair coin flips</text><text x="18" y="86" font-size="15" fill="#047857" font-weight="650">PMF · mass at each value</text><line x1="45" y1="223" x2="330" y2="223" stroke="#526174" stroke-width="1.5" /><line x1="45" y1="108" x2="45" y2="223" stroke="#526174" stroke-width="1.5" /><line x1="90" y1="223" x2="90" y2="173" stroke="#047857"  stroke-width="5"/><circle cx="90" cy="173" r="5" fill="#047857" stroke="#047857" stroke-width="2"/><text x="90" y="161" font-size="14" fill="#047857" text-anchor="middle">0.25</text><text x="90" y="245" font-size="14" fill="#526174" text-anchor="middle">0</text><line x1="190" y1="223" x2="190" y2="123" stroke="#047857"  stroke-width="5"/><circle cx="190" cy="123" r="5" fill="#047857" stroke="#047857" stroke-width="2"/><text x="190" y="111" font-size="14" fill="#047857" text-anchor="middle">0.5</text><text x="190" y="245" font-size="14" fill="#526174" text-anchor="middle">1</text><line x1="290" y1="223" x2="290" y2="173" stroke="#047857"  stroke-width="5"/><circle cx="290" cy="173" r="5" fill="#047857" stroke="#047857" stroke-width="2"/><text x="290" y="161" font-size="14" fill="#047857" text-anchor="middle">0.25</text><text x="290" y="245" font-size="14" fill="#526174" text-anchor="middle">2</text><text x="335" y="245" font-size="14" fill="#526174" >x</text><text x="18" y="281" font-size="15" fill="#047857" font-weight="650">CDF · accumulated mass</text><line x1="45" y1="439" x2="330" y2="439" stroke="#526174" stroke-width="1.5" /><line x1="45" y1="315" x2="45" y2="439" stroke="#526174" stroke-width="1.5" /><text x="35" y="329" font-size="13" fill="#526174" text-anchor="end">1</text><line x1="45" y1="439" x2="90" y2="439" stroke="#047857"  stroke-width="3"/><line x1="90" y1="410.25" x2="190" y2="410.25" stroke="#047857"  stroke-width="3"/><line x1="190" y1="352.75" x2="290" y2="352.75" stroke="#047857"  stroke-width="3"/><line x1="290" y1="324" x2="330" y2="324" stroke="#047857"  stroke-width="3"/><line x1="90" y1="439" x2="90" y2="410.25" stroke="#d8e0e8" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="439" r="4" fill="#fff" stroke="#047857" stroke-width="2"/><circle cx="90" cy="410.25" r="4" fill="#047857" stroke="#047857" stroke-width="2"/><text x="90" y="462" font-size="14" fill="#526174" text-anchor="middle">0</text><line x1="190" y1="410.25" x2="190" y2="352.75" stroke="#d8e0e8" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="190" cy="410.25" r="4" fill="#fff" stroke="#047857" stroke-width="2"/><circle cx="190" cy="352.75" r="4" fill="#047857" stroke="#047857" stroke-width="2"/><text x="190" y="462" font-size="14" fill="#526174" text-anchor="middle">1</text><line x1="290" y1="352.75" x2="290" y2="324" stroke="#d8e0e8" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="290" cy="352.75" r="4" fill="#fff" stroke="#047857" stroke-width="2"/><circle cx="290" cy="324" r="4" fill="#047857" stroke="#047857" stroke-width="2"/><text x="290" y="462" font-size="14" fill="#526174" text-anchor="middle">2</text><text x="180" y="496" font-size="14" fill="#526174" text-anchor="middle">Each CDF jump equals the PMF mass.</text>
+</svg></div><div class="cap"><b>Mass and accumulation.</b> The PMF places mass at each count. The CDF adds those masses from left to right. Filled dots show that F(x) includes the mass at x.</div></div>
+<!--prob-svg:prob3-pmf-cdf:end-->
 
 <p>The CDF has three properties, and they are worth memorising as a checklist because they are
 what makes it a safer object than the PMF: it is <i>nondecreasing</i>, it is <i>right-continuous</i>
@@ -493,6 +486,7 @@ overdispersion and which is the reason the Poisson is a starting point rather th
 in one sentence identifies the distribution, and the distribution gives you the formula, the
 mean and the variance for free. Tell the story wrong and no amount of algebra will save you.</p>
 
+<div class="prob-table-scroll" role="region" aria-label="Distribution comparison; scroll horizontally for all columns" tabindex="0">
 <table>
 <tr><th>distribution</th><th>story, in one line</th><th>mean</th><th>variance</th><th>a generative-AI sighting</th></tr>
 <tr><td>Bernoulli(\(p\))</td><td>one trial, two outcomes</td><td>\(p\)</td><td>\(p(1-p)\)</td><td>a dropout mask; a single Bernoulli sample is one bit</td></tr>
@@ -502,6 +496,7 @@ mean and the variance for free. Tell the story wrong and no amount of algebra wi
 <tr><td>Neg. Binomial(\(r,p\))</td><td>trials until the \(r\)-th success</td><td>\(r/p\)</td><td>\(r(1-p)/p^2\)</td><td>attempts until \(r\) valid outputs pass a constraint</td></tr>
 <tr><td>Poisson(\(\lambda\))</td><td>rare events in a fixed interval</td><td>\(\lambda\)</td><td>\(\lambda\)</td><td>counted events; a rate model, not a token model</td></tr>
 </table>
+</div>
 
 <p>Two of these are used constantly in generative modelling and four are background. That is
 normal. The habit worth building is the first move of the table: before writing any formula,
@@ -555,20 +550,19 @@ from one.</p>
 gives the categorical probabilities. Dividing the logits by a temperature \(T\) before the
 softmax reshapes the distribution without changing its support.</p>
 
-<div class="fig"><div class="box"><pre class="d">
-  logits z = (2, 1, 0)      exp(z) = (7.389, 2.718, 1.000)   sum = 11.107
-
-  T = 1.0   z/T = (2,   1,   0  )   p = (0.665, 0.245, 0.090)  as trained
-  T = 0.5   z/T = (4,   2,   0  )   p = (0.867, 0.117, 0.016)  sharper
-  T = 2.0   z/T = (1,  0.5,  0  )   p = (0.506, 0.307, 0.186)  flatter
-
-  T -> 0 approaches argmax;   T -> infinity approaches uniform (1/3 each)
-</pre></div><div class="cap"><b>Temperature is a rescaling of the log-odds.</b> Every
-probability changes, the ordering of the three never does, and the mass still sums to 1.</div></div>
+<!--prob-svg:prob3-temperature:start-->
+<div class="fig probability-figure" id="figure-prob3-temperature"><div class="box"><svg xmlns="http://www.w3.org/2000/svg" class="prob-diagram" width="360" height="420" viewBox="0 0 360 420" role="img" aria-labelledby="prob3-temperature-title prob3-temperature-desc" font-family="system-ui, -apple-system, sans-serif">
+<title id="prob3-temperature-title">Same logits, different temperature</title>
+<desc id="prob3-temperature-desc">Logits two, one, and zero produce three categorical probabilities. Temperature one half gives approximately 0.867, 0.117, 0.016. Temperature one gives 0.665, 0.245, 0.090. Temperature two gives 0.506, 0.307, 0.186. Lower temperature concentrates mass on the largest logit.</desc>
+<rect width="360" height="420" fill="#fff"/>
+<text x="18" y="28" font-size="17" fill="#202b3c" font-weight="650">Same logits, different temperature</text>
+<text x="18" y="56" font-size="15" fill="#526174" >Logits (2, 1, 0) → softmax(z / T)</text><text x="18" y="92" font-size="15" fill="#202b3c" font-weight="650">T = 0.5 · Sharper</text><rect x="18" y="105" width="280.84751963193645" height="25" rx="0" fill="#047857" stroke="none"/><rect x="298.84751963193645" y="105" width="38.00857861568827" height="25" rx="0" fill="#334155" stroke="none"/><rect x="336.85609824762474" y="105" width="5.143901752375232" height="25" rx="0" fill="#94a3b8" stroke="none"/><text x="18" y="153" font-size="15" fill="#526174" >0.867  /  0.117  /  0.016</text><text x="18" y="186" font-size="15" fill="#202b3c" font-weight="650">T = 1 · Original</text><rect x="18" y="199" width="215.5380696710423" height="25" rx="0" fill="#047857" stroke="none"/><rect x="233.5380696710423" y="199" width="79.29202462175444" height="25" rx="0" fill="#334155" stroke="none"/><rect x="312.83009429279673" y="199" width="29.16990570720327" height="25" rx="0" fill="#94a3b8" stroke="none"/><text x="18" y="247" font-size="15" fill="#526174" >0.665  /  0.245  /  0.090</text><text x="18" y="280" font-size="15" fill="#202b3c" font-weight="650">T = 2 · Flatter</text><rect x="18" y="293" width="164.0996467020319" height="25" rx="0" fill="#047857" stroke="none"/><rect x="182.0996467020319" y="293" width="99.53146697279347" height="25" rx="0" fill="#334155" stroke="none"/><rect x="281.6311136748254" y="293" width="60.36888632517461" height="25" rx="0" fill="#94a3b8" stroke="none"/><text x="18" y="341" font-size="15" fill="#526174" >0.506  /  0.307  /  0.186</text><rect x="12" y="341" width="336" height="66" rx="10" fill="#ecfdf5" stroke="none"/><text x="180" y="367" font-size="17" fill="#047857" text-anchor="middle" font-weight="650">Lower T → more concentrated</text><text x="180" y="390" font-size="14" fill="#526174" text-anchor="middle">For finite T &gt; 0, the ordering stays fixed.</text>
+</svg></div><div class="cap"><b>Temperature redistributes mass.</b> The three segments represent the same tokens in the same order. Bar lengths use the exact softmax values; displayed probabilities are rounded.</div></div>
+<!--prob-svg:prob3-temperature:end-->
 
 <p>Check one row. At \(T = 0.5\) the rescaled logits are \(4, 2, 0\); exponentiating gives
 \(54.598\), \(7.389\), \(1.000\); the total is \(62.987\); and \(54.598/62.987 = 0.867\). Same
-procedure as the untouched row, applied to halved inputs.</p>
+procedure as the untouched row, with the logits doubled by halving the temperature.</p>
 
 <h3>Top-\(k\) and top-\(p\) are surgeries on this PMF</h3>
 

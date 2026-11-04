@@ -266,6 +266,7 @@ markup, numbering, class whitelist, and the writing rules below restated as a ch
 before writing an eighth.
 
 ```bash
+node build/probability-diagrams.js
 for n in 1 2 3 4 5 6 7; do
   node build/build-essay.js viz/prob-$n.body.html viz/Prob$n-Curious.src.html
   node viz/build/build-curious.js viz/Prob$n-Curious.src.html html/Prob$n-Curious.html \
@@ -278,6 +279,12 @@ node build/build-index.js
 Each prints `katex_failures=0` on success. They carry no PDF: like `Foundations-Curious`, they
 were written for the screen and the deck, and the print exports would need the same verification
 pass the GAN/VAE/diffusion PDFs got.
+
+The probability illustrations are responsive, accessible SVGs. Edit
+`build/probability-diagrams.js` to change them; it writes the standalone copies in
+`assets/probability/` and inlines identical SVGs into the seven body sources. Re-run
+the pipeline above after changing a diagram. Each figure has a stable `figure-prob…`
+anchor, a text caption, and an SVG title/description; it works offline and in print.
 
 Every essay closes by mapping its tools onto the algorithm essays — a section titled *Where
 this lands in generative AI*, one table naming the specific formula in `GAN-Curious`,

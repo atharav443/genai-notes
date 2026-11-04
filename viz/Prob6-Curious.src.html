@@ -48,6 +48,22 @@ h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
             background: #fcfcfb; }
 .fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
 .fig .cap b { color: #4a4a50; }
+/* SVGs use a compact, legible coordinate system rather than shrinking ASCII. */
+.probability-figure { scroll-margin-top: 4rem; }
+.probability-figure .box { background: #fff; padding: 10px; border-radius: 12px; }
+.prob-diagram { display: block; width: 100%; max-width: 460px; height: auto;
+                margin: 0 auto; overflow: hidden; }
+@media screen {
+  /* Long formulae scroll locally; they must not widen the reading column. */
+  .mathblock { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+  .mathblock .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+  .prob-table-scroll { max-width: 100%; overflow-x: auto; }
+  .prob-table-scroll:focus-visible { outline: 2px solid #047857; outline-offset: 3px; }
+}
+@media print {
+  .probability-figure { break-inside: avoid; }
+  .prob-diagram { max-width: 105mm; }
+}
 pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
         margin: 0; white-space: pre; color: #33333a; }
 .mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
@@ -127,8 +143,9 @@ is the distribution.</p>
 on its own, obtained by summing out the other. The joint contains strictly more information:
 knowing both marginals &mdash; 30% rain, 40% umbrellas &mdash; does not tell you whether umbrellas
 and rain are related. You could build a table with those same margins in which rain and umbrellas
-are independent (0.12 each cell for the rain row), or one in which nobody carries an umbrella in
-the sun. Same edges, different interior.</p>
+are independent: rain row \(0.12, 0.18\), sun row \(0.28, 0.42\). Or put every rainy morning
+in the umbrella column: rain row \(0.30, 0\), sun row \(0.10, 0.60\). Same edges,
+different interior.</p>
 
 <p>That asymmetry is the theme of this essay. The joint determines the marginals, always, by
 summing. The marginals almost never determine the joint.</p>
@@ -209,6 +226,16 @@ marginal is not an abstraction, it is the shape of the shadow the joint casts on
   \(\int_y^1 2\,dx = 2(1-y)\); for a fixed \(y\) the triangle extends in \(x\) from \(y\) up to 1.</p>
 </div>
 
+<!--prob-svg:prob6-triangle:start-->
+<div class="fig probability-figure" id="figure-prob6-triangle"><div class="box"><svg xmlns="http://www.w3.org/2000/svg" class="prob-diagram" width="360" height="476" viewBox="0 0 360 476" role="img" aria-labelledby="prob6-triangle-title prob6-triangle-desc" font-family="system-ui, -apple-system, sans-serif">
+<title id="prob6-triangle-title">A joint density, its shadow, and a slice</title>
+<desc id="prob6-triangle-desc">A uniform density of two fills the triangle zero less than y less than x less than one. Its x marginal is two x and its y marginal is two times one minus y. Conditioning on y equals one half leaves x uniform between one half and one, with density two and total area one.</desc>
+<rect width="360" height="476" fill="#fff"/>
+<text x="18" y="28" font-size="17" fill="#202b3c" font-weight="650">A joint density, its shadow, and a slice</text>
+<text x="18" y="56" font-size="15" fill="#526174" >Uniform on 0 ≤ y ≤ x ≤ 1</text><path d="M70 263 L310 263 L310 83 Z" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><line x1="70" y1="263" x2="333" y2="263" stroke="#526174" stroke-width="1.5" /><line x1="70" y1="280" x2="70" y2="72" stroke="#526174" stroke-width="1.5" /><text x="58" y="86" font-size="14" fill="#526174" text-anchor="end">1</text><text x="310" y="288" font-size="14" fill="#526174" text-anchor="middle">1</text><text x="70" y="288" font-size="14" fill="#526174" text-anchor="middle">0</text><text x="337" y="269" font-size="15" fill="#526174" >x</text><text x="28" y="86" font-size="15" fill="#526174" >y</text><line x1="70" y1="173" x2="190" y2="173" stroke="#526174" stroke-width="1.5" stroke-dasharray="4 4"/><line x1="190" y1="173" x2="310" y2="173" stroke="#b45309"  stroke-width="5"/><text x="55" y="178" font-size="14" fill="#b45309" text-anchor="end">1/2</text><text x="219" y="232" font-size="16" fill="#b45309" text-anchor="middle">joint f = 2</text><text x="237" y="153" font-size="15" fill="#b45309" text-anchor="middle">y = 1/2</text><rect x="18" y="310" width="324" height="61" rx="10" fill="#f8fafc" stroke="#d8e0e8"/><text x="34" y="336" font-size="15" fill="#202b3c" font-weight="650">Marginals</text><text x="34" y="359" font-size="15" fill="#526174" >fX(x) = 2x    fY(y) = 2(1 − y)</text><rect x="12" y="388" width="336" height="66" rx="10" fill="#fffbeb" stroke="none"/><text x="180" y="414" font-size="17" fill="#b45309" text-anchor="middle" font-weight="650">Given Y = 1/2: fX|Y = 2</text><text x="180" y="437" font-size="14" fill="#526174" text-anchor="middle">Support (1/2, 1); area 2 × 1/2 = 1.</text>
+</svg></div><div class="cap"><b>The shadow and the slice.</b> Integrate the triangle along one direction to obtain a marginal. Fix y to obtain a conditional slice, then divide by its marginal density. At y = 1/2 that divisor is 1, so the height stays 2.</div></div>
+<!--prob-svg:prob6-triangle:end-->
+
 <h2>3 &middot; Conditional densities, and the slice</h2>
 
 <p>You are told the point's \(y\)-coordinate is \(0.5\). What is the distribution of \(x\)
@@ -231,7 +258,8 @@ essay, with an integral where the sum used to be.</p>
 </div>
 
 <p>which is uniform on a segment of length \(1/2\), and \(2 \times 0.5 = 1\). The slice kept the
-same height and got shorter, so the renormalisation had to raise it. In general, a conditional
+same height: the normalising divisor is \(f_Y(0.5)=1\). For other slices,
+normalisation may raise, lower or preserve the height. In general, a conditional
 density is the joint restricted to a slice, rescaled to integrate to one &mdash; and the rescaling
 factor is exactly \(1/f_Y(y)\).</p>
 
@@ -255,11 +283,10 @@ you can say instead.</p>
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
-  Conditioning on a slice keeps the joint's height but shortens the support. What must the
-  rescaling therefore do?</p>
+  How is a joint-density slice normalised, and must its height always increase?</p>
   <p class="a"><span class="lbl">Answer</span>
-  Raise the height, by dividing by the marginal weight of the slice, so the result integrates
-  to one.</p>
+  Divide by the marginal density so the result integrates to one. The height can rise,
+  fall or stay unchanged; at \(Y=0.5\) the divisor is 1 and it stays at 2.</p>
 </div>
 
 <hr class="rule">

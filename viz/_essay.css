@@ -42,6 +42,22 @@ h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
             background: #fcfcfb; }
 .fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
 .fig .cap b { color: #4a4a50; }
+/* SVGs use a compact, legible coordinate system rather than shrinking ASCII. */
+.probability-figure { scroll-margin-top: 4rem; }
+.probability-figure .box { background: #fff; padding: 10px; border-radius: 12px; }
+.prob-diagram { display: block; width: 100%; max-width: 460px; height: auto;
+                margin: 0 auto; overflow: hidden; }
+@media screen {
+  /* Long formulae scroll locally; they must not widen the reading column. */
+  .mathblock { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+  .mathblock .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+  .prob-table-scroll { max-width: 100%; overflow-x: auto; }
+  .prob-table-scroll:focus-visible { outline: 2px solid #047857; outline-offset: 3px; }
+}
+@media print {
+  .probability-figure { break-inside: avoid; }
+  .prob-diagram { max-width: 105mm; }
+}
 pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
         margin: 0; white-space: pre; color: #33333a; }
 .mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }

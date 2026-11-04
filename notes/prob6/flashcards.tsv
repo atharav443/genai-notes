@@ -6,7 +6,7 @@
 2.3	Same triangle: what is \(f_Y(y)\), and why are the limits different?	\(\int_y^1 2\,dx = 2(1-y)\); for a fixed \(y\) the triangle extends in \(x\) from \(y\) up to 1.
 3.1	Write the conditional density formula and say which quantity must be positive.	\(f_{X \mid Y}(x \mid y) = f_{X,Y}(x,y)/f_Y(y)\), requiring \(f_Y(y) > 0\).
 3.2	For the uniform triangle, what is the conditional density of \(X\) given \(Y = 0.5\)?	Uniform on \((0.5, 1)\), i.e. \(f = 2\) there and 0 elsewhere.
-3.3	Conditioning on a slice keeps the joint's height but shortens the support. What must the rescaling therefore do?	Raise the height, by dividing by the marginal weight of the slice, so the result integrates to one.
+3.3	How is a joint-density slice normalised, and must its height always increase?	Divide by the marginal density so the result integrates to one. The height can rise, fall or stay unchanged; at \(Y=0.5\) the divisor is 1 and it stays at 2.
 4.1	Give both forms of the covariance and say which you compute with.	\(\mathbb{E}[(X-\mathbb{E}X)(Y-\mathbb{E}Y)]\) for the definition, \(\mathbb{E}[XY] - \mathbb{E}X\,\mathbb{E}Y\) for computation.
 4.2	Why is covariance divided by the two standard deviations to get correlation?	Because covariance carries units and scales with each variable's spread; dividing normalises it to a dimensionless number in \([-1,1]\).
 4.3	On the uniform triangle, \(\mathrm{Cov} = 1/36\) and both variances are \(1/18\). What is \(\rho\)?	\(\rho = (1/36)/(1/18) = 1/2\).

@@ -48,6 +48,22 @@ h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
             background: #fcfcfb; }
 .fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
 .fig .cap b { color: #4a4a50; }
+/* SVGs use a compact, legible coordinate system rather than shrinking ASCII. */
+.probability-figure { scroll-margin-top: 4rem; }
+.probability-figure .box { background: #fff; padding: 10px; border-radius: 12px; }
+.prob-diagram { display: block; width: 100%; max-width: 460px; height: auto;
+                margin: 0 auto; overflow: hidden; }
+@media screen {
+  /* Long formulae scroll locally; they must not widen the reading column. */
+  .mathblock { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+  .mathblock .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+  .prob-table-scroll { max-width: 100%; overflow-x: auto; }
+  .prob-table-scroll:focus-visible { outline: 2px solid #047857; outline-offset: 3px; }
+}
+@media print {
+  .probability-figure { break-inside: avoid; }
+  .prob-diagram { max-width: 105mm; }
+}
 pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
         margin: 0; white-space: pre; color: #33333a; }
 .mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
@@ -124,20 +140,15 @@ probability of that point. It is the rate at which probability accumulates there
 \[ P(X = x) = 0 \quad\text{for every } x, \qquad P(a \le X \le b) = \int_a^b f(x)\,dx \]
 </div>
 
-<div class="fig"><div class="box"><pre class="d">
-  Uniform(0,1):  f(x) = 1 on [0,1], 0 elsewhere
-
-  f
-  1 |  +---------------+          area under the whole thing = 1
-    |  |               |
-    |  |               |          P(0.25 <= X <= 0.5)
-    |  |   ####        |          = width 0.25 x height 1
-    +--+---####--------+---- x    = 0.25
-       0   0.25  0.5   1
-
-  any single point is a line of zero width, hence zero area
-</pre></div><div class="cap"><b>Area, not height.</b> A density may exceed 1 without anything
-breaking, because it is a rate; only the integral has to be a probability.</div></div>
+<!--prob-svg:prob5-density:start-->
+<div class="fig probability-figure" id="figure-prob5-density"><div class="box"><svg xmlns="http://www.w3.org/2000/svg" class="prob-diagram" width="360" height="344" viewBox="0 0 360 344" role="img" aria-labelledby="prob5-density-title prob5-density-desc" font-family="system-ui, -apple-system, sans-serif">
+<title id="prob5-density-title">Probability is area, not height</title>
+<desc id="prob5-density-desc">The uniform density on zero to one has height one. The shaded interval from one quarter to one half has width one quarter, hence probability one quarter. Any single point has zero width and therefore zero probability.</desc>
+<rect width="360" height="344" fill="#fff"/>
+<text x="18" y="28" font-size="17" fill="#202b3c" font-weight="650">Probability is area, not height</text>
+<text x="18" y="56" font-size="14" fill="#526174" >Uniform(0, 1) · density f(x) = 1</text><rect x="65" y="95" width="252" height="130" rx="0" fill="#fdf4ff" stroke="none"/><rect x="128" y="95" width="63" height="130" rx="0" fill="#a21caf" stroke="none"/><line x1="42" y1="225" x2="337" y2="225" stroke="#526174" stroke-width="1.5" /><line x1="65" y1="243" x2="65" y2="78" stroke="#526174" stroke-width="1.5" /><path d="M42,225 H65 V95 H317 V225 H337" fill="none" stroke="#a21caf" stroke-width="2.5" stroke-linejoin="round" /><line x1="65" y1="225" x2="65" y2="232" stroke="#526174" stroke-width="1.5" /><text x="65" y="253" font-size="14" fill="#526174" text-anchor="middle">0</text><line x1="128" y1="225" x2="128" y2="232" stroke="#526174" stroke-width="1.5" /><text x="128" y="253" font-size="14" fill="#526174" text-anchor="middle">0.25</text><line x1="191" y1="225" x2="191" y2="232" stroke="#526174" stroke-width="1.5" /><text x="191" y="253" font-size="14" fill="#526174" text-anchor="middle">0.5</text><line x1="317" y1="225" x2="317" y2="232" stroke="#526174" stroke-width="1.5" /><text x="317" y="253" font-size="14" fill="#526174" text-anchor="middle">1</text><text x="47" y="101" font-size="14" fill="#526174" text-anchor="end">1</text><text x="25" y="79" font-size="14" fill="#526174" >f(x)</text><rect x="12" y="270" width="336" height="66" rx="10" fill="#fdf4ff" stroke="none"/><text x="180" y="296" font-size="17" fill="#a21caf" text-anchor="middle" font-weight="650">P(0.25 ≤ X ≤ 0.5) = 0.25</text><text x="180" y="319" font-size="14" fill="#526174" text-anchor="middle">Width 0.25 × height 1 = area 0.25</text>
+</svg></div><div class="cap"><b>Area, not height.</b> The shaded area is the interval probability. A density can exceed 1; its total area must equal 1. A single point contributes no area.</div></div>
+<!--prob-svg:prob5-density:end-->
 
 <p>Every consequence of the previous essays survives, with sums replaced by integrals. The
 density is non-negative and integrates to one. Averages become integrals. And the phrase
@@ -478,20 +489,15 @@ uniform. Let \(U \sim \mathrm{Unif}(0,1)\) and let \(F\) be any CDF with an inve
 is that number. The picture is a horizontal line at height \(u\) cutting the CDF and dropping
 down to the axis: the inverse CDF turns a uniform height into the quantile at that height.</p>
 
-<div class="fig"><div class="box"><pre class="d">
-  F(x)
-   1 |            +------------
-     |        +---+
-   u |    +---+      <- draw u uniformly on the vertical axis
-     |  +-+ |
-     +--+---+-+--------- x
-            ^
-            x = F^{-1}(u)
-
-  uniform in height  ->  correct density in x
-</pre></div><div class="cap"><b>Inverse-CDF sampling.</b> Draw a height uniformly, then read
-across to the CDF and down. Where the CDF is steep, more height maps to the same width, so the
-density is high there.</div></div>
+<!--prob-svg:prob5-inverse-cdf:start-->
+<div class="fig probability-figure" id="figure-prob5-inverse-cdf"><div class="box"><svg xmlns="http://www.w3.org/2000/svg" class="prob-diagram" width="360" height="381" viewBox="0 0 360 381" role="img" aria-labelledby="prob5-inverse-cdf-title prob5-inverse-cdf-desc" font-family="system-ui, -apple-system, sans-serif">
+<title id="prob5-inverse-cdf-title">Turn a uniform height into a sample</title>
+<desc id="prob5-inverse-cdf-desc">For the continuous CDF F(x) equals x squared on zero to one, choose a uniform height u equals 0.64. Move horizontally to the CDF and vertically to x equals square root of u equals 0.8. The resulting density is two x on zero to one.</desc>
+<rect width="360" height="381" fill="#fff"/>
+<text x="18" y="28" font-size="17" fill="#202b3c" font-weight="650">Turn a uniform height into a sample</text>
+<text x="18" y="56" font-size="15" fill="#526174" >Example: F(x) = x² on [0, 1]</text><line x1="65" y1="267" x2="333" y2="267" stroke="#526174" stroke-width="1.5" /><line x1="65" y1="276" x2="65" y2="80" stroke="#526174" stroke-width="1.5" /><path d="M65.00,267.00 L67.50,266.98 L70.00,266.93 L72.50,266.85 L75.00,266.73 L77.50,266.57 L80.00,266.39 L82.50,266.17 L85.00,265.91 L87.50,265.62 L90.00,265.30 L92.50,264.94 L95.00,264.55 L97.50,264.13 L100.00,263.67 L102.50,263.18 L105.00,262.65 L107.50,262.09 L110.00,261.49 L112.50,260.86 L115.00,260.20 L117.50,259.50 L120.00,258.77 L122.50,258.01 L125.00,257.21 L127.50,256.38 L130.00,255.51 L132.50,254.61 L135.00,253.67 L137.50,252.70 L140.00,251.70 L142.50,250.66 L145.00,249.59 L147.50,248.49 L150.00,247.35 L152.50,246.18 L155.00,244.97 L157.50,243.73 L160.00,242.45 L162.50,241.14 L165.00,239.80 L167.50,238.42 L170.00,237.01 L172.50,235.57 L175.00,234.09 L177.50,232.57 L180.00,231.03 L182.50,229.45 L185.00,227.83 L187.50,226.18 L190.00,224.50 L192.50,222.78 L195.00,221.03 L197.50,219.25 L200.00,217.43 L202.50,215.57 L205.00,213.69 L207.50,211.77 L210.00,209.81 L212.50,207.82 L215.00,205.80 L217.50,203.74 L220.00,201.65 L222.50,199.53 L225.00,197.37 L227.50,195.18 L230.00,192.95 L232.50,190.69 L235.00,188.39 L237.50,186.06 L240.00,183.70 L242.50,181.30 L245.00,178.87 L247.50,176.41 L250.00,173.91 L252.50,171.38 L255.00,168.81 L257.50,166.21 L260.00,163.57 L262.50,160.90 L265.00,158.20 L267.50,155.46 L270.00,152.69 L272.50,149.89 L275.00,147.05 L277.50,144.18 L280.00,141.27 L282.50,138.33 L285.00,135.35 L287.50,132.34 L290.00,129.30 L292.50,126.22 L295.00,123.11 L297.50,119.97 L300.00,116.79 L302.50,113.58 L305.00,110.33 L307.50,107.05 L310.00,103.73 L312.50,100.38 L315.00,97.00 " fill="none" stroke="#a21caf" stroke-width="2.5" stroke-linejoin="round" /><line x1="65" y1="158.2" x2="265" y2="158.2" stroke="#a21caf" stroke-width="1.5" stroke-dasharray="5 4"/><line x1="265" y1="158.2" x2="265" y2="267" stroke="#a21caf" stroke-width="1.5" stroke-dasharray="5 4"/><circle cx="265" cy="158.2" r="5" fill="#a21caf" stroke="#a21caf" stroke-width="2"/><text x="57" y="163.2" font-size="14" fill="#a21caf" text-anchor="end">0.64</text><text x="53" y="99" font-size="14" fill="#526174" text-anchor="end">1</text><text x="65" y="291" font-size="14" fill="#526174" text-anchor="middle">0</text><text x="265" y="291" font-size="14" fill="#a21caf" text-anchor="middle">0.8</text><text x="315" y="291" font-size="14" fill="#526174" text-anchor="middle">1</text><text x="26" y="80" font-size="14" fill="#526174" >F(x)</text><text x="97" y="139" font-size="14" fill="#a21caf" >Across →</text><text x="274" y="229" font-size="14" fill="#a21caf" >↓ Down</text><rect x="12" y="309" width="336" height="66" rx="10" fill="#fdf4ff" stroke="none"/><text x="180" y="335" font-size="17" fill="#a21caf" text-anchor="middle" font-weight="650">u = 0.64 → x = √u = 0.8</text><text x="180" y="358" font-size="14" fill="#526174" text-anchor="middle">Draw u uniformly; return F⁻¹(u).</text>
+</svg></div><div class="cap"><b>Inverse-CDF sampling.</b> Read across from a uniform height to the CDF, then down to x. This continuous example has density 2x, so samples favour the right side of the interval.</div></div>
+<!--prob-svg:prob5-inverse-cdf:end-->
 
 <p>For the exponential, \(F(x) = 1 - e^{-\lambda x}\), so \(F^{-1}(u) = -\ln(1-u)/\lambda\).
 Since \(1 - U\) is also uniform on \((0,1)\), the practical form is</p>
@@ -582,18 +588,15 @@ cheaply is a discrete distribution — you cannot write a categorical draw as a 
 function of its probabilities without adding a relaxation, and that is precisely why discrete
 latent variables are awkward.</p>
 
-<div class="fig"><div class="box"><pre class="d">
-  score function                    reparameterization
-  ------------------------------    ------------------------------
-  z ~ N(mu, sigma^2)                eps ~ N(0, 1)
-                                    z = mu + sigma * eps
-  dz/dmu  : not available           dz/dmu  = 1
-  dz/dsigma: not available          dz/dsigma = eps
-
-  unbiased, high variance           unbiased, low variance
-</pre></div><div class="cap"><b>Two estimators, one distribution.</b> Both give the same
-expected value; the right-hand column has orders of magnitude less noise, which is the whole
-reason variational autoencoders train at all.</div></div>
+<!--prob-svg:prob5-reparameterization:start-->
+<div class="fig probability-figure" id="figure-prob5-reparameterization"><div class="box"><svg xmlns="http://www.w3.org/2000/svg" class="prob-diagram" width="360" height="490" viewBox="0 0 360 490" role="img" aria-labelledby="prob5-reparameterization-title prob5-reparameterization-desc" font-family="system-ui, -apple-system, sans-serif">
+<title id="prob5-reparameterization-title">Two routes to the same gradient</title>
+<desc id="prob5-reparameterization-desc">The score-function route samples z from a parameter-dependent Gaussian and differentiates the log density, weighting by the function value. The pathwise route samples independent standard Gaussian epsilon, computes z equals mu plus sigma epsilon, and differentiates through that deterministic map. Both require their usual regularity conditions.</desc>
+<rect width="360" height="490" fill="#fff"/>
+<text x="18" y="28" font-size="17" fill="#202b3c" font-weight="650">Two routes to the same gradient</text>
+<text x="18" y="56" font-size="15" fill="#526174" >Both target ∇ E[f(z)]</text><rect x="18" y="75" width="324" height="165" rx="10" fill="#f8fafc" stroke="#d8e0e8"/><text x="34" y="102" font-size="16" fill="#202b3c" font-weight="650">01  Score-function route</text><text x="34" y="134" font-size="16" fill="#202b3c" >Sample z ∼ N(μ, σ²)</text><line x1="180" y1="146" x2="180" y2="165" stroke="#a21caf" stroke-width="1.5" /><path d="M177.12344676837478,159.73450462865776 L180,165 L182.87655323162522,159.73450462865776" fill="none" stroke="#a21caf" stroke-width="2.5" stroke-linejoin="round" /><text x="180" y="191" font-size="18" fill="#a21caf" text-anchor="middle" font-weight="650">f(z) × ∇ log p(z)</text><text x="34" y="220" font-size="14" fill="#526174" >Differentiate the log density.</text><rect x="18" y="258" width="324" height="202" rx="10" fill="#fdf4ff" stroke="none"/><text x="34" y="286" font-size="16" fill="#a21caf" font-weight="650">02  Pathwise route</text><text x="34" y="316" font-size="16" fill="#202b3c" >Sample ε ∼ N(0, 1)</text><line x1="180" y1="325" x2="180" y2="345" stroke="#a21caf" stroke-width="1.5" /><path d="M177.12344676837478,339.73450462865776 L180,345 L182.87655323162522,339.73450462865776" fill="none" stroke="#a21caf" stroke-width="2.5" stroke-linejoin="round" /><text x="180" y="371" font-size="21" fill="#a21caf" text-anchor="middle" font-weight="650">z = μ + σε</text><text x="34" y="405" font-size="16" fill="#202b3c" >∂z/∂μ = 1     ∂z/∂σ = ε</text><text x="34" y="435" font-size="14" fill="#526174" >Differentiate f through z.</text><text x="180" y="483" font-size="13" fill="#526174" text-anchor="middle">For smooth VAE losses, pathwise is often quieter.</text>
+</svg></div><div class="cap"><b>Two gradient estimators, one sampling law.</b> Reparameterisation makes the parameter dependence explicit in a differentiable map. It often reduces variance for smooth objectives; lower variance is not a universal guarantee.</div></div>
+<!--prob-svg:prob5-reparameterization:end-->
 
 <div class="card-qa">
   <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
