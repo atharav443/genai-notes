@@ -1,0 +1,37 @@
+1.1	Define \(\mathbb{E}[X]\) for a discrete random variable.	The sum of each value weighted by its probability: \(\sum_x x\,p_X(x)\).
+1.2	What is the expectation of a fair die, and is it a value the die can show?	\(3.5\), which the die never shows — an expectation is a balance point, not necessarily an outcome.
+1.3	Which physical picture corresponds to the expectation, and what does it predict about values the variable cannot take?	The centre of mass of weights \(p_X(x)\) placed at positions \(x\); a balance point can lie between the masses, so the expectation need not be attainable.
+2.1	Does \(\mathbb{E}[X+Y] = \mathbb{E}[X] + \mathbb{E}[Y]\) require independence?	No. It holds for every pair of random variables, dependent or not.
+2.2	One card is drawn. \(X = 1\) for an ace, \(Y = 1\) for a spade. Compute \(\mathbb{E}[X+Y]\) by linearity.	\(4/52 + 13/52 = 17/52\). The ace of spades contributes 2 to \(X+Y\), which is why this exceeds the 16/52 probability of “ace or spade”.
+2.3	What is \(\mathbb{E}[aX + b]\) in terms of \(\mathbb{E}[X]\)?	\(a\,\mathbb{E}[X] + b\).
+2.4	Why does the absence of a condition on linearity make expectations easier to work with than variances?	Because any quantity expressible as a sum of indicators can be averaged term by term with no assumptions, while variances of sums need a covariance term unless independence holds.
+3.1	State the fundamental bridge and say what it converts.	\(P(A) = \mathbb{E}[1_A]\) — it converts a probability question into a question about the average of a 0/1 variable.
+3.2	On average, how many of \(n\) randomly stuffed letters land in the correct envelope?	Exactly 1, for every \(n\).
+3.3	Verify the answer for \(n = 3\) from the six permutations.	Fixed-point counts are \(3,1,1,0,0,1\), summing to 6, so the average is \(6/6 = 1\).
+3.4	Why does the indicator method avoid needing the PMF of \(X\)?	Because linearity averages the indicators term by term, and each term needs only its own marginal probability, never the joint distribution.
+4.1	State LOTUS for a discrete random variable.	\(\mathbb{E}[g(X)] = \sum_x g(x)p_X(x)\) — weight \(g\)'s values by \(X\)'s probabilities.
+4.2	\(X\) is uniform on \(\{1,2,3,4\}\). What is \(\mathbb{E}[X^2]\)?	\((1+4+9+16)/4 = 7.5\).
+4.3	What does LOTUS save you from having to compute?	The probability distribution of \(g(X)\) itself, which is often unobtainable when \(g\) is not invertible.
+5.1	Give both forms of the variance and say which one you compute with.	\(\mathbb{E}[(X-\mathbb{E}X)^2]\) by definition, and \(\mathbb{E}[X^2] - (\mathbb{E}X)^2\) for computation.
+5.2	What is \(\mathrm{Var}(aX + b)\)?	\(a^2\,\mathrm{Var}(X)\) — the shift does nothing and the scale is squared.
+5.3	Why is the standard deviation reported instead of the variance?	Because the variance is in squared units, while \(\sigma = \sqrt{\mathrm{Var}(X)}\) is in the same units as the variable.
+5.4	Write \(\mathrm{Var}(X+Y)\) and say exactly when the extra term disappears.	\(\mathrm{Var}X + \mathrm{Var}Y + 2\,\mathrm{Cov}(X,Y)\); the covariance term vanishes when \(X\) and \(Y\) are uncorrelated, in particular when independent.
+6.1	\(X = 1\) or \(2\) with probability \(1/2\) each. Compute \(\mathbb{E}[1/X]\) and \(1/\mathbb{E}[X]\).	\(\mathbb{E}[1/X] = 0.75\) and \(1/\mathbb{E}[X] = 0.6667\); they differ.
+6.2	For which functions \(g\) is \(\mathbb{E}[g(X)] = g(\mathbb{E}[X])\) exactly?	Affine ones, \(g(x) = ax + b\) — straight lines are the only curves with no bending.
+6.3	Why must \(\mathbb{E}[X^2] \ge (\mathbb{E}X)^2\)?	Because their difference is \(\mathrm{Var}(X)\), which is an average of squares and so cannot be negative.
+7.1	Define the MGF and say how to extract the first two moments from it.	\(M_X(t) = \mathbb{E}[e^{tX}]\), with \(M'(0) = \mathbb{E}[X]\) and \(M''(0) = \mathbb{E}[X^2]\).
+7.2	Write the Bernoulli(\(p\)) MGF and use it to get the variance.	\(M(t) = (1-p) + pe^t\), so \(M'(0) = M''(0) = p\) and \(\mathrm{Var} = p - p^2 = p(1-p)\).
+7.3	Why does an MGF turn a sum of independent variables into a product, and which step needs the independence?	\(M_{X+Y}(t) = \mathbb{E}[e^{tX}e^{tY}] = \mathbb{E}[e^{tX}]\mathbb{E}[e^{tY}]\); the factorisation of the expectation is the step that requires independence.
+7.4	Give a distribution for which the MGF does not exist, and name the replacement.	The Cauchy distribution (and the lognormal); the characteristic function, which uses \(it\), always exists.
+8.1	What is the standard deviation of the average of \(n\) independent observations each with standard deviation \(\sigma\)?	\(\sigma/\sqrt{n}\).
+8.2	With \(\sigma = 2\), what sample count gives an error of 0.1?	\(n = 400\), since \(2/\sqrt{400} = 2/20 = 0.1\).
+8.3	To halve a Monte Carlo error, by what factor must \(n\) grow?	Four, because the error scales as \(1/\sqrt{n}\).
+8.4	Why is reducing \(\sigma\) by ten better than buying more samples?	Because \(\sigma/\sqrt{n}\) makes a tenfold \(\sigma\) reduction worth a hundredfold increase in \(n\) — and the variance reduction is usually free once you find it.
+9.1	Why may you subtract a constant baseline from a score-function estimator without introducing bias?	Because \(\mathbb{E}[\nabla_\theta \log p_\theta(X)] = 0\), so the baseline's contribution to the mean is zero.
+9.2	In the two-point example, what are the estimator's variance with \(b=0\) and with \(b=5\)?	25 with \(b=0\) (values 10 and 0) and 0 with \(b=5\) (both values 5); the mean is 5 either way.
+9.3	What is the ideal baseline, and what role does it play in actor-critic methods?	\(\mathbb{E}[f \mid \text{state}]\), estimated by the value function — the critic exists to supply the baseline.
+9.4	What does an unbiased estimator with large variance fail to guarantee?	That any single run lands near the truth — unbiasedness is a statement about the average over infinitely many runs.
+10.1	A minibatch loss with \(B\) examples estimates an expectation. What is the standard deviation of that estimate, and in which quantity is it?	\(\sigma/\sqrt{B}\), where \(\sigma\) is the standard deviation of the per-example loss.
+10.2	When is linearity enough to justify swapping a gradient and an expectation, and when is it not?	Enough when the distribution being averaged over does not depend on \(\theta\); not enough when it does, which is when the score-function or reparameterization trick is needed.
+10.3	What is the RLHF advantage \(A = Q - V\) in the language of this essay?	A baseline: a quantity subtracted from the reward whose own expected contribution is zero, so the estimator stays unbiased while its variance falls.
+10.4	Why does the reparameterization trick count as variance reduction rather than bias removal?	Because the score-function estimator was already unbiased; the trick keeps the same mean and replaces a high-variance estimate with a low-variance one by moving the randomness outside the parameters.

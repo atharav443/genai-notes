@@ -15,7 +15,8 @@ const site = data.site;
 
 const ready = data.topics.filter(function (t) { return t.status === 'ready'; });
 const planned = data.topics.filter(function (t) { return t.status !== 'ready'; });
-const KIND_ORDER = ['essay', 'reference', 'cheatsheet'];
+const KIND_ORDER = ['probability', 'essay', 'reference', 'cheatsheet'];
+const KIND_ID = { probability: 'probability', essay: 'essays', reference: 'reference', cheatsheet: 'cheatsheets' };
 
 // Fields may carry HTML entities (e.g. &amp;), so they are emitted verbatim.
 // They are authored here, not user input.
@@ -48,7 +49,7 @@ function card(t) {
 }
 
 // ---- derived numbers for the hero, so they cannot drift from the data ----
-var essayCount = ready.filter(function (t) { return t.kind === 'essay'; }).length;
+var essayCount = ready.filter(function (t) { return t.kind === 'essay' || t.kind === 'probability'; }).length;
 var cardCount = ready.reduce(function (n, t) { return n + (t.cards || 0); }, 0);
 var sheetCount = ready.filter(function (t) { return t.kind === 'cheatsheet'; }).length;
 var pdfCount = ready.filter(function (t) {
@@ -97,7 +98,7 @@ KIND_ORDER.forEach(function (kind) {
   var items = ready.filter(function (t) { return t.kind === kind; })
     .concat(planned.filter(function (t) { return t.kind === kind; }));
   if (!items.length) return;
-  var id = kind === 'cheatsheet' ? 'cheatsheets' : kind === 'essay' ? 'essays' : 'reference';
+  var id = KIND_ID[kind] || 'reference';
   out.push('');
   out.push('  <section class="group" id="' + id + '">');
   out.push('    <h2 class="group-title">' + esc(g.title) + '</h2>');

@@ -1,0 +1,873 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Counting, and what a probability is</title>
+<style>/*KATEX_CSS*/</style>
+<style>
+
+@page { size: A4; margin: 24mm 26mm 20mm 26mm; }
+* { box-sizing: border-box; }
+body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+       font-size: 11.4pt; line-height: 1.70; color: #1c1c1e; margin: 0;
+       }
+p { margin: 0 0 0.85em 0; text-align: left; hyphens: auto; }
+p.lead { font-size: 12.6pt; color: #333; }
+h1 { font-size: 22pt; line-height: 1.25; font-weight: 600; letter-spacing: -0.2px;
+     margin: 0 0 10px 0; color: #111; }
+h1.sub-title { font-size: 12.5pt; font-weight: 400; color: #6b6b70; font-style: italic;
+     margin: 0 0 26px 0; letter-spacing: 0; }
+.part { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.8pt;
+        letter-spacing: 0.16em; text-transform: uppercase; color: #9a9aa0;
+        margin: 30px 0 2px 0; page-break-after: avoid; }
+h2 { font-size: 14.6pt; font-weight: 600; color: #111; margin: 2px 0 12px 0;
+     page-break-after: avoid; letter-spacing: -0.1px; }
+h3 { font-size: 11.6pt; font-weight: 600; font-style: italic; color: #2a2a2e;
+     margin: 16px 0 6px 0; page-break-after: avoid; }
+
+.card-qa { border: 1px solid #e4e4e1; background: #fbfbf9; border-radius: 3px;
+           padding: 9px 12px 10px 12px; margin: 14px 0 16px 0;
+           page-break-inside: avoid; }
+.card-qa .q, .card-qa .a { margin: 0; font-size: 10.2pt; line-height: 1.55; }
+.card-qa .q { color: #1c1c1e; font-weight: 600; }
+.card-qa .a { color: #55555c; border-top: 1px dotted #dededa; padding-top: 7px;
+              margin-top: 7px; }
+.lbl { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+       letter-spacing: 0.15em; text-transform: uppercase; color: #a3a3aa;
+       display: block; margin-bottom: 2px; font-weight: 600; }
+.lbl .n { color: #c9c9cf; }
+
+.aside { border-left: 2px solid #e0e0dc; padding: 1px 0 1px 12px; margin: 14px 0;
+         font-size: 10.2pt; color: #55555c; page-break-inside: avoid; }
+.aside b { color: #2a2a2e; }
+.aside .who { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7pt;
+              letter-spacing: 0.14em; text-transform: uppercase; color: #b0b0b6;
+              display: block; margin-bottom: 3px; font-weight: 600; }
+
+.fig { margin: 16px 0 18px 0; page-break-inside: avoid; }
+.fig .box { border: 1px solid #e4e4e1; border-radius: 3px; padding: 12px 14px;
+            background: #fcfcfb; }
+.fig .cap { font-size: 9pt; color: #77777d; margin-top: 6px; line-height: 1.5; }
+.fig .cap b { color: #4a4a50; }
+pre.d { font-family: ui-monospace, Menlo, monospace; font-size: 8.6pt; line-height: 1.55;
+        margin: 0; white-space: pre; color: #33333a; }
+.mathblock { margin: 12px 0 14px 0; page-break-inside: avoid; }
+.mathblock .katex-display { margin: 0; }
+.katex { font-size: 1.0em; }
+.rule { border: 0; border-top: 1px solid #e8e8e4; margin: 26px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin: 14px 0;
+        page-break-inside: avoid; }
+th { text-align: left; font-family: ui-sans-serif, -apple-system, sans-serif;
+     font-size: 7.6pt; letter-spacing: 0.1em; text-transform: uppercase; color: #8a8a90;
+     border-bottom: 1px solid #dcdcd8; padding: 0 8px 5px 0; font-weight: 600; }
+td { padding: 5px 8px 5px 0; border-bottom: 1px solid #f0f0ec; vertical-align: top; }
+a { color: #1c1c1e; }
+.small { font-size: 9.6pt; color: #6b6b70; }
+.toc { font-size: 10.4pt; line-height: 1.75; color: #4a4a50; }
+.idxq { font-size: 10.1pt; line-height: 1.6; margin: 0 0 4px 0;
+        padding-left: 30px; text-indent: -30px; color: #2a2a2e; }
+@media screen {
+  body { max-width: 47rem; margin: 0 auto; padding: 3.2rem 1.6rem 5rem 1.6rem;
+         font-size: 13pt; background: #fff; }
+  .card-qa { background: #fbfbf9; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 16pt; }
+}
+.idx-n { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 8pt;
+         color: #b0b0b6; letter-spacing: 0.05em; display: inline-block;
+         width: 30px; text-indent: 0; }
+.toc .p { font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 7.4pt;
+          letter-spacing: 0.15em; text-transform: uppercase; color: #b0b0b6;
+          margin-top: 10px; display: block; }
+
+</style>
+</head><body>
+<div class="buildnote" style="background:#fde68a;border:1px solid #f59e0b;border-radius:4px;padding:10px 14px;margin:0 0 18px 0;font:600 13px/1.5 ui-sans-serif,-apple-system,sans-serif;color:#78350f">BUILD SOURCE &mdash; do not read this file in a browser. Math is still raw LaTeX here. Open <code>html/Prob1-Curious.html</code> instead. Assembled by <code>build/build-essay.js</code> from <code>viz/prob-1.body.html</code>.</div>
+
+<h1>Counting,<br>and what<br>a probability is</h1>
+<h1 class="sub-title">Pebbles, sample spaces, trees, permutations, combinations, story proofs
+and the sieve &mdash; six counting habits that turn &ldquo;how likely?&rdquo; into arithmetic,
+and one argument for why the arithmetic is allowed to work at all</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question and its
+answer. They are not decoration. They are the essay testing you &mdash; and if you take them
+seriously, you will remember this material for years instead of days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong is useful;
+the effort of a failed recall is what makes the next one stick. The cards here are
+deliberately small: one fact, one step, one number each.</p>
+
+<p>This is the first of seven essays on probability, and it is the floor everything else
+stands on. Before you can average over a distribution you have to say what the outcomes are.
+Before you can say how often an outcome happens, you have to be able to count. Read this one
+before the essay on conditional probability, and that before the one on distributions.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; A probability is a weight on pebbles</div>
+
+<h2>1 &middot; Ten pebbles in a bag</h2>
+
+<p>A bag holds ten pebbles. Six are white and four are black. You reach in without looking
+and take one out. What is the chance it is white?</p>
+
+<p>Six in ten. You did not compute anything &mdash; you counted. That is the whole of this
+essay: the entire content of &ldquo;probability&rdquo; for the next nine sections is
+counting, done carefully, in situations where the counting is not obvious.</p>
+
+<p>Now say the same thing in the way the subject says it. The <i>sample space</i> is the set
+of everything that could happen. Here it is the ten pebbles, written \(S\). An
+<i>event</i> is a subset of the sample space &mdash; the set of outcomes you are asking
+about. Here \(A\) is the six white pebbles. A <i>probability</i> is a number attached to
+every outcome, and the probability of the event is the total weight sitting inside it.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  S: ten pebbles, each carrying weight 1/10
+
+    o  o  o  o  o  o  .  .  .  .
+    \______________/  \________/
+       A: white        A^c: black
+       weight 6/10     weight 4/10
+
+  P(A) = sum of the weights on the pebbles in A = 6/10
+</pre></div><div class="cap"><b>Pebble World.</b> Outcomes are pebbles, events are
+collections of pebbles, and a probability is a weight. Two rules keep it honest: no pebble
+has negative weight, and the weights of all pebbles together make exactly one.</div></div>
+
+<p>Two rules and nothing else: every weight is at least zero, and the whole bag weighs one.
+Everything you will ever prove about probabilities follows from those two sentences plus the
+instruction to add. This is why the subject is easy at the bottom and hard at the top &mdash;
+the axioms are trivial, and the difficulty is entirely in working out which pebbles you
+mean.</p>
+
+<p>Read that last clause again, because it is where the mistakes live. A probability is not a
+property of a pebble. It is a number attached to a <i>set</i> of pebbles, and the same pebble
+sits in many sets. &ldquo;The chance of a white pebble&rdquo; and &ldquo;the chance of a
+pebble that is white or large&rdquo; are the weights of two different collections, and one
+contains the other.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  A bag holds 6 white and 4 black pebbles, all equally likely. What is the probability that
+  a single draw is white, and which part of that sentence did the work?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(6/10\). The work was done by &ldquo;equally likely&rdquo;, which let the count stand in
+  for the weights.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  In Pebble World, what exactly is a probability, and what two rules constrain it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A weight assigned to each outcome, with the event's probability being the total weight of
+  its outcomes. Weights are non-negative and sum to one over the whole sample space.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.3</span></span>
+  If \(A\) and \(B\) share no outcomes, why is \(P(A \cup B) = P(A) + P(B)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the pebbles in \(A\) and in \(B\) are disjoint collections, so summing weights over
+  their union is summing over each separately and adding the two totals.</p>
+</div>
+
+<h2>2 &middot; The sample space is a choice, not a fact</h2>
+
+<p>Roll two dice and add them. What is the probability of a seven?</p>
+
+<p>The obvious sample space is the eleven possible sums, from two to twelve. It is also
+wrong, and it is wrong in a way worth understanding rather than memorising. If you take the
+eleven sums as your pebbles, each carrying the same weight, you get \(1/11\). The true answer
+is \(1/6\). Not a little off &mdash; off by nearly a factor of two, from a setup that felt
+obvious.</p>
+
+<p>The eleven sums are not equally likely, and the naive counting machinery quietly assumed
+they were. A sum of seven can be made six ways; a sum of two in exactly one. The sample space
+has to be fine enough that its outcomes really are symmetric.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  second die
+       1  2  3  4  5  6
+   1 |  2  3  4  5  6  7
+   2 |  3  4  5  6  7  8
+   3 |  4  5  6  7  8  9
+   4 |  5  6  7  8  9 10
+   5 |  6  7  8  9 10 11
+   6 |  7  8  9 10 11 12
+
+  thirty-six cells, not eleven.  the antidiagonal sum = 7 has 6 of them.
+  wrong sample space:  P(7) = 1/11      right:  P(7) = 6/36 = 1/6
+</pre></div><div class="cap"><b>The same experiment, two sample spaces.</b> The table is the
+honest one because its 36 cells are symmetric &mdash; the dice cannot tell them apart. The
+eleven rows of the antidiagonal are not symmetric and cannot be counted.</div></div>
+
+<p>The right sample space is the 36 ordered pairs \((1,1), (1,2), \dots, (6,6)\). They are
+indistinguishable to the dice, so they carry equal weight, so counting works.</p>
+
+<p>A second example, because the first one gets remembered as a fact about dice when it is a
+fact about <i>sets</i>. A family has two children. What is the probability that at least one
+is a girl? Take the sample space \(\{GG, GB, BG, BB\}\), four outcomes, equally likely. Three
+of them contain a girl, so \(3/4\).</p>
+
+<p>Now try the sample space \(\{\)both the same, one of each\(\}\). Two outcomes. Under it
+the answer would be \(1/2\), which is wrong. The pair &ldquo;one of each&rdquo; is twice as
+likely as &ldquo;both the same&rdquo;, for the same reason a sum of seven beats a sum of
+two: it can happen in more ways, and the sample space you chose had stopped being able to
+see the difference.</p>
+
+<p>So choosing a sample space is choosing a resolution at which to look. Too coarse and
+outcomes you need to distinguish get merged; too fine and you count things the problem does
+not care about. The rule of thumb: <i>make the outcomes the finest distinctions the
+experiment actually makes, and no finer</i>. Two dice are distinguishable even when they look
+identical, because you can paint one red. Two electrons are not.</p>
+
+<div class="aside">
+<span class="who">Where this gets slippery</span>
+<b>Whether two coins are distinguishable is a modelling decision, not a mathematical one.</b>
+If you flip two identical coins and record only &ldquo;how many heads&rdquo;, your sample
+space is \(\{0,1,2\}\) &mdash; and those three outcomes are <i>not</i> equally likely, so you
+must not count them. If you record the pair as ordered, you have four symmetric outcomes and
+you may. Blitzstein makes this point with a spinning coin in §1.2 precisely because the
+temptation is to think the sample space is a fact about the coins. It is a fact about what
+you decided to write down.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  Why does treating the eleven possible sums of two dice as equally likely give the wrong
+  answer for \(P(\text{sum} = 7)\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because they are not equally likely: seven arises from six of the 36 ordered pairs and two
+  from one, so the eleven sums cannot carry equal weight.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  What property must a sample space have before you are allowed to compute a probability by
+  counting outcomes?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Its outcomes must be equally likely &mdash; symmetric, in the sense that the experiment
+  gives you no way to tell them apart.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  For two children, \(P(\text{at least one girl}) = 3/4\) under \(\{GG,GB,BG,BB\}\). What
+  goes wrong with the sample space \(\{\)same, different\(\}\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  &ldquo;Different&rdquo; covers two outcomes while &ldquo;same&rdquo; covers two as well but
+  only one of each kind of family &mdash; the two cells are not equally likely, so counting
+  them as halves is invalid.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part II &mdash; Counting when every pebble weighs the same</div>
+
+<h2>3 &middot; The naive definition, and the two conditions it hides</h2>
+
+<p>You are dealt five cards from a standard deck. What is the probability of a full house
+&mdash; three of one rank and two of another?</p>
+
+<p>Here is the trouble: nobody can list the hands. There are millions of them. But if the deck
+is well shuffled, every hand is equally likely, so the probability is a ratio of two counts,
+and both counts can be computed without listing anything. That is the entire method.</p>
+
+<div class="mathblock">
+\[ P(A) = \frac{|A|}{|S|} \qquad\text{provided } S \text{ is finite and its outcomes are equally likely} \]
+</div>
+
+<p>Those two provisos are doing enormous work and are usually invisible. <i>Finite</i> is
+there so that counting makes sense at all. <i>Equally likely</i> is there because the formula
+is a dressed-up average: it says each outcome gets weight \(1/|S|\), which is only true if
+they all get the same weight. The justification is always a symmetry argument, and if you
+cannot state the symmetry you do not have the right to use the formula.</p>
+
+<p>For the full house: the number of five-card hands is the number of five-element subsets of
+52,</p>
+
+<div class="mathblock">
+\[ \binom{52}{5} = \frac{52 \cdot 51 \cdot 50 \cdot 49 \cdot 48}{5 \cdot 4 \cdot 3 \cdot 2 \cdot 1} = 2{,}598{,}960 \]
+</div>
+
+<p>Full houses are counted by choosing, in order: the rank of the triple (13 ways), the three
+suits of that rank (4 ways), the rank of the pair (12 remaining ways), and the two suits of
+the pair (6 ways).</p>
+
+<div class="mathblock">
+\[ 13 \times \binom{4}{3} \times 12 \times \binom{4}{2} = 13 \times 4 \times 12 \times 6 = 3{,}744 \]
+</div>
+
+<p>so \(P(\text{full house}) = 3744/2{,}598{,}960 \approx 0.00144\) &mdash; about one hand in
+seven hundred. Nothing was listed; two counts were divided.</p>
+
+<p>Now watch the method fail. Load one face of a die so it lands six twice as often as it
+should. The sample space is still six outcomes, still finite, but the weights are
+\(2/7, 1/7, 1/7, 1/7, 1/7, 1/7\). Counting outcomes gives \(1/6\) for a six; the truth is
+\(2/7 \approx 0.286\). The formula did not fail &mdash; its second precondition did, and
+nothing warned you.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  What are the two preconditions of the naive definition \(P(A) = |A|/|S|\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The sample space is finite, and its outcomes are equally likely (justified by symmetry).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  How many five-card hands are there from a 52-card deck, and how many of them are full
+  houses?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\binom{52}{5} = 2{,}598{,}960\) hands; \(13 \times 4 \times 12 \times 6 = 3{,}744\) full
+  houses.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
+  A die is loaded so that six has weight \(2/7\) and every other face \(1/7\). What does
+  counting outcomes report for \(P(6)\), and what is the truth?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Counting gives \(1/6 \approx 0.167\); the truth is \(2/7 \approx 0.286\), because the
+  outcomes are no longer equally likely.</p>
+</div>
+
+<h2>4 &middot; Trees, and the multiplication rule</h2>
+
+<p>You own four shirts and three pairs of trousers. How many outfits?</p>
+
+<p>Twelve, and you can see why by drawing the choices as a tree: each shirt has three
+branches, four shirts, twelve leaves. The general statement is that sequential choices
+<i>multiply</i>, provided the number of options at each stage does not depend on what you
+chose earlier.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  shirt 1 ---- trouser a, b, c        leaves = 4 x 3 = 12
+  shirt 2 ---- trouser a, b, c
+  shirt 3 ---- trouser a, b, c
+  shirt 4 ---- trouser a, b, c
+
+  a licence plate is a tree with six levels:
+  [A-Z] -> [A-Z] -> [A-Z] -> [0-9] -> [0-9] -> [0-9]
+    26      26      26      10      10      10     = 17,576,000
+</pre></div><div class="cap"><b>Sequential choice multiplies.</b> The tree is the
+justification: every path from root to leaf is one outcome, and a path is chosen by making
+one choice at each level.</div></div>
+
+<p>Three letters then three digits gives \(26^3 \times 10^3 = 17{,}576 \times 1{,}000 =
+17{,}576{,}000\) plates. A ten-element set has \(2^{10} = 1{,}024\) subsets, because you
+build a subset by deciding yes or no about each element in turn: two choices, ten times.</p>
+
+<p>That proviso about the option count is not decoration. How many three-digit numbers have
+all distinct digits and no leading zero? If you start with the hundreds digit you have nine
+choices; then the tens digit has nine (the ten minus the one you used); then the units has
+eight. So \(9 \times 9 \times 8 = 648\). Choose the orders badly and the option counts
+change under you &mdash; the fix is to order the stages so that each stage's count is the
+same no matter what came before.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  How many licence plates use three letters followed by three digits?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(26^3 \times 10^3 = 17{,}576{,}000\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  Why does a ten-element set have \(2^{10}\) subsets?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Each element is independently in or out, so a subset is a sequence of ten binary choices.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  How many three-digit numbers have distinct digits and no leading zero?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(9 \times 9 \times 8 = 648\): nine hundreds digits, then nine tens digits, then eight
+  units digits.</p>
+</div>
+
+<h2>5 &middot; Permutations: filling slots one at a time</h2>
+
+<p>Ten people line up for a photograph. How many orderings?</p>
+
+<p>The first position takes any of ten, the second any of the remaining nine, and so on, so
+\(10! = 3{,}628{,}800\). If only three of the ten get medals, the same argument stops after
+three slots: \(10 \times 9 \times 8 = 720\).</p>
+
+<div class="mathblock">
+\[ n! = n(n-1)(n-2)\cdots 1 \qquad\qquad n(n-1)\cdots(n-k+1) = \frac{n!}{(n-k)!} \]
+</div>
+
+<p>The second quantity is usually written \(n^{\underline{k}}\) and called a falling
+factorial. It counts <i>ordered</i> selections of \(k\) things from \(n\), which is to say
+permutations of length \(k\).</p>
+
+<h3>Anagrams, and letters you cannot tell apart</h3>
+
+<p>How many distinct arrangements does the word MISSISSIPPI have? Eleven letters, so
+\(11! = 39{,}916{,}800\) if every letter were distinct. They are not, and here is the trouble:
+the four I's can be permuted among themselves in \(4! = 24\) ways without changing what you
+see, so \(11!\) counts each visible arrangement \(4! \times 4! \times 2! = 1{,}152\) times
+over.</p>
+
+<div class="mathblock">
+\[ \frac{11!}{1!\,4!\,4!\,2!} = \frac{39{,}916{,}800}{1{,}152} = 34{,}650 \]
+</div>
+
+<p>Dividing by the internal orderings is the general recipe: <i>count as if everything were
+distinguishable, then divide out the orderings your eyes cannot detect.</i> The same sentence,
+in different clothes, is how combinations work.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  How many distinct arrangements of the letters of MISSISSIPPI are there?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(11!/(4!\,4!\,2!) = 34{,}650\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  Why is it legitimate to count letters as if they were distinct and then divide by \(4!\) for
+  the repeated I's?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because each visible arrangement is produced by exactly \(4!\) permutations of the four
+  identical I's, so the overcount is uniform and division removes it exactly.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  Three of ten runners get gold, silver and bronze. How many podiums?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(10 \times 9 \times 8 = 720\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.4</span></span>
+  What does \(\frac{n!}{(n-k)!}\) count, in one phrase?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Ordered selections of \(k\) items from \(n\) &mdash; permutations of length \(k\).</p>
+</div>
+
+<h2>6 &middot; Combinations: dividing out an order you never wanted</h2>
+
+<p>Ten people, and you must pick three for a committee. How many committees?</p>
+
+<p>The podium answer, 720, is wrong here, and it is wrong in an instructive way: it counts
+each committee six times, once for each way of ordering its three members. A committee has no
+order. So divide by \(3! = 6\):</p>
+
+<div class="mathblock">
+\[ \binom{10}{3} = \frac{10 \cdot 9 \cdot 8}{3 \cdot 2 \cdot 1} = \frac{720}{6} = 120 \]
+</div>
+
+<p>The general formula divides the falling factorial by \(k!\), because every \(k\)-element
+subset was counted once for each of its \(k!\) orderings:</p>
+
+<div class="mathblock">
+\[ \binom{n}{k} = \frac{n!}{k!\,(n-k)!} \]
+</div>
+
+<p>This is the single most used symbol in probability, and it is not a coincidence that it is
+a quotient of two things you already know how to count. Every time order is irrelevant, you
+overcount by exactly \(k!\) &mdash; and the check that the overcount is uniform is the same
+argument every time: whichever subset you picked, it has the same \(k!\) orderings.</p>
+
+<h3>The birthday problem, in numbers</h3>
+
+<p>Twenty-three people in a room. What is the chance two of them share a birthday?</p>
+
+<p>Direct counting is hopeless: &ldquo;at least one match&rdquo; is a union of thousands of
+overlapping events. Go the other way and count the complement, no shared birthday, which is
+a sequence of ordered choices: the first person is free (365 options), the second must avoid
+one day (364), the third avoids two (363), and so on.</p>
+
+<div class="mathblock">
+\[ P(\text{no match}) = \prod_{i=0}^{22}\frac{365-i}{365} \approx 0.4927 \qquad\Longrightarrow\qquad P(\text{match}) \approx 0.5073 \]
+</div>
+
+<p>Slightly better than a coin flip, with only 23 people. The reason is not that 23 is a
+large fraction of 365 &mdash; it is that the thing being counted is pairs, and 23 people make
+\(\binom{23}{2} = 253\) pairs. The instinct that fails is counting people when the sample
+space is counting pairs.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  How many committees of three can be chosen from ten people?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\binom{10}{3} = 120\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  Why does \(\binom{n}{k}\) divide \(n!/(n-k)!\) by \(k!\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the ordered count lists each \(k\)-element subset once for each of its \(k!\)
+  orderings, and a subset has no order.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  With 23 people, \(P(\text{a shared birthday}) \approx 0.507\). Which count explains why the
+  answer is so high, and how many is it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The number of <i>pairs</i>, \(\binom{23}{2} = 253\), not the number of people.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.4</span></span>
+  Why is the birthday problem easier to compute through the complement?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  &ldquo;At least one match&rdquo; is a union of many overlapping events, while &ldquo;no
+  match&rdquo; is a sequence of ordered choices whose options shrink by one each time.</p>
+</div>
+
+<h2>7 &middot; The sampling table</h2>
+
+<p>Four questions sound different until you see them as one: pick \(k\) things from \(n\).
+Does order matter? Are repeats allowed? Answer both and the formula is read off a table.</p>
+
+<table>
+<tr><th>pick \(k\) from \(n\)</th><th>with replacement</th><th>without replacement</th></tr>
+<tr><td><b>order matters</b></td><td>\(n^k\)</td><td>\(\dfrac{n!}{(n-k)!}\)</td></tr>
+<tr><td><b>order irrelevant</b></td><td>\(\dbinom{n+k-1}{k}\)</td><td>\(\dbinom{n}{k}\)</td></tr>
+</table>
+
+<p>Three cells should already be familiar. The fourth, unordered with replacement, is the odd
+one and it has a story. Picking \(k\) from \(n\) with repeats and no order is the same as
+putting \(k\) identical stars into \(n\) distinct boxes: lay the stars in a row and insert
+\(n-1\) bars to separate the boxes, giving \(k\) stars and \(n-1\) bars in a line, and choose
+which of the \(k+n-1\) positions hold stars.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  k = 3 scoops, n = 4 flavours, order irrelevant, repeats allowed
+
+  scoop positions:  *  *  *  |  |  |
+
+  choose 3 of the 7 positions for the stars:   C(7,3) = 35
+
+  the bars say where one flavour's scoops end and the next begins
+</pre></div><div class="cap"><b>Stars and bars.</b> Unordered sampling with replacement is
+just choosing positions for the stars, which is why its count is a binomial coefficient and
+not a power.</div></div>
+
+<p>With \(n = 5\) and \(k = 3\) the four cells read \(125\), \(60\), \(10\) and \(35\). Four
+different numbers from one question, and picking the wrong cell is the second most common
+error in the subject &mdash; after the wrong sample space.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  Picking 3 things from 5 without order, with repeats allowed: how many ways?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\binom{5+3-1}{3} = \binom{7}{3} = 35\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  Which cell of the sampling table gives the number of five-card poker hands?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Order irrelevant, without replacement: \(\binom{52}{5} = 2{,}598{,}960\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  Why does unordered sampling with replacement give \(\binom{n+k-1}{k}\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It is the stars-and-bars count: arrange \(k\) identical items and \(n-1\) dividers in a line
+  and choose the \(k\) positions occupied by the items.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part III &mdash; Counting the same thing twice</div>
+
+<h2>8 &middot; Two ways to count the same committee</h2>
+
+<p>You want to know the number of ways to choose a committee of three from ten, with one of
+the three made chair. You could count it two ways, and that is the point.</p>
+
+<p>Count by the committee first: choose the three, then choose the chair from them, giving
+\(\binom{10}{3} \times 3 = 120 \times 3 = 360\). Count by the chair first: choose the chair
+from all ten, then the other two from the remaining nine, giving \(10 \times \binom{9}{2} =
+10 \times 36 = 360\).</p>
+
+<p>Two different procedures, one set of objects, so the two answers must agree. That is a
+<i>story proof</i>: you prove an identity by exhibiting both sides as counts of the same
+thing, and the identity is then true whether or not you can do the algebra.</p>
+
+<div class="mathblock">
+\[ k\binom{n}{k} = n\binom{n-1}{k-1} \]
+</div>
+
+<p>Story proofs are not a trick for the lazy. They are how the subject is actually built,
+because they explain <i>why</i> a formula has the shape it has, and the shape is what you
+remember. Blitzstein gives this habit its own section (§1.5) for exactly that reason.</p>
+
+<h3>Vandermonde, in numbers</h3>
+
+<p>Take a set of five people, three of whom wear hats. How many committees of two can you
+form? \(\binom{5}{2} = 10\), obviously. Now count by hat count: both hatted
+(\(\binom{3}{2}\binom{2}{0} = 3\)), one of each (\(\binom{3}{1}\binom{2}{1} = 6\)), both
+unhatted (\(\binom{3}{0}\binom{2}{2} = 1\)). Total \(3 + 6 + 1 = 10\). Same ten committees.</p>
+
+<div class="mathblock">
+\[ \sum_{j=0}^{r}\binom{m}{j}\binom{n}{r-j} = \binom{m+n}{r} \]
+</div>
+
+<h3>Pascal's rule, by one distinguished element</h3>
+
+<p>\(\binom{n}{k} = \binom{n-1}{k} + \binom{n-1}{k-1}\). Pick out one person. Either they are
+not on the committee, which leaves \(k\) seats to fill from the other \(n-1\), or they are on
+it, which leaves \(k-1\) seats from the other \(n-1\). Those two cases are exhaustive and
+disjoint, so the counts add.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  What makes a &ldquo;story proof&rdquo; valid?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Both sides must count the same set of objects, by two genuinely different procedures, so
+  that equality follows from the object rather than from algebra.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  Verify \(\sum_j \binom{3}{j}\binom{2}{2-j} = \binom{5}{2}\) numerically.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(1 \cdot 1 + 3 \cdot 2 + 3 \cdot 1 = 10\), and \(\binom{5}{2} = 10\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  Prove \(\binom{n}{k} = \binom{n-1}{k} + \binom{n-1}{k-1}\) by cases.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Fix one element: committees excluding it are counted by \(\binom{n-1}{k}\), committees
+  including it by \(\binom{n-1}{k-1}\).</p>
+</div>
+
+<h2>9 &middot; Inclusion&ndash;exclusion, and the matching problem</h2>
+
+<p>Fifty students take maths, forty take physics, twenty take both. How many take at least
+one?</p>
+
+<p>The obvious move, adding, double-counts the twenty &mdash; and it is the same overcount
+as the one that made the eleven-sums sample space fail. Subtract it once:
+\(50 + 40 - 20 = 70\).</p>
+
+<div class="mathblock">
+\[ |A \cup B| = |A| + |B| - |A \cap B| \]
+</div>
+
+<p>With three sets the correction needs its own correction, because the triple intersection got
+added three times and subtracted three times and has ended up counted zero times:</p>
+
+<div class="mathblock">
+\[ |A \cup B \cup C| = |A| + |B| + |C| - |AB| - |AC| - |BC| + |ABC| \]
+</div>
+
+<p>The alternating pattern continues. In general</p>
+
+<div class="mathblock">
+\[ \left|\bigcup_{i=1}^{n} A_i\right| = \sum_i |A_i| - \sum_{i<j} |A_i \cap A_j| + \sum_{i<j<l} |A_i \cap A_j \cap A_l| - \cdots \]
+</div>
+
+<p>The general form looks forbidding and its special case is one of the prettiest results in
+elementary probability. Five letters and five addressed envelopes, stuffed at random. What is
+the probability that no letter reaches its own envelope?</p>
+
+<p>Let \(A_i\) be &ldquo;letter \(i\) is in envelope \(i\)&rdquo;. Each \(P(A_i) = 1/5\), and
+there are five of them. Each pair \(P(A_i \cap A_j) = 1/(5 \cdot 4)\), and there are
+\(\binom{5}{2}\) pairs. And so on. By inclusion&ndash;exclusion, the probability that at
+least one letter is correct is</p>
+
+<div class="mathblock">
+\[ \sum_{k=1}^{n} (-1)^{k-1}\binom{n}{k}\frac{(n-k)!}{n!} = \sum_{k=1}^{n}\frac{(-1)^{k-1}}{k!} \]
+</div>
+
+<p>because \(\binom{n}{k}(n-k)!/n! = 1/k!\) &mdash; the binomial coefficient and the factorial
+collapse together, which is the small miracle that makes this work. So the probability of
+<i>no</i> match is</p>
+
+<div class="mathblock">
+\[ \sum_{k=0}^{n}\frac{(-1)^{k}}{k!} \;\longrightarrow\; \frac{1}{e} \approx 0.3679 \]
+</div>
+
+<p>For \(n = 3\): \(1 - 1 + \tfrac12 - \tfrac16 = \tfrac13\), and indeed two of the six
+orderings of three letters are derangements. For \(n = 4\): \(9\) of \(24\), i.e. \(0.375\).
+Already close to \(1/e\), and it stays there as \(n\) grows. The chance that a random shuffle
+of any greedy pile of letters fixes at least one is stuck at about \(0.632\) forever.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  50 take maths, 40 physics, 20 both. How many take at least one?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(50 + 40 - 20 = 70\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  In the three-set formula, why does the triple intersection term carry a plus sign?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It was added three times and subtracted three times, so it is currently counted zero times
+  and must be added back once.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.3</span></span>
+  Three letters go into three random envelopes. What is the probability that none is correct?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(1 - 1 + \tfrac12 - \tfrac16 = \tfrac13\), matching two derangements out of six orderings.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part IV &mdash; What a probability is, and what it is for</div>
+
+<h2>10 &middot; The axioms, and why they end the argument</h2>
+
+<p>Everything so far has been counting. But counting assumes the bag is fair, and most bags
+are not: the die is loaded, the coin is bent, the email is spam. There, the honest question is
+not &ldquo;how many&rdquo; but &ldquo;what number should I write down&rdquo;, and counting
+has nothing to say.</p>
+
+<p>Kolomogorov's answer, in 1933, was to stop asking where the numbers come from. Write down
+three rules any set of weights must obey and let everything else be a theorem.</p>
+
+<table>
+<tr><th>axiom</th><th>statement</th><th>what it forbids</th></tr>
+<tr><td>non-negativity</td><td>\(P(A) \ge 0\)</td><td>negative chances</td></tr>
+<tr><td>normalisation</td><td>\(P(S) = 1\)</td><td>weights that do not total one</td></tr>
+<tr><td>countable additivity</td><td>\(P\left(\bigcup_i A_i\right) = \sum_i P(A_i)\) for disjoint \(A_i\)</td><td>coarse or inconsistent merging</td></tr>
+</table>
+
+<p>Every rule you have used follows. Complementary events: \(P(A) + P(A^c) = 1\), because
+\(A\) and \(A^c\) are disjoint and fill the space. Monotonicity: if \(A \subseteq B\) then
+\(P(A) \le P(B)\), because \(B\) is \(A\) plus \(B \setminus A\). Inclusion&ndash;exclusion,
+for the reason in the last section. None of this required a sample space in which counting
+works.</p>
+
+<p>The third axiom is the subtle one, and its name &mdash; <i>countable</i> additivity
+&mdash; is a commitment. It says you may break a union into countably many disjoint pieces
+and the weights add. This is what makes probability a branch of measure theory, and it is what
+allows a uniform distribution on the interval \([0,1]\), where each individual point must
+have probability zero and yet the whole interval has probability one. Under the naive
+definition that distribution does not exist, because you cannot count the points.</p>
+
+<div class="aside">
+<span class="who">Where this bites later</span>
+<b>A density is not a probability.</b> The move from &ldquo;count the pebbles&rdquo; to
+&ldquo;assign weights and integrate&rdquo; is exactly the move made in the fifth essay of this
+series, and it is where \(P(X = x) = 0\) comes from for a continuous variable, and why a
+language model's likelihood of an exact real-valued output is a density rather than a
+chance. The axioms are what keep that machinery honest.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.1</span></span>
+  State the three axioms of probability.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(A) \ge 0\); \(P(S) = 1\); and countable additivity for pairwise disjoint events.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.2</span></span>
+  Which axiom gives you \(P(A) + P(A^c) = 1\), and how?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Additivity, applied to the disjoint pair \(A\) and \(A^c\), whose union is \(S\) with
+  \(P(S) = 1\) by normalisation.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.3</span></span>
+  Why can a uniform distribution on \([0,1]\) exist as a probability but not as a count?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the axioms allow weights on uncountably many points &mdash; each point carries
+  probability zero and additivity over intervals supplies the rest &mdash; while the naive
+  definition needs a finite, countable sample space.</p>
+</div>
+
+<h2>11 &middot; Where this lands in generative AI</h2>
+
+<p>A language model with a 50,000-token vocabulary, writing a 20-token sentence, is choosing
+one point in a space of size \(50{,}000^{20} \approx 10^{94}\). For comparison, the number of
+atoms in the observable universe is about \(10^{80}\).</p>
+
+<p>That single number decides the architecture of everything that follows. You cannot
+enumerate that space, so you cannot compute a normalising constant by summing over it. You
+cannot count the pebbles, so the naive definition is not available. What is left is the
+multiplication rule: cut the giant space into a tree and choose one branch at a time,
+conditional on the branch already taken.</p>
+
+<div class="mathblock">
+\[ p(x_1, \dots, x_n) = \prod_{i=1}^{n} p(x_i \mid x_1, \dots, x_{i-1}) \]
+</div>
+
+<p>That factorisation <i>is</i> the multiplication rule of section 4, applied to a tree with
+one level per token. Every autoregressive model is a multiplication rule with learned branch
+probabilities, and the training objective is a story about averaging over that tree rather
+than walking it.</p>
+
+<table>
+<tr><th>tool from this essay</th><th>where it reappears</th></tr>
+<tr><td>multiplication rule, trees</td><td>the autoregressive factorisation above, and RLHF's trajectory probability \(\prod_t \pi_\theta(a_t \mid s_t)\), which is the multiplication rule on a tree of actions</td></tr>
+<tr><td>size of the sample space, \(n^k\)</td><td>why every loss in <i>Foundations-Curious</i> is a Monte Carlo estimate: the expectation over \(10^{94}\) sentences is replaced by an average over a minibatch</td></tr>
+<tr><td>binomial coefficients</td><td>the \(\binom{M}{m}\) and \(M\)-sample averages inside the VAE's ELBO and the importance-weighted bound in <i>VAE-Curious</i></td></tr>
+<tr><td>order irrelevant, without replacement</td><td>top-\(k\) and nucleus sampling, which draw without replacement from the truncated support before renormalising</td></tr>
+<tr><td>equally likely, and when it fails</td><td>why a uniform distribution over the vocabulary is a useless model, and why temperature is a reweighting rather than a re-count</td></tr>
+<tr><td>complement counting</td><td>the birthday-style argument behind deduplication and contamination checks: the space of pairs, not of items</td></tr>
+</table>
+
+<p>One habit is worth carrying forward more than any formula. Every essay after this one is a
+fight over <i>which</i> space an average is taken in, and the failure mode is always the same
+one from section 2: a space whose outcomes are not symmetric, counted as though they were.
+When a derivation stops making sense, check what the pebbles are.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.1</span></span>
+  A model has 50,000 tokens and writes 20. Roughly how many possible outputs, and why does the
+  number matter?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(50{,}000^{20} \approx 10^{94}\) &mdash; far beyond enumeration, so normalising constants
+  and expectations must be estimated by sampling, never by summing.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.2</span></span>
+  Which counting rule of this essay is the autoregressive factorisation of a language model?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The multiplication rule: a point in the product space is chosen one coordinate at a time, so
+  the joint probability is a product of conditional ones.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.3</span></span>
+  Why can no generative model compute its likelihood by listing outcomes?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The outcome space is \(|V|^n\), astronomically large, so the naive definition's count of a
+  numerator and a denominator is unavailable; likelihoods must be factorised or bounded
+  instead.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;11.4</span></span>
+  What is the recurring failure mode this essay warns about, in one sentence?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Counting a sample space whose outcomes are not actually symmetric, and treating the count as
+  though they were.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from Blitzstein &amp; Hwang, <i>Introduction to Probability</i>, chapter 1
+(&sect;1.2&ndash;&sect;1.6). Typeset with KaTeX. Source: <i>viz/prob-1.body.html</i>,
+assembled by <i>build/build-essay.js</i>.</p>
+
+</body></html>

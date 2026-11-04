@@ -1,0 +1,634 @@
+<!--META
+{ "title": "Bounds, the law of large numbers, and the bell curve" }
+-->
+<h1>Bounds, the law<br>of large numbers,<br>and the bell curve</h1>
+<h1 class="sub-title">How to say something true when you cannot compute anything, what averaging
+really buys you, why the error shrinks as the square root of effort, and what to do when you
+cannot even draw a sample</h1>
+
+<p class="lead">This essay is part of a series written in what we call a
+<i>mnemonic medium</i>. Small boxes appear along the way, each holding a question and its
+answer. They are not decoration. They are the essay testing you &mdash; and if you take them
+seriously, you will remember this material for years instead of days.</p>
+
+<p>When a box appears, say your answer out loud before you look. Getting it wrong is useful;
+the effort of a failed recall is what makes the next one stick. The cards here are
+deliberately small: one fact, one step, one number each.</p>
+
+<p>This is the last of the seven essays on probability. It needs the fourth and fifth, on
+expectation and on densities, and it closes the loop: Jensen's inequality from the fifth section
+is the step that turns a likelihood into the bound every variational model optimises, and the
+square-root law of the eighth section is the reason batch size is a tuning knob rather than an
+afterthought.</p>
+
+<hr class="rule">
+
+<div class="part">Part I &mdash; Bounding what you cannot compute</div>
+
+<h2>1 &middot; Why an inequality is a tool</h2>
+
+<p>A machine produces a positive quantity with mean 2. What is the chance it exceeds 10?</p>
+
+<p>You cannot answer. You have one number &mdash; a mean &mdash; and the tail is determined by
+the shape, which you do not know. Two different distributions with mean 2 give wildly different
+answers: one bounded by 2 answers zero, and a distribution that is 10 with probability 0.2 and 0
+otherwise answers 0.2.</p>
+
+<p>What you <i>can</i> say is a bound that holds for all of them. That is what the inequalities
+of this part are: statements that are true of every distribution satisfying a stated hypothesis,
+and therefore weaker than the truth but free of assumptions.</p>
+
+<p>The trade is worth being explicit about. An inequality is loose &mdash; it may be off by a
+large factor &mdash; but it is never wrong, and it requires almost nothing. That combination is
+what makes it usable when the distribution is unavailable, which is to say, almost always.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.1</span></span>
+  What does a probability inequality give you that an exact computation would not?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A statement that holds for every distribution satisfying a few weak hypotheses, when the
+  distribution itself is unknown.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;1.2</span></span>
+  What do you pay for that?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Tightness &mdash; the bound can be far from the truth, sometimes by orders of magnitude.</p>
+</div>
+
+<h2>2 &middot; Markov: a bound from one number</h2>
+
+<p>The weakest useful inequality, and the ancestor of the rest. For a non-negative variable,</p>
+
+<div class="mathblock">
+\[ P(X \ge a) \le \frac{\mathbb{E}[X]}{a}, \qquad a > 0 \]
+</div>
+
+<p>The proof is a one-line geometric observation. The expectation is the integral of \(x\) against
+the density; the part of that integral sitting above \(a\) is at least \(a\) times the mass above
+\(a\), because every point there contributes at least \(a\) and the mass is \(P(X \ge a)\).</p>
+
+<div class="mathblock">
+\[ \mathbb{E}[X] = \int_0^{\infty} x\,f(x)\,dx \;\ge\; \int_a^{\infty} x\,f(x)\,dx \;\ge\; a\int_a^{\infty} f(x)\,dx = a\,P(X \ge a) \]
+</div>
+
+<p>With mean 2 and threshold 10, the bound is \(0.2\). That is the answer the two-point
+distribution gives exactly, so Markov is tight in the worst case &mdash; and hopeless in the
+typical case. If the quantity is a coin flip scaled to mean 2 with a maximum of 2, the true
+probability of exceeding 10 is zero and Markov still says \(0.2\).</p>
+
+<p>Tightness in the worst case is the right way to read these results. They are guarantees, not
+estimates, and the distribution that makes them tight is always a deliberately awkward one.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.1</span></span>
+  State Markov's inequality, including its hypothesis.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  For \(X \ge 0\) and \(a > 0\), \(P(X \ge a) \le \mathbb{E}[X]/a\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.2</span></span>
+  A non-negative variable has mean 2. Bound \(P(X \ge 10)\).</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(2/10 = 0.2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;2.3</span></span>
+  When is Markov exactly tight?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  When the variable takes only the values \(a\) and 0, so all its mass sits at the threshold.</p>
+</div>
+
+<h2>3 &middot; Chebyshev: a bound from two numbers</h2>
+
+<p>Add a variance and the bound improves sharply, because you can now talk about distance from the
+mean in both directions.</p>
+
+<div class="mathblock">
+\[ P\big(|X - \mu| \ge a\big) \le \frac{\sigma^2}{a^2} \qquad\text{equivalently}\qquad P\big(|X - \mu| \ge k\sigma\big) \le \frac{1}{k^2} \]
+</div>
+
+<p>The derivation is Markov applied to the non-negative variable \((X-\mu)^2\), whose mean is
+\(\sigma^2\):</p>
+
+<div class="mathblock">
+\[ P\big((X-\mu)^2 \ge a^2\big) \le \frac{\mathbb{E}[(X-\mu)^2]}{a^2} = \frac{\sigma^2}{a^2} \]
+</div>
+
+<p>With \(\sigma = 2\) and \(a = 6\), the bound is \(4/36 \approx 0.111\) &mdash; the same as
+\(1/3^2\), because six is three standard deviations. Compare the truth for a normal distribution:
+\(0.0027\). So Chebyshev is loose by a factor of forty, and it is still the best you can do
+without assuming a shape.</p>
+
+<p>The version worth memorising is the second one, \(1/k^2\), because it is dimensionless: no more
+than \(1/k^2\) of any distribution's mass lies more than \(k\) standard deviations from the mean,
+whatever the distribution is. That is a genuinely surprising statement the first time you meet
+it, and it is the reason a six-sigma event is remarkable in any well-behaved process.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.1</span></span>
+  State Chebyshev's inequality in both forms.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(P(|X-\mu| \ge a) \le \sigma^2/a^2\), equivalently \(P(|X-\mu| \ge k\sigma) \le 1/k^2\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.2</span></span>
+  \(\sigma = 2\), \(a = 6\). What does Chebyshev give, and how does it compare with a normal?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(4/36 \approx 0.111\), against the normal's \(0.0027\) &mdash; loose, but valid for every
+  distribution.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;3.3</span></span>
+  Which earlier inequality does Chebyshev follow from, and applied to what?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Markov, applied to the non-negative variable \((X-\mu)^2\).</p>
+</div>
+
+<h2>4 &middot; Cauchy&ndash;Schwarz, and the ceiling on correlation</h2>
+
+<p>Correlation cannot exceed 1. Why not?</p>
+
+<div class="mathblock">
+\[ \big(\mathbb{E}[XY]\big)^2 \le \mathbb{E}[X^2]\,\mathbb{E}[Y^2] \]
+</div>
+
+<p>This is Cauchy&ndash;Schwarz, and it is the statement that the inner product of two random
+variables is at most the product of their lengths &mdash; the same fact as the triangle inequality
+for vectors, in a space whose elements are random variables. Apply it to the centred variables
+\(X - \mu_X\) and \(Y - \mu_Y\) and it reads
+\(\mathrm{Cov}(X,Y)^2 \le \sigma_X^2 \sigma_Y^2\), which after taking square roots is exactly
+\(|\rho| \le 1\).</p>
+
+<p>The bound is attained only when one variable is an affine function of the other, which is why
+\(\rho = \pm 1\) means a perfect straight-line relationship and nothing else. And it gives the
+honest reading of the previous essay's counterexample: \(Y = X^2\) has a curved relationship, so
+its correlation must be under 1 in magnitude &mdash; it happens to be 0, which is the extremum in
+the other direction.</p>
+
+<p>In estimation the inequality appears as a variance sanity check. The importance-sampling
+estimator's variance involves \(\mathbb{E}[f^2]\) and \(\mathbb{E}[g^2]\) terms whose ratio
+blows up when the weights have heavy tails, and Cauchy&ndash;Schwarz is the tool that tells you
+so before you run the experiment rather than after.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.1</span></span>
+  State Cauchy&ndash;Schwarz for random variables.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((\mathbb{E}[XY])^2 \le \mathbb{E}[X^2]\mathbb{E}[Y^2]\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.2</span></span>
+  How does it give \(|\rho| \le 1\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Applied to the centred variables it reads \(\mathrm{Cov}^2 \le \sigma_X^2\sigma_Y^2\); take
+  square roots and divide.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;4.3</span></span>
+  When is the bound attained, and what does that mean for the scatter plot?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Only when one variable is an affine function of the other, so \(|\rho| = 1\) means a perfect
+  straight line.</p>
+</div>
+
+<h2>5 &middot; Jensen, and the direction of the bending</h2>
+
+<p>You have met this twice already, in the fourth essay as &ldquo;expectation does not commute with
+a curve&rdquo; and in the sixth as the missing ingredient for a bound. Here it is properly, because
+it is the single most consequential inequality in this series.</p>
+
+<p>A function is <i>convex</i> if the chord between any two of its points lies above the curve.
+For such a function, and any random variable,</p>
+
+<div class="mathblock">
+\[ \mathbb{E}\big[g(X)\big] \;\ge\; g\big(\mathbb{E}[X]\big) \qquad (g \text{ convex}) \]
+</div>
+
+<p>and the inequality reverses for a concave \(g\), which is to say for \(-g\). The intuition is
+the same as the seesaw: the average of the heights of the curve at the two ends of a chord is
+above the height of the curve at the midpoint, because the curve sags below its chords.</p>
+
+<div class="fig"><div class="box"><pre class="d">
+  convex g (bends up)              concave g = -g (bends down)
+
+   |        *                       |  *
+   |      *                         |    *
+   |   *    *   chord above         |      *     chord below
+   | *        *  the curve          |        *   the curve
+   +-------------- x                +-------------- x
+
+  E[g(X)] >= g(E[X])               E[g(X)] <= g(E[X])
+</pre></div><div class="cap"><b>Which way the inequality points.</b> Convex bends up, so
+averaging the curve beats the curve of the average. Reversing the curve reverses the
+inequality.</div></div>
+
+<h3>In numbers</h3>
+
+<p>Let \(X\) be 1 or 4 with probability \(1/2\) each, and take \(g = \log\), which is concave.</p>
+
+<div class="mathblock">
+\[ \log\mathbb{E}[X] = \log 2.5 = 0.9163 \qquad\text{while}\qquad \mathbb{E}[\log X] = \tfrac12(0 + 1.3863) = 0.6931 \]
+</div>
+
+<p>The gap is \(0.2231\), and it is exactly the price of moving the logarithm outside the
+average. Note what the gap measures: it is zero when \(X\) is constant, and it grows as the
+spread of \(X\) grows. Jensen's gap is a measure of variability.</p>
+
+<h3>Why the KL divergence cannot be negative</h3>
+
+<p>The application that matters most. For two distributions \(p\) and \(q\),</p>
+
+<div class="mathblock">
+\[ \mathrm{KL}(p \,\|\, q) = \mathbb{E}_p\!\left[\log\frac{p(X)}{q(X)}\right] \;\ge\; \log \mathbb{E}_p\!\left[\frac{p(X)}{q(X)}\right] = \log 1 = 0 \]
+</div>
+
+<p>The inequality is Jensen on the concave log, and the final equality is the definition of an
+expectation. So the divergence is non-negative, and it is zero only when the ratio is constant,
+which for two distributions means \(p = q\) almost everywhere.</p>
+
+<p>That two-line proof is load-bearing for everything in the generative-AI series that says
+&ldquo;this is a bound&rdquo;. A bound is only a bound because the thing you subtracted is
+non-negative, and the thing you subtracted is non-negative because of Jensen.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.1</span></span>
+  State Jensen's inequality for a convex function, and say what happens for a concave one.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}[g(X)] \ge g(\mathbb{E}[X])\) for convex \(g\); the inequality reverses for
+  concave \(g\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.2</span></span>
+  \(X = 1\) or \(4\) with probability \(1/2\), \(g = \log\). Compute both sides.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\log 2.5 = 0.9163\) and \(\tfrac12(0 + 1.3863) = 0.6931\); the gap is \(0.2231\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.3</span></span>
+  Prove \(\mathrm{KL}(p\,\|\,q) \ge 0\) using Jensen.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathbb{E}_p[\log(p/q)] \ge \log\mathbb{E}_p[p/q] = \log 1 = 0\), since log is concave.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;5.4</span></span>
+  What does the size of Jensen's gap measure?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Variability: zero when the variable is constant, growing as its spread grows.</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part II &mdash; What happens as \(n\) grows</div>
+
+<h2>6 &middot; The law of large numbers</h2>
+
+<p>A casino runs a game with expected loss 2% per bet. Over ten bets the operator might lose
+money. Over ten million, the result is not in doubt. Something is making the average
+concentrate, and the law of large numbers names it.</p>
+
+<div class="mathblock">
+\[ \frac{1}{n}\sum_{i=1}^{n} X_i \;\xrightarrow{\;P\;}\; \mu \qquad\text{weak law} \]
+</div>
+
+<p>&ldquo;Converges in probability&rdquo; means: for every \(\epsilon > 0\), the probability that
+the average differs from \(\mu\) by more than \(\epsilon\) tends to zero. The strong law says the
+same thing with almost-sure convergence, which is stronger and which matters for statements about
+a single infinite sequence rather than about each fixed \(n\).</p>
+
+<p>The weak law is a two-line consequence of Chebyshev, and the derivation is worth seeing because
+it shows exactly where the \(\sqrt{n}\) comes from. The average has mean \(\mu\) and variance
+\(\sigma^2/n\), so for any \(\epsilon\):</p>
+
+<div class="mathblock">
+\[ P\big(|\bar{X}_n - \mu| \ge \epsilon\big) \le \frac{\sigma^2}{n\epsilon^2} \;\longrightarrow\; 0 \]
+</div>
+
+<p>That is the whole proof. The variance of the average shrinks like \(1/n\), Chebyshev converts
+a variance into a tail probability, and the tail goes to zero. Nothing was assumed about the shape
+of the distribution &mdash; only that \(\sigma^2\) is finite, and that finiteness is doing real
+work.</p>
+
+<div class="aside">
+<span class="who">Where this breaks</span>
+<b>Without a finite mean, nothing concentrates.</b> Draw from a Cauchy distribution &mdash; the
+ratio of two standard normals &mdash; and the average of \(n\) draws has exactly the same
+distribution as one draw, for every \(n\). Average a million of them and you have learned nothing.
+The law of large numbers is not a statement about arithmetic; it is a statement about a
+hypothesis, and the hypothesis can fail.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.1</span></span>
+  State the weak law of large numbers.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The sample average of i.i.d. variables with finite mean \(\mu\) converges to \(\mu\) in
+  probability: \(P(|\bar{X}_n - \mu| > \epsilon) \to 0\) for every \(\epsilon > 0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.2</span></span>
+  Sketch the proof from Chebyshev.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathrm{Var}(\bar{X}_n) = \sigma^2/n\), so Chebyshev gives
+  \(P(|\bar{X}_n - \mu| \ge \epsilon) \le \sigma^2/(n\epsilon^2) \to 0\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.3</span></span>
+  How does the strong law differ from the weak one?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It asserts almost-sure convergence &mdash; the average converges along the whole sequence with
+  probability one, not merely in probability at each fixed \(n\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;6.4</span></span>
+  Give a distribution for which averaging gains nothing.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The Cauchy: the average of \(n\) draws has the same distribution as one draw, for every \(n\).</p>
+</div>
+
+<h2>7 &middot; The central limit theorem</h2>
+
+<p>The law of large numbers says the average lands on \(\mu\). The central limit theorem says
+something far more precise about <i>how</i> it lands: the fluctuations around \(\mu\), scaled up
+by \(\sqrt{n}\), are normal.</p>
+
+<div class="mathblock">
+\[ \frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} \;\xrightarrow{\;d\;}\; \mathcal{N}(0,1) \]
+</div>
+
+<p>Convergence in distribution. The shape of the error does not depend on the shape you started
+with &mdash; only on its mean and variance. This is why the bell curve is everywhere, and it is
+the deep answer to the question the fifth essay deferred: sums of many small independent
+contributions are normal whatever the contributions were.</p>
+
+<h3>In numbers</h3>
+
+<p>Take \(n = 100\) draws with \(\mu = 2\) and \(\sigma = 2\). The average has standard deviation
+\(2/\sqrt{100} = 0.2\). Then</p>
+
+<div class="mathblock">
+\[ P(\bar{X}_{100} > 2.4) = P\!\left(Z > \frac{2.4 - 2}{0.2}\right) = P(Z > 2) \approx 0.023 \]
+</div>
+
+<p>Two and a half percent, and it came from a table for the standard normal because the CLT says
+the standardized average is approximately standard normal. Nothing else about the original
+distribution was used.</p>
+
+<h3>The \(n \ge 30\) folklore</h3>
+
+<p>Somewhere in every statistics course there is a claim that thirty observations is enough. It is
+not a theorem and it is not reliable. The approximation's accuracy depends on how close the
+original distribution already is to normal: for a uniform starting point a dozen draws is ample,
+and for a distribution with a long right tail a thousand may not be. Ask what the convergence rate
+is, not what the threshold is.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.1</span></span>
+  State the central limit theorem.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \((\bar{X}_n - \mu)/(\sigma/\sqrt{n})\) converges in distribution to \(\mathcal{N}(0,1)\) for
+  i.i.d. variables with finite variance.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.2</span></span>
+  \(\mu = 2\), \(\sigma = 2\), \(n = 100\). Compute \(P(\bar{X}_{100} > 2.4)\) approximately.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Standardise to \((2.4-2)/0.2 = 2\), so \(P(Z > 2) \approx 0.023\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.3</span></span>
+  Why is the &ldquo;\(n \ge 30\)&rdquo; rule unreliable?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Because the rate of convergence depends on how non-normal the starting distribution is; a skewed
+  or heavy-tailed one may need far more than thirty.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;7.4</span></span>
+  Which hypothesis does the central limit theorem need that the law of large numbers does not
+  emphasise?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  A finite variance; without it there is no limiting normal, as the Cauchy case shows.</p>
+</div>
+
+<h2>8 &middot; Error bars, and the difference between two sigmas</h2>
+
+<p>You have estimated an average from \(n\) samples. How wrong is it?</p>
+
+<p>The standard deviation of the estimator is \(\sigma/\sqrt{n}\), called the <i>standard
+error</i>, and it is a different object from \(\sigma\). The confusion between them is the most
+common statistical error in applied work, so state it plainly: \(\sigma\) describes how spread out
+one observation is; \(\sigma/\sqrt{n}\) describes how spread out the <i>average</i> is. Data is
+noisy; an estimate is less noisy than the data, by the square root of how much of it you have.</p>
+
+<div class="mathblock">
+\[ \mathrm{se} = \frac{\sigma}{\sqrt{n}}, \qquad 95\% \text{ interval} \approx \hat\mu \pm 1.96\,\frac{\sigma}{\sqrt{n}} \]
+</div>
+
+<p>With \(\sigma = 2\) and \(n = 400\): the standard error is \(0.1\) and the interval is about
+\(\pm 0.196\). Halving that interval requires 1,600 samples, not 800 &mdash; the fourfold tax from
+the fourth essay, unchanged.</p>
+
+<p>The \(1.96\) is not magic and is worth demystifying: it is the point beyond which a standard
+normal puts 2.5% of its mass on each side. It is inherited from the CLT, so it is approximately
+right for averages from any distribution with finite variance, and exactly right for a normal.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.1</span></span>
+  What is the standard error of the mean, and how does it differ from \(\sigma\)?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\sigma/\sqrt{n}\): the spread of the <i>average</i>, whereas \(\sigma\) is the spread of a
+  single observation.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.2</span></span>
+  \(\sigma = 2\), \(n = 400\). Give the standard error and the 95% interval half-width.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  \(\mathrm{se} = 0.1\), half-width \(\approx 1.96 \times 0.1 = 0.196\).</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.3</span></span>
+  Where does the number 1.96 come from?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It is the standard-normal quantile leaving 2.5% in each tail, inherited through the central
+  limit theorem.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;8.4</span></span>
+  You want to halve the width of a confidence interval. How many more samples?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Four times as many, since the width scales as \(1/\sqrt{n}\).</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part III &mdash; When you cannot even draw</div>
+
+<h2>9 &middot; Sampling without a sampler</h2>
+
+<p>Every argument so far has assumed you can draw from the distribution. Often you cannot: you
+know the posterior \(p(\theta \mid \text{data})\) only up to a constant, because the denominator
+is the same intractable integral from the second essay.</p>
+
+<p>The Monte Carlo methods of the fourth essay need independent samples from \(p\). When those are
+unavailable, there is a different idea: build a Markov chain whose long-run distribution is
+\(p\), and walk it. After a while the states it visits are samples from \(p\), approximately and
+asymptotically.</p>
+
+<p>The Metropolis&ndash;Hastings rule is the standard construction. From the current state \(x\),
+propose \(x'\) from some proposal distribution, and accept it with probability</p>
+
+<div class="mathblock">
+\[ \min\left(1, \;\frac{\tilde p(x')\,q(x \mid x')}{\tilde p(x)\,q(x' \mid x)}\right) \]
+</div>
+
+<p>where \(\tilde p\) is the unnormalised density. Look at what happened: the normalising constant
+appears in both the numerator and the denominator and cancels. That cancellation is the entire
+point &mdash; it is why MCMC works precisely in the case where the direct approach fails.</p>
+
+<p>Gibbs sampling is the special case where you cycle through the coordinates and sample each one
+from its conditional given the others, which needs no accept/reject step at all. Both methods are
+correct in the limit and neither is fast, and both come with the same honest caveats: the early
+iterations are not from \(p\) (burn-in), successive samples are correlated (autocorrelation), and
+the guarantees are asymptotic rather than finite-sample.</p>
+
+<div class="aside">
+<span class="who">Where this breaks</span>
+<b>MCMC gives you samples, not a number.</b> There is no error bar in the usual sense, because the
+samples are dependent; the effective sample size is smaller than the number of iterations by
+roughly the autocorrelation time, and estimating that factor is itself a research problem. A
+chain that has not converged produces confident nonsense, and the diagnostic that catches it
+&mdash; running several chains from different starts and comparing &mdash; is a heuristic, not a
+guarantee.
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.1</span></span>
+  Why is direct sampling impossible in a Bayesian posterior, and what replaces it?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The normalising constant \(p(\text{data})\) is an intractable integral; Markov chain Monte Carlo
+  replaces independent draws with a chain whose stationary distribution is the posterior.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.2</span></span>
+  What cancels in the Metropolis&ndash;Hastings acceptance ratio, and why does that matter?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  The unnormalised density's normalising constant, which is exactly the quantity that made direct
+  sampling impossible.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;9.3</span></span>
+  Name the two honest caveats of any MCMC run.</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Burn-in (early states are not from the target) and autocorrelation (samples are dependent, so
+  the effective sample size is smaller than the iteration count).</p>
+</div>
+
+<hr class="rule">
+
+<div class="part">Part IV &mdash; Where this lands in generative AI</div>
+
+<h2>10 &middot; Jensen is the reason any of it is a bound</h2>
+
+<p>Almost every objective in the series has the same skeleton: take a log-likelihood you cannot
+compute, apply Jensen to get something you can, and prove the gap is non-negative. Both halves of
+that &mdash; the direction and the non-negativity &mdash; come from the fifth section.</p>
+
+<div class="mathblock">
+\[ \log p(x) = \underbrace{\mathbb{E}_{q}\!\left[\log\frac{p(x,z)}{q(z\mid x)}\right]}_{\text{ELBO, computable}} + \underbrace{\mathrm{KL}\big(q(z\mid x)\,\|\,p(z\mid x)\big)}_{\ge\, 0 \text{ by Jensen}} \]
+</div>
+
+<p>The equality is exact; the usefulness comes from the second term being non-negative, which is
+Jensen on the logarithm, which is the concavity of \(\log\). Remove Jensen and the ELBO is just an
+algebraic rearrangement with no reason to be a lower bound.</p>
+
+<table>
+<tr><th>from this essay</th><th>where it reappears</th></tr>
+<tr><td>Jensen's inequality</td><td><i>VAE-Curious</i> and <i>Diffusion-Curious</i>: the ELBO is Jensen applied to \(\log p(x) = \log\mathbb{E}_q[p(x,z)/q(z\mid x)]\); the gap is the KL</td></tr>
+<tr><td>\(\mathrm{KL} \ge 0\)</td><td>the reason a bound is a bound: \(\log p(x) - \mathrm{ELBO} = \mathrm{KL}(q\,\|\,p(z\mid x)) \ge 0\) in <i>VAE-Curious</i>, and the non-negativity of every f-divergence in <i>GAN-Curious</i></td></tr>
+<tr><td>the law of large numbers</td><td>why a minibatch gradient is a valid gradient: the average over \(B\) samples converges to the expectation over the data distribution, which is the premise of every training loop in the series</td></tr>
+<tr><td>the central limit theorem</td><td>the noise in an SGD step is approximately Gaussian for large batches, which is the assumption behind analyses that model training as Langevin dynamics</td></tr>
+<tr><td>\(\sigma/\sqrt{n}\), and the fourfold tax</td><td>batch size as a variance dial in every essay; the reason gradient accumulation trades compute for estimator quality rather than for a better objective</td></tr>
+<tr><td>Cauchy&ndash;Schwarz</td><td>the variance of an importance-weighted estimate in <i>VAE-Curious</i>'s importance-weighted bound and in PPO's ratio estimator, which blows up when the weights are heavy-tailed</td></tr>
+<tr><td>Markov and Chebyshev</td><td>concentration bounds for generalisation; genuinely loose in practice, and included here because they are the only bounds available without distributional assumptions</td></tr>
+<tr><td>MCMC</td><td>sampling an unnormalised posterior in <i>VAE-Curious</i>'s discussion of what the encoder is approximating &mdash; but note that diffusion's reverse process is <i>not</i> MCMC, it is a learned transport with a fixed number of steps</td></tr>
+</table>
+
+<p>One correction worth making explicitly, because it is a common conflation. Diffusion sampling is
+often described as &ldquo;MCMC-like&rdquo;, and the analogy is tempting: both walk a chain from
+noise toward data. But the diffusion reverse process is a fixed, learned, finite-length sequence
+of Gaussian steps with no accept/reject test, so it has no stationary distribution and no
+asymptotic guarantee. Its correctness comes from having learned the reverse of a known forward
+process, not from any chain converging. The vocabulary is borrowed; the mathematics is not.</p>
+
+<p>The habit to take away from this essay is a single question, asked of any objective you meet:
+<i>which inequality makes this a bound, and in which direction does it point?</i> If the answer is
+Jensen on a concave function, the objective is a lower bound on a log-likelihood and you should
+expect a gap you can name. If there is no inequality anywhere in the derivation, the quantity is
+an identity and calling it a bound is a mistake.</p>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.1</span></span>
+  Which inequality makes the ELBO a lower bound rather than a rearrangement?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  Jensen's inequality applied to the concave logarithm, which is what forces the KL gap to be
+  non-negative.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.2</span></span>
+  Why does a minibatch gradient estimate the full-data gradient?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  By the law of large numbers: the average over a random minibatch converges to the expectation
+  over the data distribution.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.3</span></span>
+  Why is diffusion's reverse process not a Markov chain Monte Carlo method?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  It is a fixed, learned, finite sequence of Gaussian steps with no accept/reject test and no
+  stationary distribution; its correctness comes from inverting a known forward process.</p>
+</div>
+
+<div class="card-qa">
+  <p class="q"><span class="lbl">Question <span class="n">&nbsp;10.4</span></span>
+  A derivation produces an objective with no inequality anywhere. What should you conclude?</p>
+  <p class="a"><span class="lbl">Answer</span>
+  That it is an identity, not a bound &mdash; and calling it a bound is an error.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Appendix &middot; Every question in this essay</h2>
+
+<p>Each card you met is listed below. Try them cold: answer before you look, or
+better, use the companion file <span class="small">(flashcards.tsv)</span>, which
+imports directly into any spaced-repetition system.</p>
+
+<div id="cardindex"><!--CARDINDEX--></div>
+
+<p class="small" style="margin-top:22px;border-top:1px solid #e8e8e4;padding-top:12px">
+Built from Blitzstein &amp; Hwang, <i>Introduction to Probability</i>, chapter 10
+(&sect;10.1&ndash;&sect;10.3), with &sect;12.1 for Metropolis&ndash;Hastings. Typeset with KaTeX.
+Source: <i>viz/prob-7.body.html</i>, assembled by <i>build/build-essay.js</i>.</p>
