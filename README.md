@@ -16,7 +16,7 @@ runtime dependencies — the published site is plain HTML.
 | `build/chrome/` | `chrome.css` + `chrome.js` — the single source for everything injected into the articles (postcards, decks, nav) |
 | `html/` | rendered articles (KaTeX pre-rendered, fonts base64-inlined) |
 | `pdf/` | print exports of each topic |
-| `notes/<topic>/` | source-page transcriptions (`FULL.md`) and the Anki-importable `flashcards.tsv` for each essay (foundations has only the deck) |
+| `notes/<topic>/` | source-page transcriptions (`FULL.md`) and  `flashcards.tsv` for each essay (foundations has only the deck) |
 | `viz/` | build inputs for the articles + the original render scripts |
 | `video/`, `blockdiagrams/` | GAN/WGAN training animations and diagrams |
 
